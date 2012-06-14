@@ -62,10 +62,10 @@ renderLBSStmt (Offset (Reg o) dir (Reg i) sf) =
                 ScaleFactorInput i -> i
 
 renderLBSProgram :: LBSProgram -> Builder
-renderLBSProgram lbs = DL.foldr f (fromString "") lbs
+renderLBSProgram lbs = DL.foldr join (fromString "") lbs
     where
-    f :: LBSStmt -> Builder -> Builder
-    f l s = (renderLBSStmt l) `mappend` (fromString "\n") `mappend` s
+    join :: LBSStmt -> Builder -> Builder
+    join l s = (renderLBSStmt l) `mappend` (fromString "\n") `mappend` s
 
 instance Num Expr where
     (+) l r = Op Plus l r
