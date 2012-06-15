@@ -11,7 +11,7 @@ Executable ExprToMRM
     build-depends:  base, text >= 0.11, containers >= 0.4, dlist >= 0.5,
                     mtl >= 2.0
     hs-source-dirs: ExprToMRM
-    ghc-options:    -Wall
+    ghc-options:    -Wall -Werror
 
 Test-Suite test-foo
     type:          exitcode-stdio-1.0
