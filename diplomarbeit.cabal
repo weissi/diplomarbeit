@@ -1,0 +1,19 @@
+Name:           diplomarbeit
+Version:        0.1
+License:        GPL-3
+License-File:   LICENSE
+Author:         Johannes Weiß
+Cabal-Version:  >= 1.9.2
+Build-Type:     Simple
+
+Executable ExprToMRM
+    main-is:        ExprToMRM.hs
+    build-depends:  base, text >= 0.11, containers >= 0.4, dlist >= 0.5,
+                    mtl >= 2.0
+    hs-source-dirs: ExprToMRM
+    ghc-options:    -Wall
+
+Test-Suite test-foo
+    type:          exitcode-stdio-1.0
+    main-is:       test-foo.hs
+    build-depends: base

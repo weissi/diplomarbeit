@@ -4,3 +4,7 @@ cabal-dev
 *.hi
 *.chi
 *.chs.h
+*.aux
+*.hp
+*.prof
+*.ps
