@@ -1,0 +1,56 @@
+\documentclass[12pt, a4paper, openright]{article}
+
+% language
+\usepackage[american]{babel}
+\usepackage[utf8]{inputenc}
+
+% bib
+\bibliographystyle{plainurl}
+
+\usepackage{amsmath}
+\usepackage{url}
+
+% I need them :-)
+\usepackage[plainpages=false]{hyperref}
+\hypersetup {
+   pdfauthor={Johannes Wei\ss},
+   pdftitle={Dimplomarbeit -- Roadmap},
+   pdfsubject={Diploma Thesis Roadmap},
+   pdfkeywords={KIT, crypto, diploma thesis, roadmap}
+}
+
+\title{Diplomarbeit -- Roadmap}
+
+\begin{document}
+
+\maketitle
+
+This writing describes the process of securely evaluating arithmetic circuits
+such as $f(x,y) = ...$ over fields.
+
+\section{From Arithmetic Circuits To Matrices}
+
+This section will describe how to describe the evaluation of an arithmetic
+circuit using matrix multiplication \cite{cleve91}.
+
+
+\section{Grouping the Matrices}
+
+This section will describe how to build groups of matrices which could be
+evaluated directly using one OAFE application.
+
+
+\section{Garbling the Matrices}
+
+This section will describe the process of garbling the matrices.
+
+
+\section{Evaluating them using OAFEs (David \& Goliath)}
+
+This section will describe how we put everything together.
+
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliography{bibliography}
+
+\end{document}
+% vim: set spell spelllang=en_us fileencoding=utf8 :
