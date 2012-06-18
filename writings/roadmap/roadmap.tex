@@ -1,4 +1,4 @@
-\documentclass[12pt, a4paper, openright]{article}
+\documentclass[12pt, a4paper]{article}
 
 % language
 \usepackage[american]{babel}
@@ -18,6 +18,8 @@
    pdfsubject={Diploma Thesis Roadmap},
    pdfkeywords={KIT, crypto, diploma thesis, roadmap}
 }
+\usepackage{listings}
+\usepackage{color}
 
 \title{Diplomarbeit -- Roadmap}
 
@@ -25,13 +27,69 @@
 
 \maketitle
 
-This writing describes the process of securely evaluating arithmetic circuits
-such as $f(x,y) = ...$ over fields.
+This writing describes the process of securely evaluating arithmetic functions
+such as $f(x,y) = ...$ over fields. The main building block is the David \&
+Goliath OAFE protocol\cite{davidgoliath}.
 
-\section{From Arithmetic Circuits To Matrices}
 
-This section will describe how to describe the evaluation of an arithmetic
-circuit using matrix multiplication \cite{cleve91}.
+\section{From Arithmetic Formulas To Matrix Multiplications}
+
+Our definition of formulas is the same as in \cite{cleve91}: Formulas are
+circuits that are trees. A postorder traversal is enough to evaluate the formula
+easily. We describe the evaluation of such a formula using \emph{linear
+bijection straight--line programs} (LBS programs)\cite{cleve91} which use at
+most $\omega$ registers. A LBS program can be simulated by matrix
+multiplications, one statement is simulated by one matrix multiplication. The
+matrices are elements of $SL_w(K)$, the special linear group consisting of
+$\omega \times \omega$ matrices with determinant $1$ (and $K$ a field).
+
+A LBS program consists of assignment statements of the following
+forms where $R_{1,...,\omega}$ denote registers, $c \in K$ constants and $x_u
+\in K$ the formula's inputs:
+
+\begin{eqnarray}
+R_j & \leftarrow & R_j + (R_i * c) \\
+R_j & \leftarrow & R_j - (R_i * c) \\
+R_j & \leftarrow & R_j + (R_i * x_u) \\
+R_j & \leftarrow & R_j - (R_i * x_u)
+\end{eqnarray}
+
+For the exact definitions, proofs and algorithms how to transform arbitrary
+formulas to LBS programs see \cite{cleve91}.
+
+The current implementation is a Haskell library which does the transformation
+from the formula, over the LBS program to the matrices. Exemplary,
+the definition of the function $f(x,y) = 3*x + 4*y$ looks like
+
+\lstset{language=Haskell}
+
+\begin{lstlisting}
+_X_ :: Expr
+_X_ = Var "x"
+
+_Y_ :: Expr
+_Y_ = Var "y"
+
+f :: Expr
+f = 3 * _X_  +  4 * _Y_
+\end{lstlisting}
+
+The resulting LBS program is
+
+\begin{lstlisting}
+R1 <- R1 - R2 * x
+R2 <- R2 + R0 * 3
+R1 <- R1 + R2 * x
+R2 <- R2 - R0 * 3
+R1 <- R1 - R2 * y
+R2 <- R2 + R0 * 4
+R1 <- R1 + R2 * y
+R2 <- R2 - R0 * 4
+\end{lstlisting}
+
+The construction of the matrices is straight--forward: The statement $R_i
+\leftarrow R_i + (R_j * \alpha)$ is equivalent to the $K^{\omega \times \omega}$
+identity matrix whose entry $i,j$ is set to $\alpha$.
 
 
 \section{Grouping the Matrices}
