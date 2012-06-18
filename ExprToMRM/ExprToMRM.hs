@@ -2,7 +2,8 @@ module Main (main) where
 
 import Codec.LBS ( Expr(..), InputValues, lbsFromExpr, renderLBSProgram, runLBS
                  , LBSProgram, LBSStmt(..), Register(..), OffsetDirection(..)
-                 , ScaleFactor(..))
+                 , ScaleFactor(..)
+                 )
 import Data.Monoid (mappend, mconcat)
 import Data.Text.Lazy (Text())
 import Data.Text.Lazy.Builder (Builder(), fromString, toLazyText)
@@ -19,11 +20,19 @@ _X_ = Var "x"
 _Y_ :: Expr
 _Y_ = Var "y"
 
-test :: Expr
-test = (4 * _X_ * _X_ + 2 * (_X_ + _Y_ * _Y_) * _X_ * _Y_ + 7) * _X_
+--test :: Expr
+--test = (4 * _X_ * _X_ + 2 * (_X_ + _Y_ * _Y_) * _X_ * _Y_ + 7) * _X_
 
---test2 :: Expr
---test2 = 3 + _X_ * _Y_
+big_sum :: Expr
+big_sum = 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + _X_ + _Y_
+
+test :: Expr
+test = big_sum * big_sum * big_sum * big_sum * big_sum +
+       big_sum * big_sum * big_sum * big_sum * big_sum +
+       big_sum * big_sum * big_sum * big_sum * big_sum
+
+--test :: Expr
+--test = 2 * 3 * 5 * 7 * 11 * 13 * 17 * 19
 
 fromShow :: Show a => a -> Builder
 fromShow = fromString . show

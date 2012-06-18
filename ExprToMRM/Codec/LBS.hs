@@ -1,7 +1,7 @@
 module Codec.LBS ( Expr(Var), InputValues
                  , renderLBSProgram
                  , runLBS, lbsFromExpr
-                 , LBSProgram, LBSStmt(..), Register(..)
+                 , LBSProgram, LBSStmt(..), Register(..), RegisterState
                  , OffsetDirection(..), ScaleFactor(..)
                  ) where
 
@@ -19,7 +19,7 @@ type LBSProgram = DL.DList LBSStmt
 
 data LBSStmt = Offset Register OffsetDirection Register ScaleFactor
 
-data Register = Reg Integer
+data Register = Reg { getReg :: Integer } deriving (Eq)
 
 data OffsetDirection = OffsetPlus | OffsetMinus
 
@@ -33,6 +33,8 @@ data Expr = Op Operator Expr Expr
           | Literal Integer
           deriving (Show)
 
+type RegisterState = Map Integer Integer
+
 -- Internal Data Types
 data Operator = Plus | Minus | Times deriving Show
 
@@ -44,8 +46,6 @@ instance Num Expr where
     abs = error "abs for instance Num Expr not implemented"
     signum = error "signum for instance Num Expr not implemented"
     fromInteger a = Literal a
-
-type RegisterState = Map Integer Integer
 
 type RegisterStateMonad = State RegisterState
 
@@ -88,42 +88,73 @@ renderLBSProgram lbs = toLazyText $ DL.foldr joinStmts (fromString "") lbs
     joinStmts :: LBSStmt -> Builder -> Builder
     joinStmts l s = (renderLBSStmt l) `mappend` (fromString "\n") `mappend` s
 
-nextRegister :: Register -> Register
-nextRegister (Reg r) = Reg $ r + 1
+freeRegister :: [Register] -> Register
+freeRegister dirtyRegs = Reg (1 + maximum (map getReg dirtyRegs))
 
-lbsFromAddExpr :: Expr -> Expr -> Register -> Register -> LBSProgram
-lbsFromAddExpr el er regOut regScale = lbsl `DL.append` lbsr
+-- |Offsets `output register' by +/- `scale register' * (`expr 1' + `expr 2')
+lbsFromAddExpr :: [Register]       -- dirty registers
+               -> Register         -- output register
+               -> OffsetDirection  -- +/-
+               -> Register         -- scale register
+               -> Expr             -- expr 1
+               -> Expr             -- expr 2
+               -> LBSProgram
+lbsFromAddExpr dirtyRegs regOut direction regScale el er  =
+    lbsl `DL.append` lbsr
     where lbsl :: LBSProgram
-          lbsl = lbsFromExpr' el regOut OffsetPlus regScale
+          lbsl = lbsFromExpr' dirtyRegs regOut direction regScale el
           lbsr :: LBSProgram
-          lbsr = lbsFromExpr' er regOut OffsetPlus regScale
+          lbsr = lbsFromExpr' dirtyRegs regOut direction regScale er
 
-lbsFromMulExpr :: Expr -> Expr -> Register -> Register -> LBSProgram
-lbsFromMulExpr el er regOut regScale =
-    DL.concat [ lbsFromExpr' er rk OffsetMinus rj
-              , lbsFromExpr' el rj OffsetPlus ri
-              , lbsFromExpr' er rk OffsetPlus rj
-              , lbsFromExpr' el rj OffsetMinus ri
-              ]
+-- |Offsets `output register' by +/- `scale register' * (`expr 1' * `expr 2')
+lbsFromMulExpr :: [Register]       -- dirty registers
+               -> Register         -- output register
+               -> OffsetDirection  -- +/-
+               -> Register         -- scale register
+               -> Expr             -- expr 1
+               -> Expr             -- expr 2
+               -> LBSProgram
+lbsFromMulExpr dirtyRegs regOut direction regScale el er =
+    case direction of
+      OffsetPlus ->
+          DL.concat [ lbsFromExpr' dirtyRegs' rk OffsetMinus rj er
+                    , lbsFromExpr' dirtyRegs' rj OffsetPlus ri el
+                    , lbsFromExpr' dirtyRegs' rk OffsetPlus rj er
+                    , lbsFromExpr' dirtyRegs' rj OffsetMinus ri el
+                    ]
+      OffsetMinus ->
+          DL.concat [ lbsFromExpr' dirtyRegs' rk OffsetMinus rj er
+                    , lbsFromExpr' dirtyRegs' rj OffsetMinus ri el
+                    , lbsFromExpr' dirtyRegs' rk OffsetPlus rj er
+                    , lbsFromExpr' dirtyRegs' rj OffsetPlus ri el
+                    ]
     where ri = regScale
-          rj = nextRegister rk
+          rj = freeRegister dirtyRegs
           rk = regOut
+          dirtyRegs' = rj : dirtyRegs
 
-lbsFromExpr' :: Expr -> Register -> OffsetDirection -> Register -> LBSProgram
-lbsFromExpr' e regOut direction regScale =
+-- |Offsets `output register' by +/- `scale register' * `expr'
+lbsFromExpr' :: [Register]       -- dirty registers
+             -> Register         -- output register
+             -> OffsetDirection  -- +/-
+             -> Register         -- scale register
+             -> Expr             -- expr
+             -> LBSProgram
+lbsFromExpr' dirtyRegs regOut direction regScale e =
     case e of
       Op o el er ->
           case o of
-            Plus -> lbsFromAddExpr el er regOut _REG_CONST_1_
+            Plus -> lbsFromAddExpr dirtyRegs regOut direction regScale el er
             Minus -> undefined
-            Times -> lbsFromMulExpr el er regOut _REG_CONST_1_
+            Times -> lbsFromMulExpr dirtyRegs regOut direction regScale el er
       Var s ->
           DL.singleton $Offset regOut direction regScale (ScaleFactorInput s)
       Literal i ->
           DL.singleton $Offset regOut direction regScale (ScaleFactorConstant i)
 
 lbsFromExpr :: Expr -> LBSProgram
-lbsFromExpr e = lbsFromExpr' e (Reg 1) OffsetPlus _REG_CONST_1_
+lbsFromExpr e = lbsFromExpr' alwaysDirtyRegs (Reg 1) OffsetPlus _REG_CONST_1_ e
+    where alwaysDirtyRegs = [_REG_CONST_1_, Reg 1]
 
 registerValue :: Register -> RegisterState -> Integer
 registerValue (Reg r) regs = M.findWithDefault 0 r regs
@@ -162,10 +193,10 @@ execLBSProgram inputs p = sequence (DL.unDL stmts []) >>= return . DL.concat
     where stmts :: DList (RegisterStateMonad ErrorList)
           stmts = (DL.map (execLBSStatement inputs) p)
 
-runLBS :: InputValues -> LBSProgram -> Maybe Integer
+runLBS :: InputValues -> LBSProgram -> Maybe (Integer, RegisterState)
 runLBS inputs lbs =
     if null $ DL.toList errs
-      then Just $ registerValue (Reg 1) state
+      then Just $ (registerValue (Reg 1) state, state)
       else Nothing
     where (errs, state) =
               runState (execLBSProgram inputs lbs) _INITIAL_REGISTER_STATE_
