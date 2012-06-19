@@ -17,9 +17,9 @@ import qualified Data.Map as M
 -- Public Data Types
 type LBSProgram = DL.DList LBSStmt
 
-data LBSStmt = Offset Register OffsetDirection Register ScaleFactor
+data LBSStmt = Offset !Register !OffsetDirection !Register !ScaleFactor
 
-data Register = Reg { getReg :: Integer } deriving (Eq)
+data Register = Reg { getReg :: ! Integer } deriving (Eq)
 
 data OffsetDirection = OffsetPlus | OffsetMinus
 
@@ -163,7 +163,7 @@ registerValueM :: Register -> RegisterStateMonad Integer
 registerValueM r = get >>= return . (registerValue r)
 
 updateRegisterM :: Register -> Integer -> RegisterStateMonad ()
-updateRegisterM (Reg r) v = get >>= return . (M.insert r v) >>= put
+updateRegisterM (Reg !r) !v = get >>= return . (M.insert r v) >>= put
 
 dirOp :: Num a => OffsetDirection -> (a -> a -> a)
 dirOp dir = case dir of
