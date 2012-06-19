@@ -1,6 +1,7 @@
+{-# LANGUAGE BangPatterns #-}
 module Codec.LBS ( Expr(Var), InputValues
                  , renderLBSProgram
-                 , runLBS, lbsFromExpr
+                 , runLBS, lbsFromExpr, lbsProgramLength
                  , LBSProgram, LBSStmt(..), Register(..), RegisterState
                  , OffsetDirection(..), ScaleFactor(..)
                  ) where
@@ -200,3 +201,6 @@ runLBS inputs lbs =
       else Nothing
     where (errs, state) =
               runState (execLBSProgram inputs lbs) _INITIAL_REGISTER_STATE_
+
+lbsProgramLength :: LBSProgram -> Int
+lbsProgramLength = length . DL.toList
