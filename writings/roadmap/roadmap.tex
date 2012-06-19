@@ -33,6 +33,7 @@ Goliath OAFE protocol\cite{davidgoliath}.
 
 
 \section{From Arithmetic Formulas To Matrix Multiplications}
+\label{sec:FormulasToMatrixMuls}
 
 Our definition of formulas is the same as in \cite{cleve91}: Formulas are
 circuits that are trees. A postorder traversal is enough to evaluate the formula
@@ -48,18 +49,76 @@ forms where $R_{1,...,\omega}$ denote registers, $c \in K$ constants and $x_u
 \in K$ the formula's inputs:
 
 \begin{eqnarray}
-R_j & \leftarrow & R_j + (R_i * c) \\
-R_j & \leftarrow & R_j - (R_i * c) \\
-R_j & \leftarrow & R_j + (R_i * x_u) \\
-R_j & \leftarrow & R_j - (R_i * x_u)
+R_j & \leftarrow & R_j + (R_i \cdot c) \\
+R_j & \leftarrow & R_j - (R_i \cdot c) \\
+R_j & \leftarrow & R_j + (R_i \cdot x_u) \\
+R_j & \leftarrow & R_j - (R_i \cdot x_u)
 \end{eqnarray}
 
-For the exact definitions, proofs and algorithms how to transform arbitrary
-formulas to LBS programs see \cite{cleve91}.
+
+\subsection{Transformation of Formulas to LBS Programs}
+
+The goal is to transform a register $R_{out}$ with a initial value of $0$ to be
+transformed like $R_{out} \leftarrow R_{out} + R_{one} \cdot f(x,y)$ . The
+special register $R_{one}$ holds a constant $1$. This can be achieved by
+induction as follows.  For the exact definitions, proofs and algorithms how to
+transform arbitrary formulas to LBS programs see \cite{cleve91}.
+
+
+\paragraph{Depth $d = 0$}
+
+The construction of the LBS for $d = 0$ is very straightforward:
+$R_j \leftarrow R_j \pm R_i \cdot c$ or $R_j \leftarrow R_j \pm R_i \cdot x_u$ .
+
+
+\paragraph{Depth $d > 0$}
+
+Having LBS progams that do $R_j \leftarrow R_j \pm R_i \cdot l(x, y)$  and
+$R_j \leftarrow R_j \pm R_i \cdot r(x, y)$ we can
+transform formulas of depth $d > 0$ to a LBS program using only formulas of
+of depth $d - 1$ until $d = 0$.
+
+\subparagraph{Additive:} We can construct a LBS program doing $R_j \leftarrow
+R_j + R_i \cdot (l + r)(x, y)$ easily by the following LBS program
+
+\begin{eqnarray}
+R_j & \leftarrow & R_j + R_i \cdot l(x, y) \\
+R_j & \leftarrow & R_j + R_i \cdot r(x, y)
+\end{eqnarray}
+
+Alike for $R_j \leftarrow R_j - R_i \cdot (l + r)(x, y)$
+
+\begin{eqnarray}
+R_j & \leftarrow & R_j - R_i \cdot l(x, y) \\
+R_j & \leftarrow & R_j - R_i \cdot r(x, y)
+\end{eqnarray}
+
+
+\subparagraph{Multiplicative:} We can construct a LBS program doing $R_j
+\leftarrow R_j + R_i \cdot (l \cdot r)(x, y)$ less obviously by the LBS program
+
+\begin{eqnarray}
+R_k & \leftarrow & R_k - R_j \cdot r(x, y) \\
+R_j & \leftarrow & R_j + R_i \cdot l(x, y) \\
+R_k & \leftarrow & R_k + R_j \cdot r(x, y) \\
+R_j & \leftarrow & R_j - R_i \cdot l(x, y)
+\end{eqnarray}
+
+Alike for $R_j \leftarrow R_j - R_i \cdot (l \cdot r)(x, y)$
+
+\begin{eqnarray}
+R_k & \leftarrow & R_k - R_j \cdot r(x, y) \\
+R_j & \leftarrow & R_j - R_i \cdot l(x, y) \\
+R_k & \leftarrow & R_k + R_j \cdot r(x, y) \\
+R_j & \leftarrow & R_j + R_i \cdot l(x, y)
+\end{eqnarray}
+
+
+\subsection{Current Implementation State}
 
 The current implementation is a Haskell library which does the transformation
 from the formula, over the LBS program to the matrices. Exemplary,
-the definition of the function $f(x,y) = 3*x + 4*y$ looks like
+the definition of the function $f(x,y) = 3 \cdot x + 4 \cdot y$ looks like
 
 \lstset{language=Haskell}
 
@@ -88,20 +147,36 @@ R2 <- R2 - R0 * 4
 \end{lstlisting}
 
 The construction of the matrices is straight--forward: The statement $R_i
-\leftarrow R_i + (R_j * \alpha)$ is equivalent to the $K^{\omega \times \omega}$
-identity matrix whose entry $i,j$ is set to $\alpha$.
+\leftarrow R_i + (R_j \cdot \alpha)$ is equivalent to the $K^{\omega \times
+\omega}$ identity matrix whose entry $i,j$ is set to $\alpha$.
 
 
 \section{Grouping the Matrices}
 
-This section will describe how to build groups of matrices which could be
-evaluated directly using one OAFE application.
+The grouping process is very straightforward, too: From the process described in
+section \ref{sec:FormulasToMatrixMuls} we obtain matrices $S_1$ to $S_n$ which
+each have the effect of exactly one LBS program statement. Using associativity,
+we group together a variable amount of matrices $S_1$ to $S_n$. Each group is
+complete when there is at least one reference to the \emph{other party's input}
+$y$.  Matrices $M_1$ to $M_m$ where $M_1$ to $M_{m-1}$ definitely have at least
+one reference to $y$ and $M_m$ may or may not are the result of this step.
+Obviously the following properties hold:
 
+\begin{eqnarray}
+n & >= & m \\
+\prod_{i=1}^m M_i & = & \prod_{j=1}^n S_i
+\end{eqnarray}
 
 \section{Garbling the Matrices}
 
-This section will describe the process of garbling the matrices.
-
+Let $D_L$ be the $\omega \times \omega$ matrix whose entry $2,2$ is $1$, and
+whose other entries are $0$. Multiplication of $D_L$ selects the second row of
+matrices multiplied on the right of $D_L$. Let $D_R$ be the $\omega \times
+\omega$ matrix whose entry $1,1$ is $1$, and whose other entries are $0$. This
+matrix will select the first column when multiplied on the left of any matrix.
+Using additional matrices $G_0$ to $G_{m+1}$ uniformly at random and invertible,
+$D_L G_0 \cdot ( \prod_{i=1}^m G_{m-1}^{-1} M_i G_m ) \cdot G_m^{-1} D_R$ will
+only reveal the final result and no usable information by itself\cite{cramer03}.
 
 \section{Evaluating them using OAFEs (David \& Goliath)}
 
