@@ -6,7 +6,7 @@ module Codec.LBS ( Expr(Var), InputValues
                  , OffsetDirection(..), ScaleFactor(..)
                  ) where
 
-import Control.Monad.State (State, get, put, runState)
+import Control.Monad.State.Strict (State, get, put, runState)
 import Data.DList (DList())
 import Data.Map (Map())
 import Data.Monoid (mappend)
@@ -171,15 +171,18 @@ dirOp dir = case dir of
               OffsetPlus -> (+)
               OffsetMinus -> (-)
 
-execLBSStatement :: InputValues -> LBSStmt -> RegisterStateMonad ErrorList
-execLBSStatement inputs (Offset regOut dir regScale sf) =
+execLBSStatement :: InputValues
+                 -> LBSStmt
+                 -> ErrorList
+                 -> RegisterStateMonad (ErrorList)
+execLBSStatement inputs (Offset regOut dir regScale sf) accumErrors =
     do outVal <- registerValueM regOut
        scaleVal <- registerValueM regScale
        case sfVal of
-         Left err -> return $ DL.singleton err
+         Left err -> return $ accumErrors `DL.snoc` err
          Right val ->
              do updateRegisterM regOut (dirOp dir outVal (scaleVal * val))
-                return DL.empty
+                return accumErrors
        where sfVal :: Either String Integer
              sfVal =
                  case sf of
@@ -190,9 +193,17 @@ execLBSStatement inputs (Offset regOut dir regScale sf) =
                          Just x -> Right x
 
 execLBSProgram :: InputValues -> LBSProgram -> RegisterStateMonad ErrorList
-execLBSProgram inputs p = sequence (DL.unDL stmts []) >>= return . DL.concat
-    where stmts :: DList (RegisterStateMonad ErrorList)
+execLBSProgram inputs p =
+    combine (DL.toList stmts) DL.empty
+    where stmts :: DList (ErrorList -> RegisterStateMonad ErrorList)
           stmts = (DL.map (execLBSStatement inputs) p)
+          combine :: [ErrorList -> RegisterStateMonad ErrorList]
+                  -> ErrorList
+                  -> RegisterStateMonad ErrorList
+          combine ss errs =
+              case ss of
+                [] -> return errs
+                (s:ss') -> s errs >>= combine ss'
 
 runLBS :: InputValues -> LBSProgram -> Maybe (Integer, RegisterState)
 runLBS inputs lbs =
