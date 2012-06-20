@@ -29,7 +29,7 @@
 \maketitle
 
 This writing describes the process of securely evaluating arithmetic functions
-such as $f(x,y) = ...$ over fields. The main building block is the David \&
+such as $f(x_G,x_D) = ...$ over fields. The main building block is the David \&
 Goliath OAFE protocol\cite{davidgoliath}.
 
 
@@ -60,7 +60,7 @@ R_j & \leftarrow R_j - (R_i \cdot x_u)
 \subsection{Transformation of Formulas to LBS Programs}
 
 The goal is to transform a register $R_{out}$ with a initial value of $0$ to be
-transformed like $R_{out} \leftarrow R_{out} + R_{one} \cdot f(x,y)$ . The
+transformed like $R_{out} \leftarrow R_{out} + R_{one} \cdot f(x_G,x_D)$ . The
 special register $R_{one}$ holds a constant $1$. This can be achieved by
 induction as follows.  For the exact definitions, proofs and algorithms how to
 transform arbitrary formulas to LBS programs see \cite{cleve91}.
@@ -74,44 +74,44 @@ $R_j \leftarrow R_j \pm R_i \cdot c$ or $R_j \leftarrow R_j \pm R_i \cdot x_u$ .
 
 \paragraph{Depth $d > 0$}
 
-Having LBS progams that do $R_j \leftarrow R_j \pm R_i \cdot l(x, y)$  and
-$R_j \leftarrow R_j \pm R_i \cdot r(x, y)$ we can
+Having LBS progams that do $R_j \leftarrow R_j \pm R_i \cdot l(x_G, x_D)$  and
+$R_j \leftarrow R_j \pm R_i \cdot r(x_G, x_D)$ we can
 transform formulas of depth $d > 0$ to a LBS program using only formulas of
 of depth $d - 1$ until $d = 0$.
 
 \subparagraph{Additive:} We can construct a LBS program doing $R_j \leftarrow
-R_j + R_i \cdot (l + r)(x, y)$ easily by the following LBS program
+R_j + R_i \cdot (l + r)(x_G, x_D)$ easily by the following LBS program
 
 \begin{align*}
-R_j & \leftarrow R_j + R_i \cdot l(x, y) \\
-R_j & \leftarrow R_j + R_i \cdot r(x, y)
+R_j & \leftarrow R_j + R_i \cdot l(x_G, x_D) \\
+R_j & \leftarrow R_j + R_i \cdot r(x_G, x_D)
 \end{align*}
 
-Alike for $R_j \leftarrow R_j - R_i \cdot (l + r)(x, y)$
+Alike for $R_j \leftarrow R_j - R_i \cdot (l + r)(x_G, x_D)$
 
 \begin{align*}
-R_j & \leftarrow R_j - R_i \cdot l(x, y) \\
-R_j & \leftarrow R_j - R_i \cdot r(x, y)
+R_j & \leftarrow R_j - R_i \cdot l(x_G, x_D) \\
+R_j & \leftarrow R_j - R_i \cdot r(x_G, x_D)
 \end{align*}
 
 
 \subparagraph{Multiplicative:} We can construct a LBS program doing $R_j
-\leftarrow R_j + R_i \cdot (l \cdot r)(x, y)$ less obviously by the LBS program
+\leftarrow R_j + R_i \cdot (l \cdot r)(x_G, x_D)$ less obviously by the LBS program
 
 \begin{align*}
-R_k & \leftarrow R_k - R_j \cdot r(x, y) \\
-R_j & \leftarrow R_j + R_i \cdot l(x, y) \\
-R_k & \leftarrow R_k + R_j \cdot r(x, y) \\
-R_j & \leftarrow R_j - R_i \cdot l(x, y)
+R_k & \leftarrow R_k - R_j \cdot r(x_G, x_D) \\
+R_j & \leftarrow R_j + R_i \cdot l(x_G, x_D) \\
+R_k & \leftarrow R_k + R_j \cdot r(x_G, x_D) \\
+R_j & \leftarrow R_j - R_i \cdot l(x_G, x_D)
 \end{align*}
 
-Alike for $R_j \leftarrow R_j - R_i \cdot (l \cdot r)(x, y)$
+Alike for $R_j \leftarrow R_j - R_i \cdot (l \cdot r)(x_G, x_D)$
 
 \begin{align*}
-R_k & \leftarrow R_k - R_j \cdot r(x, y) \\
-R_j & \leftarrow R_j - R_i \cdot l(x, y) \\
-R_k & \leftarrow R_k + R_j \cdot r(x, y) \\
-R_j & \leftarrow R_j + R_i \cdot l(x, y)
+R_k & \leftarrow R_k - R_j \cdot r(x_G, x_D) \\
+R_j & \leftarrow R_j - R_i \cdot l(x_G, x_D) \\
+R_k & \leftarrow R_k + R_j \cdot r(x_G, x_D) \\
+R_j & \leftarrow R_j + R_i \cdot l(x_G, x_D)
 \end{align*}
 
 
@@ -119,42 +119,42 @@ R_j & \leftarrow R_j + R_i \cdot l(x, y)
 
 The current implementation is a Haskell library which does the transformation
 from the formula, over the LBS program to the matrices. Exemplary,
-the definition of the function $f(x,y) = 3x \cdot (x + y^2)$ looks like
+the definition of the function $f(x_G,x_D) = 3x \cdot (x_G + x_D^2)$ looks like
 
 \lstset{language=Haskell}
 
 \begin{lstlisting}
-_X_ :: Expr
-_X_ = Var "x"
+_Xg_ :: Expr
+_Xg_ = Var "Xg"
 
-_Y_ :: Expr
-_Y_ = Var "y"
+_Xd_ :: Expr
+_Xd_ = Var "Xd"
 
 f :: Expr
-f = 3 * _X_ * (_X_ + _Y_ * _Y_)
+f = 3 * _Xg_ * (_Xg_ + _Yd_ * _Yd_)
 \end{lstlisting}
 
 \noindent{}The resulting LBS program which will hold the result in \texttt{R1}
 looks like:
 
 \begin{lstlisting}
-R1 <- R1 - R2 * x
-R1 <- R1 - R3 * y
-R3 <- R3 - R2 * y
-R1 <- R1 + R3 * y
-R3 <- R3 + R2 * y
-R2 <- R2 - R3 * x
+R1 <- R1 - R2 * Xg
+R1 <- R1 - R3 * Xd
+R3 <- R3 - R2 * Xd
+R1 <- R1 + R3 * Xd
+R3 <- R3 + R2 * Xd
+R2 <- R2 - R3 * Xg
 R3 <- R3 + R0 * 3
-R2 <- R2 + R3 * x
+R2 <- R2 + R3 * Xg
 R3 <- R3 - R0 * 3
-R1 <- R1 + R2 * x
-R1 <- R1 - R3 * y
-R3 <- R3 + R2 * y
-R1 <- R1 + R3 * y
-R3 <- R3 - R2 * y
-R2 <- R2 - R3 * x
+R1 <- R1 + R2 * Xg
+R1 <- R1 - R3 * Xd
+R3 <- R3 + R2 * Xd
+R1 <- R1 + R3 * Xd
+R3 <- R3 - R2 * Xd
+R2 <- R2 - R3 * Xg
 R3 <- R3 - R0 * 3
-R2 <- R2 + R3 * x
+R2 <- R2 + R3 * Xg
 R3 <- R3 + R0 * 3
 \end{lstlisting}
 
@@ -167,17 +167,18 @@ $R_i \leftarrow R_i + (R_j \cdot \alpha)$ is equivalent to the $K^{\omega \times
 \label{sec:matrix-grouping}
 
 The grouping process is very straightforward, too: From the process described in
-section \ref{sec:FormulasToMatrixMuls} we obtain matrices $S_1$ to $S_n$ which
-each have the effect of exactly one LBS program statement. Using associativity,
-we group together a variable amount of matrices $S_1$ to $S_n$. Each group is
-complete when there is at least one reference to the \emph{other party's input}
-$y$.  Matrices $M_1$ to $M_m$ where $M_1$ to $M_{m-1}$ definitely have at least
-one reference to $y$ and $M_m$ may or may not are the result of this step.
-Obviously the following properties hold:
+section \ref{sec:FormulasToMatrixMuls} we obtain matrices $\widehat{M}_1$ to
+$\widehat{M}_n$ which each have the effect of exactly one LBS program statement.
+Using associativity, we group together a variable amount of matrices
+$\widehat{M}_1$ to $\widehat{M}_n$. Each group is complete when there is at least
+one reference to the \emph{other party's input} $x_D$.  Matrices $M_1$ to $M_m$
+where $M_1$ to $M_{m-1}$ definitely have at least one reference to $x_D$ and
+$M_m$ may or may not are the result of this step.  Obviously the following
+properties hold:
 
 \begin{align*}
 n & >= m \\
-\prod_{i=1}^m M_i & = \prod_{j=1}^n S_i
+\prod_{i=1}^m M_i & = \prod_{j=1}^n \widehat{M}_j
 \end{align*}
 
 \section{Garbling the Matrices}
@@ -188,17 +189,19 @@ whose other entries are $0$. Multiplication of $D_L$ selects the second row of
 matrices multiplied on the right of $D_L$. Let $D_R$ be the $\omega \times
 \omega$ matrix whose entry $1,1$ is $1$, and whose other entries are $0$. This
 matrix will select the first column when multiplied on the left of any matrix.
-Using additional matrices $G_1$ to $G_{m}$ uniformly at random and invertible,
+Using additional matrices $S_1$ to $S_{m}$ uniformly at random and invertible,
 we can build up $m$ garbled matrix groups:
 
 \begin{align*}
-U_1 & = D_L M_1 G_1 \\
-U_i & = G_{i-1} M_i G_i & \text{for $i \in \{x \in \mathbb{N} \big| 1 < x < m\}$}\\
-U_m & = G_{m-1} M_m D_R
+U_1 & = D_L M_1 S_1 \\
+U_i & = S_{i-1}^{-1} M_i S_i &
+\text{for $i \in \{n \in \mathbb{N} \big| 1 < n < m\}$}\\
+U_m & = S_{m-1}^{-1} M_m D_R
 \end{align*}
 
-\noindent{} Hence, each $U_{1..m}$ does not contain usable information
-\cite{cramer03}, but $\prod_{i=1}^m U_i$ does still contain the desired result.
+\noindent{} Hence, each $U_{1..m}$ does not reveal usable information by itself
+\cite{cramer03}, but $\prod_{i=1}^m U_i$ does still calculate the desired
+result.
 
 
 \section{Evaluating them using OAFEs (David \& Goliath)}
@@ -207,11 +210,11 @@ From section \ref{sec:matrix-garbling} we obtain the matrices $U_{1..m} \in
 K^{\omega \times \omega}$. We can easily reshape the matrices $U_{1..m}$ to
 vectors $u_{1..m} \in K^{\omega^2}$ and concat the vectors $u_{1..m}$ to one
 giant vector $\mu \in K^{m\omega^2}$. After that we deduce two vectors $a$ and
-$b$ that hold the following property ($a, b \in K^{m\omega^2}$, $y$ a scalar
+$b$ that hold the following property ($a, b \in K^{m\omega^2}$, $x_D$ a scalar
 variable, as in section \ref{sec:matrix-grouping} David's input):
 
 \begin{align}
-a \cdot y + b = \mu
+a \cdot x_D + b = \mu
 \end{align}
 
 Using the $\prod^{\text{semi-int}}_{\text{OAFE}}$ protocol\cite{davidgoliath} we
@@ -222,14 +225,16 @@ are now ready to evaluate the function securely:
 \item The setup is: $a, b$ as above, $\mathbb{F}_q = K$, $k = m\omega^2$ and $m$
 known to both, David and Goliath
 
-\item The protocol now lets David evaluate the linear functions to his result
-vector $\lambda \in K^{m\omega^2}$
+\item After applying the protocol, David is now able to evaluate the linear
+functions to his result vector $y \in K^{m\omega^2} = GWh + \tilde{a}x_D +
+\tilde{b}$ ($G$, $W$, $h$, $\tilde{a}$ ,$\tilde{b}$ as in the paper
+\cite{davidgoliath})
 
-\item The last but one step is to reshape $\lambda$ to the matrices $F_{1..m}
+\item The last but one step is to reshape $y$ to the matrices $F_{1..m}
 \in K^{m\omega^2}$
 
 \item Finally, the entry $2, 1$ of $\prod_{i=1}^m F_i$ is the desired result of
-$f(x,y)$.
+$f(x_G,x_D)$.
 
 \end{itemize}
 
