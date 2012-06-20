@@ -8,6 +8,7 @@
 \bibliographystyle{plainurl}
 
 \usepackage{amsmath}
+\usepackage{amsfonts}
 \usepackage{url}
 
 % I need them :-)
@@ -48,12 +49,12 @@ A LBS program consists of assignment statements of the following
 forms where $R_{1,...,\omega}$ denote registers, $c \in K$ constants and $x_u
 \in K$ the formula's inputs:
 
-\begin{eqnarray}
-R_j & \leftarrow & R_j + (R_i \cdot c) \\
-R_j & \leftarrow & R_j - (R_i \cdot c) \\
-R_j & \leftarrow & R_j + (R_i \cdot x_u) \\
-R_j & \leftarrow & R_j - (R_i \cdot x_u)
-\end{eqnarray}
+\begin{align}
+R_j & \leftarrow R_j + (R_i \cdot c) \\
+R_j & \leftarrow R_j - (R_i \cdot c) \\
+R_j & \leftarrow R_j + (R_i \cdot x_u) \\
+R_j & \leftarrow R_j - (R_i \cdot x_u)
+\end{align}
 
 
 \subsection{Transformation of Formulas to LBS Programs}
@@ -81,44 +82,44 @@ of depth $d - 1$ until $d = 0$.
 \subparagraph{Additive:} We can construct a LBS program doing $R_j \leftarrow
 R_j + R_i \cdot (l + r)(x, y)$ easily by the following LBS program
 
-\begin{eqnarray}
-R_j & \leftarrow & R_j + R_i \cdot l(x, y) \\
-R_j & \leftarrow & R_j + R_i \cdot r(x, y)
-\end{eqnarray}
+\begin{align*}
+R_j & \leftarrow R_j + R_i \cdot l(x, y) \\
+R_j & \leftarrow R_j + R_i \cdot r(x, y)
+\end{align*}
 
 Alike for $R_j \leftarrow R_j - R_i \cdot (l + r)(x, y)$
 
-\begin{eqnarray}
-R_j & \leftarrow & R_j - R_i \cdot l(x, y) \\
-R_j & \leftarrow & R_j - R_i \cdot r(x, y)
-\end{eqnarray}
+\begin{align*}
+R_j & \leftarrow R_j - R_i \cdot l(x, y) \\
+R_j & \leftarrow R_j - R_i \cdot r(x, y)
+\end{align*}
 
 
 \subparagraph{Multiplicative:} We can construct a LBS program doing $R_j
 \leftarrow R_j + R_i \cdot (l \cdot r)(x, y)$ less obviously by the LBS program
 
-\begin{eqnarray}
-R_k & \leftarrow & R_k - R_j \cdot r(x, y) \\
-R_j & \leftarrow & R_j + R_i \cdot l(x, y) \\
-R_k & \leftarrow & R_k + R_j \cdot r(x, y) \\
-R_j & \leftarrow & R_j - R_i \cdot l(x, y)
-\end{eqnarray}
+\begin{align*}
+R_k & \leftarrow R_k - R_j \cdot r(x, y) \\
+R_j & \leftarrow R_j + R_i \cdot l(x, y) \\
+R_k & \leftarrow R_k + R_j \cdot r(x, y) \\
+R_j & \leftarrow R_j - R_i \cdot l(x, y)
+\end{align*}
 
 Alike for $R_j \leftarrow R_j - R_i \cdot (l \cdot r)(x, y)$
 
-\begin{eqnarray}
-R_k & \leftarrow & R_k - R_j \cdot r(x, y) \\
-R_j & \leftarrow & R_j - R_i \cdot l(x, y) \\
-R_k & \leftarrow & R_k + R_j \cdot r(x, y) \\
-R_j & \leftarrow & R_j + R_i \cdot l(x, y)
-\end{eqnarray}
+\begin{align*}
+R_k & \leftarrow R_k - R_j \cdot r(x, y) \\
+R_j & \leftarrow R_j - R_i \cdot l(x, y) \\
+R_k & \leftarrow R_k + R_j \cdot r(x, y) \\
+R_j & \leftarrow R_j + R_i \cdot l(x, y)
+\end{align*}
 
 
 \subsection{Current Implementation State}
 
 The current implementation is a Haskell library which does the transformation
 from the formula, over the LBS program to the matrices. Exemplary,
-the definition of the function $f(x,y) = 3 \cdot x + 4 \cdot y$ looks like
+the definition of the function $f(x,y) = 3x \cdot (x + y^2)$ looks like
 
 \lstset{language=Haskell}
 
@@ -130,28 +131,40 @@ _Y_ :: Expr
 _Y_ = Var "y"
 
 f :: Expr
-f = 3 * _X_  +  4 * _Y_
+f = 3 * _X_ * (_X_ + _Y_ * _Y_)
 \end{lstlisting}
 
-The resulting LBS program is
+\noindent{}The resulting LBS program which will hold the result in \texttt{R1}
+looks like:
 
 \begin{lstlisting}
 R1 <- R1 - R2 * x
-R2 <- R2 + R0 * 3
+R1 <- R1 - R3 * y
+R3 <- R3 - R2 * y
+R1 <- R1 + R3 * y
+R3 <- R3 + R2 * y
+R2 <- R2 - R3 * x
+R3 <- R3 + R0 * 3
+R2 <- R2 + R3 * x
+R3 <- R3 - R0 * 3
 R1 <- R1 + R2 * x
-R2 <- R2 - R0 * 3
-R1 <- R1 - R2 * y
-R2 <- R2 + R0 * 4
-R1 <- R1 + R2 * y
-R2 <- R2 - R0 * 4
+R1 <- R1 - R3 * y
+R3 <- R3 + R2 * y
+R1 <- R1 + R3 * y
+R3 <- R3 - R2 * y
+R2 <- R2 - R3 * x
+R3 <- R3 - R0 * 3
+R2 <- R2 + R3 * x
+R3 <- R3 + R0 * 3
 \end{lstlisting}
 
-The construction of the matrices is straight--forward: The statement $R_i
-\leftarrow R_i + (R_j \cdot \alpha)$ is equivalent to the $K^{\omega \times
+\noindent{}The construction of the matrices is straight--forward: The statement
+$R_i \leftarrow R_i + (R_j \cdot \alpha)$ is equivalent to the $K^{\omega \times
 \omega}$ identity matrix whose entry $i,j$ is set to $\alpha$.
 
 
 \section{Grouping the Matrices}
+\label{sec:matrix-grouping}
 
 The grouping process is very straightforward, too: From the process described in
 section \ref{sec:FormulasToMatrixMuls} we obtain matrices $S_1$ to $S_n$ which
@@ -162,25 +175,63 @@ $y$.  Matrices $M_1$ to $M_m$ where $M_1$ to $M_{m-1}$ definitely have at least
 one reference to $y$ and $M_m$ may or may not are the result of this step.
 Obviously the following properties hold:
 
-\begin{eqnarray}
-n & >= & m \\
-\prod_{i=1}^m M_i & = & \prod_{j=1}^n S_i
-\end{eqnarray}
+\begin{align*}
+n & >= m \\
+\prod_{i=1}^m M_i & = \prod_{j=1}^n S_i
+\end{align*}
 
 \section{Garbling the Matrices}
+\label{sec:matrix-garbling}
 
 Let $D_L$ be the $\omega \times \omega$ matrix whose entry $2,2$ is $1$, and
 whose other entries are $0$. Multiplication of $D_L$ selects the second row of
 matrices multiplied on the right of $D_L$. Let $D_R$ be the $\omega \times
 \omega$ matrix whose entry $1,1$ is $1$, and whose other entries are $0$. This
 matrix will select the first column when multiplied on the left of any matrix.
-Using additional matrices $G_0$ to $G_{m+1}$ uniformly at random and invertible,
-$D_L G_0 \cdot ( \prod_{i=1}^m G_{m-1}^{-1} M_i G_m ) \cdot G_m^{-1} D_R$ will
-only reveal the final result and no usable information by itself\cite{cramer03}.
+Using additional matrices $G_1$ to $G_{m}$ uniformly at random and invertible,
+we can build up $m$ garbled matrix groups:
+
+\begin{align*}
+U_1 & = D_L M_1 G_1 \\
+U_i & = G_{i-1} M_i G_i & \text{for $i \in \{x \in \mathbb{N} \big| 1 < x < m\}$}\\
+U_m & = G_{m-1} M_m D_R
+\end{align*}
+
+\noindent{} Hence, each $U_{1..m}$ does not contain usable information
+\cite{cramer03}, but $\prod_{i=1}^m U_i$ does still contain the desired result.
+
 
 \section{Evaluating them using OAFEs (David \& Goliath)}
 
-This section will describe how we put everything together.
+From section \ref{sec:matrix-garbling} we obtain the matrices $U_{1..m} \in
+K^{\omega \times \omega}$. We can easily reshape the matrices $U_{1..m}$ to
+vectors $u_{1..m} \in K^{\omega^2}$ and concat the vectors $u_{1..m}$ to one
+giant vector $\mu \in K^{m\omega^2}$. After that we deduce two vectors $a$ and
+$b$ that hold the following property ($a, b \in K^{m\omega^2}$, $y$ a scalar
+variable, as in section \ref{sec:matrix-grouping} David's input):
+
+\begin{align}
+a \cdot y + b = \mu
+\end{align}
+
+Using the $\prod^{\text{semi-int}}_{\text{OAFE}}$ protocol\cite{davidgoliath} we
+are now ready to evaluate the function securely:
+
+\begin{itemize}
+
+\item The setup is: $a, b$ as above, $\mathbb{F}_q = K$, $k = m\omega^2$ and $m$
+known to both, David and Goliath
+
+\item The protocol now lets David evaluate the linear functions to his result
+vector $\lambda \in K^{m\omega^2}$
+
+\item The last but one step is to reshape $\lambda$ to the matrices $F_{1..m}
+\in K^{m\omega^2}$
+
+\item Finally, the entry $2, 1$ of $\prod_{i=1}^m F_i$ is the desired result of
+$f(x,y)$.
+
+\end{itemize}
 
 \addcontentsline{toc}{chapter}{Bibliography}
 \bibliography{bibliography}
