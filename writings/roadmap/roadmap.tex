@@ -167,18 +167,18 @@ $R_i \leftarrow R_i + (R_j \cdot \alpha)$ is equivalent to the $K^{\omega \times
 \label{sec:matrix-grouping}
 
 The grouping process is very straightforward, too: From the process described in
-section \ref{sec:FormulasToMatrixMuls} we obtain matrices $\widehat{M}_1$ to
-$\widehat{M}_n$ which each have the effect of exactly one LBS program statement.
+section \ref{sec:FormulasToMatrixMuls} we obtain matrices $\widehat{M_1}$ to
+$\widehat{M_n}$ which each have the effect of exactly one LBS program statement.
 Using associativity, we group together a variable amount of matrices
-$\widehat{M}_1$ to $\widehat{M}_n$. Each group is complete when there is at least
+$\widehat{M_1}$ to $\widehat{M_n}$. Each group is complete when there is at least
 one reference to the \emph{other party's input} $x_D$.  Matrices $M_1$ to $M_m$
 where $M_1$ to $M_{m-1}$ definitely have at least one reference to $x_D$ and
 $M_m$ may or may not are the result of this step.  Obviously the following
 properties hold:
 
 \begin{align*}
-n & >= m \\
-\prod_{i=1}^m M_i & = \prod_{j=1}^n \widehat{M}_j
+n & \geq m \\
+\prod_{i=1}^m M_i & = \prod_{j=1}^n \widehat{M_j}
 \end{align*}
 
 \section{Garbling the Matrices}
