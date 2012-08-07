@@ -7,7 +7,6 @@ import Codec.LBS ( Expr(..), InputValues, lbsFromExpr, renderLBSProgram, runLBS
 import Data.Monoid (mappend, mconcat)
 import Data.Text.Lazy (Text())
 import Data.Text.Lazy.Builder (Builder(), fromString, toLazyText)
-import System.IO (withFile, IOMode(..))
 import qualified Data.DList as DL
 import qualified Data.Map as M
 import qualified Data.Text.Lazy.IO as TIO
