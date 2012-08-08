@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 module Codec.DARE (test
                   , LinearExpr(..)
                   ) where
@@ -5,12 +6,13 @@ module Codec.DARE (test
 
 import Data.Map (Map)
 import Data.Maybe (mapMaybe)
-import Control.Monad (liftM2)
+import Control.Monad (liftM, liftM2)
 import Control.Monad.CryptoRandom (CRand, runCRand, getCRandom)
 import Crypto.Random (newGenIO, GenError, SystemRandom, CryptoRandomGen)
+import Math.Algebra.Field.Base (F97)
 import qualified Data.Map as M
 
-type Element = Int
+type Element = F97
 type Variable = String
 type Decoder a = VarMapping -> a -> Maybe Element
 type VarMapping = Map Variable Element
@@ -29,6 +31,9 @@ instance Show LinearExpr where
         case le of
           LinearExpr s v i -> show s ++ " * " ++ v ++ " + " ++ show i
           ConstLinearExpr cle -> show cle
+
+getRandomElement :: forall g. CryptoRandomGen g => CRand g GenError Element
+getRandomElement = liftM fromIntegral (getCRandom :: CRand g GenError Int)
 
 genLinearExpr :: Element -> PrimaryExpression -> Element -> LinearExpr
 genLinearExpr a b c =
@@ -70,10 +75,10 @@ dareEncodeMulRnd :: CryptoRandomGen g
                  -> PrimaryExpression
                  -> CRand g GenError [LinearExpr]
 dareEncodeMulRnd x1 x2 x3 =
-    do r1 <- getCRandom
-       r2 <- getCRandom
-       r3 <- getCRandom
-       r4 <- getCRandom
+    do r1 <- getRandomElement
+       r2 <- getRandomElement
+       r3 <- getRandomElement
+       r4 <- getRandomElement
        return $ dareEncodeMul x1 x2 x3 r1 r2 r3 r4
 
 -- |DARE for an addition getting randoms from generator
@@ -82,7 +87,7 @@ dareEncodeAddRnd :: CryptoRandomGen g
                  -> PrimaryExpression
                  -> CRand g GenError [LinearExpr]
 dareEncodeAddRnd x1 x2 =
-    do r <- getCRandom
+    do r <- getRandomElement
        return $ dareEncodeAdd x1 x2 r
 
 -- |DARE for an addition f(x1, x2) = x1 + x2
@@ -142,6 +147,11 @@ test =
          Right ((dec, les), _) ->
             do print $ les
                print $ dec _TestVarMap_ les
+         Left _ -> print "left"
+       case runCRand (dareEncodeAddRnd _V_y_ _V_x_) g of
+         Right (les, _) ->
+            do print $ les
+               print $ addDecoder _TestVarMap_ les
          Left _ -> print "left"
     where testDARE =
               do les1 <- dareEncodeMulRnd _V_x_ _C_23_ _C_42_
