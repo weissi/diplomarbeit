@@ -43,8 +43,17 @@ STEP="main program"
 cp build/roadmap.pdf .
 
 echo BUILD SUCCESSFUL
-#
-#if pgrep -f 'evince (.+\/)?thesis.pdf' > /dev/null; then
-#    echo "updating evince..."
-#    evince thesis.pdf
-#fi
+
+case "$(uname -s)" in
+    Darwin)
+        open roadmap.pdf
+        ;;
+    Linux)
+        if pgrep -f 'evince (.+\/)?thesis.pdf' > /dev/null; then
+            evince roadmap.pdf
+        fi
+        ;;
+    *)
+        echo >&2 "ERROR: could not open PDF under OS '$(uname -s)'"
+        ;;
+esac
