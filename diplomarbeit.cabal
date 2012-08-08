@@ -3,6 +3,7 @@ Version:        0.1
 License:        GPL-3
 License-File:   LICENSE
 Author:         Johannes Weiß
+Maintainer:     weiss@tux4u.de
 Cabal-Version:  >= 1.9.2
 Build-Type:     Simple
 
@@ -10,7 +11,7 @@ Executable ExprToMRM
     main-is:        ExprToMRM.hs
     build-depends:  base, text >= 0.11, containers >= 0.4, dlist >= 0.5,
                     mtl >= 2.0
-    hs-source-dirs: ExprToMRM
+    hs-source-dirs: ExprToMRM Lib
     ghc-options:    -Wall
     ghc-options:    -Werror
     ghc-options:    -O2
