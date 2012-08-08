@@ -5,13 +5,14 @@ module Codec.DARE (test
 
 import Data.Map (Map)
 import Data.Maybe (mapMaybe)
+import Control.Monad (liftM2)
 import Control.Monad.CryptoRandom (CRand, runCRand, getCRandom)
 import Crypto.Random (newGenIO, GenError, SystemRandom, CryptoRandomGen)
 import qualified Data.Map as M
 
 type Element = Int
 type Variable = String
-type Decoder = VarMapping -> [LinearExpr] -> Maybe Element
+type Decoder a = VarMapping -> a -> Maybe Element
 type VarMapping = Map Variable Element
 
 data PrimaryExpression = Var Variable
@@ -46,7 +47,7 @@ calcLinearExpr varMap le =
           do vVal <- M.lookup v varMap
              return $ s * vVal + i
 
-mulDecoder :: Decoder
+mulDecoder :: Decoder [LinearExpr]
 mulDecoder varMap les =
     case length les of
       5 -> case (mapMaybe (calcLinearExpr varMap) les) of
@@ -54,7 +55,7 @@ mulDecoder varMap les =
              _ -> Nothing
       _ -> Nothing
 
-addDecoder :: Decoder
+addDecoder :: Decoder [LinearExpr]
 addDecoder varMap les =
     case length les of
       2 -> case (mapMaybe (calcLinearExpr varMap) les) of
@@ -137,13 +138,14 @@ _TestVarMap_ = M.fromList [("x", 17), ("y", 23), ("z", 42)]
 test :: IO ()
 test =
     do g <- (newGenIO :: IO SystemRandom)
-       case runCRand (dareEncodeMulRnd _V_x_ _V_y_ _V_z_) g of
-         Right (les, _) ->
+       case runCRand testDARE g of
+         Right ((dec, les), _) ->
             do print $ les
-               print $ mulDecoder _TestVarMap_ les
+               print $ dec _TestVarMap_ les
          Left _ -> print "left"
-       case runCRand (dareEncodeAddRnd _V_x_ _C_23_) g of
-         Right (les, _) ->
-            do print $ les
-               print $ addDecoder _TestVarMap_ les
-         Left _ -> print "left"
+    where testDARE =
+              do les1 <- dareEncodeMulRnd _V_x_ _C_23_ _C_42_
+                 les2 <- dareEncodeAddRnd _V_x_ _C_23_
+                 return (dec, (les1, les2))
+                 where dec v (l1, l2) =
+                           liftM2 (+) (mulDecoder v l1) (addDecoder v l2)
