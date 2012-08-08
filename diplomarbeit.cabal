@@ -17,6 +17,15 @@ Executable ExprToMRM
     ghc-options:    -O2
     ghc-options:    -rtsopts -auto-all -caf-all
 
+Executable ExprToDARE
+    main-is:        ExprToDARE.hs
+    build-depends:  base, monadcryptorandom >= 0.4.1, crypto-api >= 0.10.1,
+                    containers >= 0.4.2.1
+    hs-source-dirs: ExprToDARE Lib
+    ghc-options:    -Wall
+    ghc-options:    -Werror
+    ghc-options:    -O2
+    ghc-options:    -rtsopts -auto-all -caf-all
 
 Test-Suite test-foo
     type:          exitcode-stdio-1.0
