@@ -34,19 +34,20 @@ _TestVarMap_ = M.fromList [("x", 17), ("y", 23), ("z", 42)]
 
 test :: IO ()
 test =
-    do g <- (newGenIO :: IO SystemRandom)
-       case runCRand testDARE g of
+    do g1 <- (newGenIO :: IO SystemRandom)
+       case runCRand testDARE g1 of
          Right (dare, _) ->
             do print $ dare
                print $ dareDecode _TestVarMap_ dare
          Left _ -> print "left"
-       case runCRand (dareEncodeAddRnd _V_y_ _V_x_) g of
+       g2 <- (newGenIO :: IO SystemRandom)
+       case runCRand (dareEncodeAddRnd _V_y_ _V_x_) g2 of
          Right (les, _) ->
             do print $ les
                print $ dareDecode _TestVarMap_ les
          Left _ -> print "left"
     where testDARE =
-              do les1 <- dareEncodeMulRnd _V_x_ _C_23_ _C_42_
+              do les1 <- dareEncodeMulRnd _V_x_ _C_42_ _C_42_
                  les2 <- dareEncodeAddRnd _V_x_ _C_23_
                  let les3 = dareEncodePrimaryExpr _C_1_
                  les4 <- dareEncodeDareAddRnd les1 les2
