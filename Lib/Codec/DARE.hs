@@ -142,6 +142,11 @@ dareEncodeDareAddRnd dl dr =
     do r <- getRandomElement
        return (dareEncodeDareAdd dl dr r)
 
+-- |DARE encode constatnt
+dareEncodeConstant :: Element
+                   -> DARE
+dareEncodeConstant c = DARE [] [ConstLinearExpr c]
+
 -- |DARE decoder
 dareDecode :: VarMapping -> DARE -> Maybe Element
 dareDecode varMap (DARE muls adds) =
@@ -194,5 +199,7 @@ test =
     where testDARE =
               do les1 <- dareEncodeMulRnd _V_x_ _C_23_ _C_42_
                  les2 <- dareEncodeAddRnd _V_x_ _C_23_
-                 lesOut <- dareEncodeDareAddRnd les1 les2
+                 let les3 = dareEncodeConstant 12
+                 les4 <- dareEncodeDareAddRnd les1 les2
+                 lesOut <- dareEncodeDareAddRnd les3 les4
                  return lesOut
