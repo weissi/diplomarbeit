@@ -85,9 +85,9 @@ dareEncodeAdd :: PrimaryExpression
               -> Element
               -> DARE
 dareEncodeAdd x1 x2 r =
-    let le1 = genLinearExpr 1 x1 r
-        le2 = genLinearExpr 1 x2 (-r)
-        in DARE [] [le1, le2]
+    let dareL = dareEncodePrimaryExpr x1
+        dareR = dareEncodePrimaryExpr x2
+        in dareEncodeDareAdd dareL dareR r
 
 -- |DARE for a multiplication (+ addition) f(x1, x2, x3) = x1 * x2 + x3
 -- see How to Garble Arithmetic Circuits, p. 13
@@ -143,9 +143,8 @@ dareEncodeDareAddRnd dl dr =
        return (dareEncodeDareAdd dl dr r)
 
 -- |DARE encode constatnt
-dareEncodeConstant :: Element
-                   -> DARE
-dareEncodeConstant c = DARE [] [ConstLinearExpr c]
+dareEncodePrimaryExpr :: PrimaryExpression -> DARE
+dareEncodePrimaryExpr c = DARE [] [genLinearExpr 1 c 0]
 
 -- |DARE decoder
 dareDecode :: VarMapping -> DARE -> Maybe Element
@@ -199,7 +198,7 @@ test =
     where testDARE =
               do les1 <- dareEncodeMulRnd _V_x_ _C_23_ _C_42_
                  les2 <- dareEncodeAddRnd _V_x_ _C_23_
-                 let les3 = dareEncodeConstant 12
+                 let les3 = dareEncodePrimaryExpr _C_1_
                  les4 <- dareEncodeDareAddRnd les1 les2
                  lesOut <- dareEncodeDareAddRnd les3 les4
                  return lesOut
