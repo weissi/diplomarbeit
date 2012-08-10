@@ -11,12 +11,16 @@ main :: IO ()
 main =
     do putStrLn "ExprToDARE: START"
        test
+       putStrLn "EXERCISE 2"
+       g <- (newGenIO :: IO SystemRandom)
+       let (_, dares) = exprToRP g testExpr1
+       print $ dares
        putStrLn "ExprToDARE: done :-)"
 
 type Element = F97
 
 testExpr1 :: Expr Element
-testExpr1 = (4 * _X_ * _X_ + 2 * (_X_ + _Y_ * _Y_) * _X_ * _Y_ + 7) * _X_
+testExpr1 = (4 * _X_ * _X_ + 2 * (_X_ + _Y_ * (_X_ + _Y_)) * _X_ * _Y_ + 7) * _X_
 
 _X_ :: FieldElement e => Expr e
 _X_ = Var "x"

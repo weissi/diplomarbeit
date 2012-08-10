@@ -20,7 +20,8 @@ Executable ExprToMRM
 Executable ExprToDARE
     main-is:        ExprToDARE.hs
     build-depends:  base, monadcryptorandom >= 0.4, crypto-api >= 0.10,
-                    containers >= 0.4, HaskellForMaths >= 0.4
+                    containers >= 0.4, HaskellForMaths >= 0.4, mtl >= 2.0,
+                    dlist >= 0.5
     hs-source-dirs: ExprToDARE Lib
     ghc-options:    -Wall
     ghc-options:    -Werror
