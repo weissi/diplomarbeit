@@ -1,9 +1,10 @@
 module Main (main) where
 
-import Codec.LBS ( Expr(..), InputValues, lbsFromExpr, renderLBSProgram, runLBS
+import Codec.LBS ( InputValues, lbsFromExpr, renderLBSProgram, runLBS
                  , LBSProgram, LBSStmt(..), Register(..), OffsetDirection(..)
                  , ScaleFactor(..), lbsProgramLength
                  )
+import Data.ExpressionTypes (Expr(..))
 import Data.Monoid (mappend, mconcat)
 import Data.Text.Lazy (Text())
 import Data.Text.Lazy.Builder (Builder(), fromString, toLazyText)

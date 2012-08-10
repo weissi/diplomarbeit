@@ -1,5 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
-module Codec.LBS ( Expr(Var), InputValues
+module Codec.LBS ( InputValues
                  , renderLBSProgram
                  , runLBS, lbsFromExpr, lbsProgramLength
                  , LBSProgram, LBSStmt(..), Register(..), RegisterState
@@ -8,6 +8,7 @@ module Codec.LBS ( Expr(Var), InputValues
 
 import Control.Monad.State.Strict (State, get, put, runState)
 import Data.DList (DList())
+import Data.ExpressionTypes (Expr(..), Operator(..))
 import Data.Map (Map())
 import Data.Monoid (mappend)
 import Data.Text.Lazy (Text())
@@ -29,24 +30,9 @@ data ScaleFactor = ScaleFactorConstant Integer
 
 type InputValues = Map String Integer
 
-data Expr = Op Operator Expr Expr
-          | Var String
-          | Literal Integer
-          deriving (Show)
-
 type RegisterState = Map Integer Integer
 
 -- Internal Data Types
-data Operator = Plus | Minus | Times deriving Show
-
-instance Num Expr where
-    (+) l r = Op Plus l r
-    (*) l r = Op Times l r
-    (-) l r = l + ((Literal (-1)) * r)
-    negate a = (Literal (-1)) * a
-    abs = error "abs for instance Num Expr not implemented"
-    signum = error "signum for instance Num Expr not implemented"
-    fromInteger a = Literal a
 
 type RegisterStateMonad = State RegisterState
 
