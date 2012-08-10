@@ -1,4 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE BangPatterns #-}
 module Codec.DARE ( LinearExpr(..)
                   , DARE
                   , PrimaryExpression (..)
@@ -10,6 +11,7 @@ module Codec.DARE ( LinearExpr(..)
                   , dareEncodePrimaryExpr
                   , dareDecode
                   , exprToRP
+                  , runRP
                   ) where
 
 -- # STANDARD LIBRARY
@@ -17,6 +19,7 @@ import Data.DList (DList)
 import Data.List (foldl')
 import Data.Map (Map)
 import Control.Monad (liftM2)
+import Control.Monad.State.Strict (State, get, put, execState)
 import Control.Monad.Writer.Lazy (Writer, tell, runWriter)
 import Control.Monad.Trans (lift)
 import qualified Data.DList as DL
@@ -49,7 +52,9 @@ data LinearExpr el = LinearExpr { leSlope     :: el
                                }
                   | ConstLinearExpr el
 
-data DARE el = DARE [(LinearExpr el, LinearExpr el)] [LinearExpr el] deriving Show
+data DARE el = DARE [(LinearExpr el, LinearExpr el)]
+                    [LinearExpr el]
+                    deriving Show
 
 instance (Show el, FieldElement el) => Show (LinearExpr el) where
     show le =
@@ -63,7 +68,11 @@ getRandomElement =
     do rint <- getCRandom :: CRandT g GenError m Int
        return $ fromIntegral rint
 
-genLinearExpr :: FieldElement el => el -> PrimaryExpression el -> el -> LinearExpr el
+genLinearExpr :: FieldElement el
+              => el
+              -> PrimaryExpression el
+              -> el
+              -> LinearExpr el
 genLinearExpr a b c =
     case b of
       Variable b' -> LinearExpr { leSlope = a
@@ -241,7 +250,7 @@ exprToRP' expr outVar =
 exprToRP :: (CryptoRandomGen g, FieldElement el)
          => g
          -> Expr el
-         -> (Either GenError g, [(VariableName, DARE el)])
+         -> (Either GenError g, RP el)
 exprToRP g expr =
    let (ge, dares) = runWriter (runCRandT (exprToRP' expr "z") g)
        lastDare =
@@ -252,4 +261,27 @@ exprToRP g expr =
            case ge of
              Left err -> Left err
              Right (_, gen) -> Right gen
-       in (errOrGen, DL.toList (dares `DL.append` lastDare))
+       in (errOrGen, dares `DL.append` lastDare)
+
+type RunRPStateMonad el = State (VarMapping el)
+
+execRPStmt :: FieldElement el => RPStmt el -> (RunRPStateMonad el) (Maybe el)
+execRPStmt (outVar, dare) =
+    do varMap <- get
+       let !valM = dareDecode varMap dare
+           varMap' =
+              case valM of
+               Just val -> M.insert outVar val varMap
+               Nothing -> varMap
+       put varMap'
+       return valM
+
+runRP :: forall el. FieldElement el
+      => VarMapping el
+      -> RP el
+      -> (Maybe el, VarMapping el)
+runRP initialVarMap rp =
+  let outVarMap :: VarMapping el
+      outVarMap = execState (sequence_ $ map execRPStmt (DL.toList rp))
+                            initialVarMap
+    in (M.lookup "z" outVarMap, outVarMap)

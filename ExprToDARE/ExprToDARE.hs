@@ -5,6 +5,7 @@ import Control.Monad.CryptoRandom (runCRand)
 import Crypto.Random (SystemRandom, newGenIO)
 import Data.ExpressionTypes (Expr(..))
 import Math.Algebra.Field.Base (F97)
+import qualified Data.DList as DL
 import qualified Data.Map as M
 
 main :: IO ()
@@ -14,19 +15,21 @@ main =
        putStrLn "EXERCISE 2"
        g <- (newGenIO :: IO SystemRandom)
        let (_, dares) = exprToRP g testExpr1
-       print $ dares
+       print $ DL.toList dares
+       print $ runRP _TestVarMap_ dares
        putStrLn "ExprToDARE: done :-)"
 
 type Element = F97
 
 testExpr1 :: Expr Element
-testExpr1 = (4 * _X_ * _X_ + 2 * (_X_ + _Y_ * (_X_ + _Y_)) * _X_ * _Y_ + 7) * _X_
+testExpr1 = 4 * _X_ + _Y_ + _X_ * _X_ * _X_
+--testExpr1 = (4 * _X_ * _X_ + 2 * (_X_ + _Y_ * (_X_ + _Y_)) * _X_ * _Y_ + 7) * _X_
 
 _X_ :: FieldElement e => Expr e
 _X_ = Var "x"
 
 _Y_ :: FieldElement e => Expr e
-_Y_ = Var "x"
+_Y_ = Var "y"
 
 _C_1_ :: PrimaryExpression Element
 _C_1_ = Constant 1
@@ -47,7 +50,7 @@ _V_z_ :: PrimaryExpression Element
 _V_z_ = Variable "z"
 
 _TestVarMap_ :: VarMapping Element
-_TestVarMap_ = M.fromList [("x", 17), ("y", 23), ("z", 42)]
+_TestVarMap_ = M.fromList [("x", 17), ("y", 23)]
 
 test :: IO ()
 test =
