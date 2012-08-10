@@ -3,6 +3,8 @@ module Main where
 import Codec.DARE
 import Control.Monad.CryptoRandom (runCRand)
 import Crypto.Random (SystemRandom, newGenIO)
+import Data.ExpressionTypes (Expr(..))
+import Math.Algebra.Field.Base (F97)
 import qualified Data.Map as M
 
 main :: IO ()
@@ -11,25 +13,36 @@ main =
        test
        putStrLn "ExprToDARE: done :-)"
 
-_C_1_ :: PrimaryExpression
-_C_1_ = Const 1
+type Element = F97
 
-_C_23_ :: PrimaryExpression
-_C_23_ = Const 23
+testExpr1 :: Expr Element
+testExpr1 = (4 * _X_ * _X_ + 2 * (_X_ + _Y_ * _Y_) * _X_ * _Y_ + 7) * _X_
 
-_C_42_ :: PrimaryExpression
-_C_42_ = Const 42
+_X_ :: FieldElement e => Expr e
+_X_ = Var "x"
 
-_V_x_ :: PrimaryExpression
-_V_x_ = Var "x"
+_Y_ :: FieldElement e => Expr e
+_Y_ = Var "x"
 
-_V_y_ :: PrimaryExpression
-_V_y_ = Var "y"
+_C_1_ :: PrimaryExpression Element
+_C_1_ = Constant 1
 
-_V_z_ :: PrimaryExpression
-_V_z_ = Var "z"
+_C_23_ :: PrimaryExpression Element
+_C_23_ = Constant 23
 
-_TestVarMap_ :: VarMapping
+_C_42_ :: PrimaryExpression Element
+_C_42_ = Constant 42
+
+_V_x_ :: PrimaryExpression Element
+_V_x_ = Variable "x"
+
+_V_y_ :: PrimaryExpression Element
+_V_y_ = Variable "y"
+
+_V_z_ :: PrimaryExpression Element
+_V_z_ = Variable "z"
+
+_TestVarMap_ :: VarMapping Element
 _TestVarMap_ = M.fromList [("x", 17), ("y", 23), ("z", 42)]
 
 test :: IO ()

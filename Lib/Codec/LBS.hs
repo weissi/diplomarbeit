@@ -83,8 +83,8 @@ lbsFromAddExpr :: [Register]       -- dirty registers
                -> Register         -- output register
                -> OffsetDirection  -- +/-
                -> Register         -- scale register
-               -> Expr             -- expr 1
-               -> Expr             -- expr 2
+               -> Expr Integer     -- expr 1
+               -> Expr Integer     -- expr 2
                -> LBSProgram
 lbsFromAddExpr dirtyRegs regOut direction regScale el er  =
     lbsl `DL.append` lbsr
@@ -98,8 +98,8 @@ lbsFromMulExpr :: [Register]       -- dirty registers
                -> Register         -- output register
                -> OffsetDirection  -- +/-
                -> Register         -- scale register
-               -> Expr             -- expr 1
-               -> Expr             -- expr 2
+               -> Expr Integer     -- expr 1
+               -> Expr Integer     -- expr 2
                -> LBSProgram
 lbsFromMulExpr dirtyRegs regOut direction regScale el er =
     case direction of
@@ -125,7 +125,7 @@ lbsFromExpr' :: [Register]       -- dirty registers
              -> Register         -- output register
              -> OffsetDirection  -- +/-
              -> Register         -- scale register
-             -> Expr             -- expr
+             -> Expr Integer     -- expr
              -> LBSProgram
 lbsFromExpr' dirtyRegs regOut direction regScale e =
     case e of
@@ -139,7 +139,7 @@ lbsFromExpr' dirtyRegs regOut direction regScale e =
       Literal i ->
           DL.singleton $Offset regOut direction regScale (ScaleFactorConstant i)
 
-lbsFromExpr :: Expr -> LBSProgram
+lbsFromExpr :: Expr Integer -> LBSProgram
 lbsFromExpr e = lbsFromExpr' alwaysDirtyRegs (Reg 1) OffsetPlus _REG_CONST_1_ e
     where alwaysDirtyRegs = [_REG_CONST_1_, Reg 1]
 
