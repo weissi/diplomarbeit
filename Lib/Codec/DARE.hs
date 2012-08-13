@@ -8,10 +8,18 @@ module Codec.DARE ( LinearExpr(..)
                   , dareEncodeMulRnd
                   , dareEncodeAddRnd
                   , dareEncodeDareAddRnd
+                  , dareEncodeEncMulRnd
                   , dareEncodePrimaryExpr
                   , dareDecode
                   , exprToRP
                   , runRP
+                  -- Just for the tests
+                  , dareEncodeMul
+                  , dareEncodeAdd
+                  , dareEncodeDareAdd
+                  , dareEncodeEncMul
+                  , addToDARE
+                  , mulElementToDARE
                   ) where
 
 -- # STANDARD LIBRARY
@@ -35,9 +43,12 @@ import Math.Common.IntegerAsType (IntegerAsType)
 import Data.ExpressionTypes (Expr(..), Operator(..))
 
 instance IntegerAsType n => FieldElement (Fp n) where
-    invert = error "not implemented"
+    invert n =
+        case n of
+          0 -> error "0 is not invertible"
+          n' -> 1 / n'
 
-class Num el => FieldElement el where
+class (Num el, Eq el) => FieldElement el where
     invert :: el -> el
 
 type VariableName = String
@@ -56,6 +67,8 @@ data DARE el = DARE [(LinearExpr el, LinearExpr el)]
                     [LinearExpr el]
                     deriving Show
 
+type PrimaryExpressionEncryptionKey el = (el, el)
+
 instance (Show el, FieldElement el) => Show (LinearExpr el) where
     show le =
         case le of
@@ -67,6 +80,18 @@ getRandomElement :: forall m g el. (Monad m, CryptoRandomGen g, FieldElement el)
 getRandomElement =
     do rint <- getCRandom :: CRandT g GenError m Int
        return $ fromIntegral rint
+
+getRandomInvertibleElement :: forall m g el.
+                              (Monad m, CryptoRandomGen g, FieldElement el)
+                           => CRandT g GenError m el
+getRandomInvertibleElement =
+    do loop
+    where loop =
+              do rint <- getCRandom :: CRandT g GenError m Int
+                 let rel = fromIntegral rint
+                 if rel /= 0
+                   then return $ rel
+                   else loop
 
 genLinearExpr :: FieldElement el
               => el
@@ -101,6 +126,19 @@ dareEncodeMulRnd x1 x2 x3 =
        r3 <- getRandomElement
        r4 <- getRandomElement
        return $ dareEncodeMul x1 x2 x3 r1 r2 r3 r4
+
+-- |DARE for an encrypted multiplication getting randoms from generator
+dareEncodeEncMulRnd :: (Monad m, CryptoRandomGen g, FieldElement el)
+                    => (PrimaryExpression el, PrimaryExpressionEncryptionKey el)
+                    -> (PrimaryExpression el, PrimaryExpressionEncryptionKey el)
+                    -> (PrimaryExpression el, PrimaryExpressionEncryptionKey el)
+                    -> CRandT g GenError m (DARE el)
+dareEncodeEncMulRnd x1 x2 x3 =
+    do r1 <- getRandomElement
+       r2 <- getRandomElement
+       r3 <- getRandomElement
+       r4 <- getRandomElement
+       return $ dareEncodeEncMul x1 x2 x3 r1 r2 r3 r4
 
 -- |DARE for an addition getting randoms from generator
 dareEncodeAddRnd :: (Monad m, CryptoRandomGen g, FieldElement el)
@@ -142,6 +180,24 @@ dareEncodeMul x1 x2 x3 r1 r2 r3 r4 =
         le5 = genLinearExpr 1 x3 (-r3-r4)
         in DARE [(le1, le3)] [le2, le4, le5]
 
+-- |DARE for an encrypted multiplication
+dareEncodeEncMul :: FieldElement el
+                 => (PrimaryExpression el, PrimaryExpressionEncryptionKey el)
+                 -> (PrimaryExpression el, PrimaryExpressionEncryptionKey el)
+                 -> (PrimaryExpression el, PrimaryExpressionEncryptionKey el)
+                 -> el
+                 -> el
+                 -> el
+                 -> el
+                 -> DARE el
+dareEncodeEncMul (x1, (k1a,k1b)) (x2, (k2a,k2b)) (x3, (k3a,k3b)) r1 r2 r3 r4 =
+    let le1 = genLinearExpr (invert k1a) x1 (-k1b - r1) -- r1
+        le2 = genLinearExpr (r2 * invert k1a) x1 (-r2*k1b - r1*r2 + r3) -- r1
+        le3 = genLinearExpr (invert k2a) x2 (-k2b - r2) -- r2
+        le4 = genLinearExpr (r1 * invert k2a) x2 (-r1*k2b + r4) -- r2
+        le5 = genLinearExpr (invert k3a) x3 (-k3b -r3-r4) -- r3
+        in DARE [(le1, le3)] [le2, le4, le5]
+
 addToLinearExpression :: FieldElement el
                       => LinearExpr el
                       -> el
@@ -151,6 +207,15 @@ addToLinearExpression le el =
       ConstLinearExpr c -> ConstLinearExpr (c + el)
       LinearExpr s v i -> LinearExpr s v (i + el)
 
+mulElementToLinearExpression :: FieldElement el
+                             => LinearExpr el
+                             -> el
+                             -> LinearExpr el
+mulElementToLinearExpression le el =
+    case le of
+      ConstLinearExpr c -> ConstLinearExpr (c * el)
+      LinearExpr s v i -> LinearExpr (s * el) v (i * el)
+
 addToDARE :: FieldElement el
           => DARE el
           -> el
@@ -159,6 +224,25 @@ addToDARE (DARE muls adds) el =
     case adds of
       [] -> DARE muls [ConstLinearExpr el]
       (x:xs) -> DARE muls ((addToLinearExpression x el):xs)
+
+mulElementToDARE :: forall el. FieldElement el
+                 => DARE el
+                 -> el
+                 -> DARE el
+mulElementToDARE (DARE muls adds) el =
+    let mulElementToLinearExpressions :: FieldElement el
+                                      => (LinearExpr el, LinearExpr el)
+                                      -> el
+                                      -> (LinearExpr el, LinearExpr el)
+        mulElementToLinearExpressions (le1, le2) e =
+            ( mulElementToLinearExpression le1 e
+            , le2
+            )
+        muls' :: [(LinearExpr el, LinearExpr el)]
+        muls' = map (flip mulElementToLinearExpressions el) muls
+        adds' :: [LinearExpr el]
+        adds' = map (flip mulElementToLinearExpression el) adds
+     in DARE muls' adds'
 
 -- |DARE for an addition of two DAREs
 dareEncodeDareAdd :: FieldElement el
@@ -205,6 +289,9 @@ type RP el = DList (RPStmt el)
 _CONST_0_ :: FieldElement e => PrimaryExpression e
 _CONST_0_ = Constant 0
 
+_NO_DARE_ENCRYPTION_ :: FieldElement el => (el, el)
+_NO_DARE_ENCRYPTION_ = (1, 0)
+
 priExFromExpr :: FieldElement el => Expr el -> Maybe (PrimaryExpression el)
 priExFromExpr expr =
     case expr of
@@ -234,18 +321,25 @@ exprToRP' expr outVar =
                       dareEncodeMulRnd peL peR _CONST_0_
                   _ -> do l <- exprToRP' exprL ('L':outVar)
                           r <- exprToRP' exprR ('R':outVar)
-                          lvar <- putDare l ('l':outVar)
-                          rvar <- putDare r ('r':outVar)
-                          dareEncodeMulRnd lvar rvar _CONST_0_
+                          encVarL <- putDare l ('l':outVar)
+                          encVarR <- putDare r ('r':outVar)
+                          dareEncodeEncMulRnd encVarL
+                                              encVarR
+                                              (_CONST_0_, _NO_DARE_ENCRYPTION_)
       Var v -> return $ dareEncodePrimaryExpr $ Variable v
       Literal l -> return $ dareEncodePrimaryExpr $ Constant l
       where putDare :: (CryptoRandomGen g, FieldElement el)
                     => DARE el
                     -> VariableName
-                    -> (RPGenMonad g el) (PrimaryExpression el)
+                    -> (RPGenMonad g el) ( PrimaryExpression el
+                                         , PrimaryExpressionEncryptionKey el
+                                         )
             putDare dare varName =
-               do lift $ tell $ DL.singleton (varName, dare)
-                  return $ Variable varName
+               do r1 <- getRandomInvertibleElement
+                  r2 <- getRandomElement
+                  let dare' = mulElementToDARE (addToDARE dare r2) r1
+                  lift $ tell $ DL.singleton (varName, dare')
+                  return $ (Variable varName, (r1, r2))
 
 exprToRP :: (CryptoRandomGen g, FieldElement el)
          => g
