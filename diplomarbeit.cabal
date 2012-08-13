@@ -7,6 +7,18 @@ Maintainer:     weiss@tux4u.de
 Cabal-Version:  >= 1.10
 Build-Type:     Simple
 
+Library
+    Build-Depends:    base, HaskellForMaths >= 0.4, monadcryptorandom >= 0.4,
+                      crypto-api >= 0.10, containers >= 0.4, mtl >= 2.0,
+                      dlist >= 0.5, text >= 0.11
+    Default-Language: Haskell2010
+    Exposed-modules:  Codec.DARE, Codec.LBS, Data.ExpressionTypes
+    hs-source-dirs:   Lib
+    ghc-options:      -Wall
+    ghc-options:      -Werror
+    ghc-options:      -O2
+    ghc-options:      -rtsopts -auto-all -caf-all
+
 Executable ExprToMRM
     main-is:        ExprToMRM.hs
     Default-Language: Haskell2010
@@ -22,9 +34,9 @@ Executable ExprToDARE
     main-is:        ExprToDARE.hs
     Default-Language: Haskell2010
     build-depends:  base, monadcryptorandom >= 0.4, crypto-api >= 0.10,
-                    containers >= 0.4, HaskellForMaths >= 0.4, mtl >= 2.0,
-                    dlist >= 0.5
-    hs-source-dirs: ExprToDARE Lib
+                    containers >= 0.4, HaskellForMaths >= 0.4, dlist >= 0.5,
+                    diplomarbeit
+    hs-source-dirs: ExprToDARE
     ghc-options:    -Wall
     ghc-options:    -Werror
     ghc-options:    -O2
