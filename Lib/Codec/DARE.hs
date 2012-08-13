@@ -85,12 +85,12 @@ getRandomInvertibleElement :: forall m g el.
                               (Monad m, CryptoRandomGen g, FieldElement el)
                            => CRandT g GenError m el
 getRandomInvertibleElement =
-    do loop
+    loop
     where loop =
               do rint <- getCRandom :: CRandT g GenError m Int
                  let rel = fromIntegral rint
                  if rel /= 0
-                   then return $ rel
+                   then return rel
                    else loop
 
 genLinearExpr :: FieldElement el
@@ -223,7 +223,7 @@ addToDARE :: FieldElement el
 addToDARE (DARE muls adds) el =
     case adds of
       [] -> DARE muls [ConstLinearExpr el]
-      (x:xs) -> DARE muls ((addToLinearExpression x el):xs)
+      (x:xs) -> DARE muls (addToLinearExpression x el : xs)
 
 mulElementToDARE :: forall el. FieldElement el
                  => DARE el
@@ -239,9 +239,9 @@ mulElementToDARE (DARE muls adds) el =
             , le2
             )
         muls' :: [(LinearExpr el, LinearExpr el)]
-        muls' = map (flip mulElementToLinearExpressions el) muls
+        muls' = map (`mulElementToLinearExpressions` el) muls
         adds' :: [LinearExpr el]
-        adds' = map (flip mulElementToLinearExpression el) adds
+        adds' = map (`mulElementToLinearExpression` el) adds
      in DARE muls' adds'
 
 -- |DARE for an addition of two DAREs
@@ -295,7 +295,7 @@ _NO_DARE_ENCRYPTION_ = (1, 0)
 priExFromExpr :: FieldElement el => Expr el -> Maybe (PrimaryExpression el)
 priExFromExpr expr =
     case expr of
-      Op _ _ _ -> Nothing
+      Op {} -> Nothing
       Var v -> Just $ Variable v
       Literal l -> Just $ Constant l
 
@@ -339,7 +339,7 @@ exprToRP' expr outVar =
                   r2 <- getRandomElement
                   let dare' = mulElementToDARE (addToDARE dare r2) r1
                   lift $ tell $ DL.singleton (varName, dare')
-                  return $ (Variable varName, (r1, r2))
+                  return (Variable varName, (r1, r2))
 
 exprToRP :: (CryptoRandomGen g, FieldElement el)
          => g
@@ -376,6 +376,6 @@ runRP :: forall el. FieldElement el
       -> (Maybe el, VarMapping el)
 runRP initialVarMap rp =
   let outVarMap :: VarMapping el
-      outVarMap = execState (sequence_ $ map execRPStmt (DL.toList rp))
+      outVarMap = execState (mapM_ execRPStmt (DL.toList rp))
                             initialVarMap
     in (M.lookup "z" outVarMap, outVarMap)
