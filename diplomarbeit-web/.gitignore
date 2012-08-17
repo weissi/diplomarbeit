@@ -3,3 +3,4 @@ dist
 .static-cache
 static/tmp
 *.sqlite3
+config/client_session_key.aes
