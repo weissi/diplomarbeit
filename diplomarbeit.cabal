@@ -24,7 +24,7 @@ Library
     GHC-Options:      -O2
     GHC-Options:      -rtsopts -auto-all -caf-all
     Build-tools:      c2hs -any
-    Extra-libraries:  ntl
+    Extra-libraries:  ntl, stdc++
     C-Sources:        Lib/Math/FiniteFields/Foreign/ntl_interface_easy.cpp
     CC-Options:       -Wall -pedantic -ggdb
 
@@ -60,4 +60,4 @@ Test-Suite TestDARE
                       monadcryptorandom >= 0.4, containers >= 0.4, dlist >= 0.5,
                       mtl >= 2.0, random >= 1.0, diplomarbeit
     hs-source-dirs:   Test
-    GHC-Options:      -rtsopts -auto-all -caf-all -prof
+    GHC-Options:      -rtsopts -auto-all -caf-all
