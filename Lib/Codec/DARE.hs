@@ -3,7 +3,6 @@
 module Codec.DARE ( LinearExpr(..)
                   , DARE
                   , PrimaryExpression (..)
-                  , FieldElement (..)
                   , VarMapping
                   , dareEncodeMulRnd
                   , dareEncodeAddRnd
@@ -36,20 +35,18 @@ import qualified Data.Map as M
 -- # SITE PACKAGES
 import Control.Monad.CryptoRandom (CRandT, getCRandom, runCRandT)
 import Crypto.Random (GenError, CryptoRandomGen)
-import Math.Algebra.Field.Base (Fp)
-import Math.Common.IntegerAsType (IntegerAsType)
+--import Math.Algebra.Field.Base (Fp)
+--import Math.Common.IntegerAsType (IntegerAsType)
 
 -- # LOCAL
 import Data.ExpressionTypes (Expr(..), Operator(..))
+import Data.FieldTypes (FieldElement(..))
 
-instance IntegerAsType n => FieldElement (Fp n) where
-    invert n =
-        case n of
-          0 -> error "0 is not invertible"
-          n' -> 1 / n'
-
-class (Num el, Eq el) => FieldElement el where
-    invert :: el -> el
+--instance IntegerAsType n => FieldElement (Fp n) where
+--    invert n =
+--        case n of
+--          0 -> error "0 is not invertible"
+--          n' -> 1 / n'
 
 type VariableName = String
 type VarMapping el = Map VariableName el

@@ -4,13 +4,17 @@ import Codec.DARE
 import Control.Monad.CryptoRandom (runCRand)
 import Crypto.Random (SystemRandom, newGenIO)
 import Data.ExpressionTypes (Expr(..))
-import Math.Algebra.Field.Base (F97)
+import Data.FieldTypes (FieldElement(..))
+--import Math.Algebra.Field.Base (F97)
+import Math.FiniteFields.F2Pow256
+import Math.FiniteFields.Foreign.FFInterface
 import qualified Data.DList as DL
 import qualified Data.Map as M
 
 main :: IO ()
 main =
     do putStrLn "ExprToDARE: START"
+       ffInitializeInterface
        test
        putStrLn "EXERCISE 2"
        g <- (newGenIO :: IO SystemRandom)
@@ -19,7 +23,7 @@ main =
        print $ runRP _TestVarMap_ dares
        putStrLn "ExprToDARE: done :-)"
 
-type Element = F97
+type Element = F2Pow256
 
 testExpr1 :: Expr Element
 testExpr1 = 4 * _X_ + _Y_ + _X_ * _X_ * _X_
