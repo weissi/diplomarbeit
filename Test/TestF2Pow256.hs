@@ -20,7 +20,7 @@ import Debug.Trace
 type Element = F2Pow256
 
 _MAX_NUM_ :: Element
-_MAX_NUM_ = 2^256-1
+_MAX_NUM_ = fromInteger $ 2^256-1
 
 prop_elementEqualsElement :: Element -> Bool
 prop_elementEqualsElement e = e == e
