@@ -69,3 +69,11 @@ Test-Suite TestF2Pow256
     build-depends:    base, HTF >= 0.8, diplomarbeit
     hs-source-dirs:   Test
     GHC-Options:      -rtsopts -auto-all -caf-all
+
+Test-Suite TestMisc
+    type:             exitcode-stdio-1.0
+    main-is:          TestMisc.hs
+    Default-Language: Haskell2010
+    build-depends:    base, HTF >= 0.8, diplomarbeit, bytestring >= 0.9
+    hs-source-dirs:   Test
+    GHC-Options:      -rtsopts -auto-all -caf-all

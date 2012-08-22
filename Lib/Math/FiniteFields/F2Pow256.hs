@@ -25,7 +25,10 @@ instance Num F2Pow256 where
     (-) = binaryOp FFI.ffSubElements
     signum = error "F2Pow256.signum not implemented"
     abs = error "F2Pow256.abs not implemented"
-    fromInteger = F2Pow256 . FFI.ffElementFromBytes . integralBytes . abs
+    fromInteger = fromIntegerF2Pow256
+
+fromIntegerF2Pow256 :: Integer -> F2Pow256
+fromIntegerF2Pow256 = F2Pow256 . FFI.ffElementFromBytes . integralBytes . abs
 
 instance Eq F2Pow256 where
     (==) (F2Pow256 l) (F2Pow256 r) = FFI.ffEquals l r

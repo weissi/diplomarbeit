@@ -19,6 +19,9 @@ import Debug.Trace
 
 type Element = F2Pow256
 
+_MAX_NUM_ :: Element
+_MAX_NUM_ = 2^256-1
+
 prop_elementEqualsElement :: Element -> Bool
 prop_elementEqualsElement e = e == e
 
@@ -60,6 +63,50 @@ prop_distributiveLaw a b c = a * (b + c) == a * b + a * c
 
 prop_zeroIsNotOne :: Bool
 prop_zeroIsNotOne = (0 :: Element) /= (1 :: Element)
+
+test_representationZero :: IO ()
+test_representationZero =
+    do let expected = "[]"
+           actual = show (0 :: Element)
+       assertEqual expected actual
+
+test_representationOne :: IO ()
+test_representationOne =
+    do let expected = "[1]"
+           actual = show (1 :: Element)
+       assertEqual expected actual
+
+test_representationTwo :: IO ()
+test_representationTwo =
+    do let expected = "[0 1]"
+           actual = show (2 :: Element)
+       assertEqual expected actual
+
+test_representationThree :: IO ()
+test_representationThree =
+    do let expected = "[1 1]"
+           actual = show (3 :: Element)
+       assertEqual expected actual
+
+test_representation255 :: IO ()
+test_representation255 =
+    do let elem = 255 :: Element
+           actual = show elem
+           expected = "[1 1 1 1 1 1 1 1]"
+       assertEqual expected actual
+
+test_representation256 :: IO ()
+test_representation256 =
+    do let elem = 256 :: Element
+           actual = show elem
+           expected = "[0 0 0 0 0 0 0 0 1]"
+       assertEqual expected actual
+
+test_representation2Pow256Minus1 :: IO ()
+test_representation2Pow256Minus1 =
+    do let act = show _MAX_NUM_
+           exp = "[1" ++ (concat $ replicate 254 " 1") ++ " 1]"
+       assertEqual exp act
 
 allTestSuites :: [TestSuite]
 allTestSuites = [ allHTFTests ]

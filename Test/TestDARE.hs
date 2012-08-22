@@ -78,19 +78,19 @@ execDare expr =
 
 test_simpleDARE =
     do act <- execDare $ sum (replicate 96 1)
-       assertEqual act (Just (sum (replicate 96 1)) :: Maybe Element)
+       assertEqual (Just (sum (replicate 96 1)) :: Maybe Element) act
 
 test_complexAddDARE =
     do actual <- execDare $ 1 + 17 + _VAR_X_ + (_VAR_X_ + 23)
        let expected :: Maybe Element
            expected = Just $ 1 + 17 + _VAL_X_ + (_VAL_X_ + 23)
-       assertEqual actual expected
+       assertEqual expected actual
 
 test_complexDARE1 =
     do actual <- execDare  $ 4 * _VAR_X_ + _VAR_Y_ + _VAR_X_ * _VAR_X_ * _VAR_X_
        let expected :: Maybe Element
            expected = Just $ 4 * _VAL_X_ + _VAL_Y_ + _VAL_X_ * _VAL_X_ * _VAL_X_
-       assertEqual actual expected
+       assertEqual expected actual
 
 test_complexDARE2 =
     do actual <- execDare  $ ( (  (4 * _VAR_X_ * _VAR_X_ + 2)
@@ -104,7 +104,7 @@ test_complexDARE2 =
                                 * _VAL_X_ * _VAL_Y_ + 7)
                               * _VAL_X_
                              )
-       assertEqual actual expected
+       assertEqual expected actual
 
 prop_dareAddDAREConstants :: Element -> Element -> Element -> Bool
 prop_dareAddDAREConstants el1 el2 rnd =
@@ -322,8 +322,6 @@ prop_dareEncryptedMulConstants el1 el2 el3 k1b k2b k3b r1 r2 r3 r4 =
     in forAll threePositiveElements $
         \(kpos, kpos2, kpos3) ->
             Just (el1 * el2 + el3) == dareDecode M.empty (act kpos kpos2 kpos3)
-
---prop_inverse (NonZero x) = (invert x) * x == (1 :: Element)
 
 allTestSuites :: [TestSuite]
 allTestSuites = [ allHTFTests ]
