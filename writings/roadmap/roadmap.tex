@@ -85,7 +85,7 @@ ARE. The safety is proven in \emph{How to Garble Arithmetic Circuits}
 \mathcal{F}_{AR} & = \{ s * x + i\ |\ s, i \in K, x \in \mathcal{V} \} \cup
 \{ v\ |\ v \in K \} \\
 \mathcal{E}_{AR} & = \{ (M, A) \mid M \subseteq \mathcal{F}_{AR} \times
-\mathcal{F}_{AR}, A \subseteq \mathcal{F}_{AR} \}
+\mathcal{F}_{AR}, A \subseteq \mathcal{F}_{AR}; \text{$M$ and $A$ multisets} \}
 \end{align}
 
 
@@ -141,14 +141,15 @@ property would hold for a variable $v$ being the decoded value of an ARE $e$:
 v = DEC(e \in \mathcal{E}_RE)
 \end{align}
 
-Then a modified ARE $\hat{e} \in \mathcal{E}_RE^+$ decoding to a value $\hat{v}$
+\noindent{}Then a modified ARE $\hat{e} \in \mathcal{E}_RE^+$ decoding to a
+value $\hat{v}$
 
 \begin{align}
 \hat{v} = \alpha \cdot (v + \beta) = DEC(\hat{e})
 \end{align}
 
-with secret keys---known only by the first party---$\alpha$ and $\beta$ would
-get transmitted.
+\noindent{}with secret keys---known only by the first party---$\alpha$ and
+$\beta$ would get transmitted.
 
 \subsubsection{Security Proof}
 \label{sec:randomized-variables-proof}
