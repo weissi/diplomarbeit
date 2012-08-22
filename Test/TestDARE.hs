@@ -22,6 +22,7 @@ import Math.FiniteFields.Foreign.FFInterface (ffInitializeInterface)
 -- # HTF
 import System.Environment ( getArgs )
 import Test.Framework
+import TestHelpers
 
 -- # DEBUG
 import Debug.Trace
@@ -53,9 +54,6 @@ _TEST_VAR_MAP_ :: FieldElement el => VarMapping el
 _TEST_VAR_MAP_ = M.fromList [("x", _VAL_X_), ("y", _VAL_Y_), ("z", _VAL_Z_)]
 
 instance IntegerAsType n => Arbitrary (Fp n) where
-    arbitrary = arbitrarySizedIntegral
-
-instance Arbitrary F2Pow256 where
     arbitrary = arbitrarySizedIntegral
 
 instance IntegerAsType n => Random (Fp n) where
