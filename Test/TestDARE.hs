@@ -27,8 +27,9 @@ import Test.Framework
 import Debug.Trace
 
 type Element = F2Pow256
-_ALL_POS_NUMS_ :: [Element]
-_ALL_POS_NUMS_ = map fromIntegral [1..(2^256-1)]
+_SOME_POS_NUMS_ :: [Element]
+_SOME_POS_NUMS_ = map fromIntegral $ [1..100] ++
+                                     [ 2^256-1, 2^42-1, 234345, 391238571]
 
 _VAR_X_ :: FieldElement el => Expr el
 _VAR_X_ = Var "x"
@@ -291,7 +292,7 @@ prop_dareMulConstantsTimesElements el1 el2 el3 els r1 r2 r3 r4 =
 
 threePositiveElements =
     elements [(x, y, z) |
-               x <- _ALL_POS_NUMS_, y <- _ALL_POS_NUMS_, z <- _ALL_POS_NUMS_
+              x <- _SOME_POS_NUMS_, y <- _SOME_POS_NUMS_, z <- _SOME_POS_NUMS_
              ]
 
 encryptedConstant :: FieldElement el
