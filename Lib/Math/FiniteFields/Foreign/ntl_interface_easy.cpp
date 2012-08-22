@@ -105,7 +105,10 @@ extern "C" {
     }
 
     OpaqueElement ff_invert_element(OpaqueElement opaque_e) {
-        return ff_div_elements(ff_one_element(), opaque_e);
+        OpaqueElement one = ff_one_element();
+        OpaqueElement inv = ff_div_elements(one, opaque_e);
+        ff_free_element(one);
+        return inv;
     }
 
     int ff_equals(OpaqueElement opaque_l, OpaqueElement opaque_r) {
