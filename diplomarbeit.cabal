@@ -10,11 +10,13 @@ Build-Type:     Simple
 Library
     Build-Depends:    base, HaskellForMaths >= 0.4, monadcryptorandom >= 0.4,
                       crypto-api >= 0.10, containers >= 0.4, mtl >= 2.0,
-                      dlist >= 0.5, text >= 0.11
+                      dlist >= 0.5, text >= 0.11, bytestring >= 0.9,
+                      blaze-builder >= 0.3
     Default-Language: Haskell2010
     Exposed-modules:  Codec.DARE, Codec.LBS, Data.ExpressionTypes,
                       Data.FieldTypes, Math.FiniteFields.F2Pow256,
-                      Math.FiniteFields.Foreign.FFInterface
+                      Math.FiniteFields.Foreign.FFInterface,
+                      Data.Helpers
     include-dirs:     Lib/Math/FiniteFields/Foreign
     hs-source-dirs:   Lib
     GHC-Options:      -Wall
@@ -24,7 +26,7 @@ Library
     Build-tools:      c2hs -any
     Extra-libraries:  ntl
     C-Sources:        Lib/Math/FiniteFields/Foreign/ntl_interface_easy.cpp
-    CC-Options:       -Wall -pedantic
+    CC-Options:       -Wall -pedantic -ggdb
 
 Executable ExprToMRM
     main-is:        ExprToMRM.hs
@@ -50,10 +52,12 @@ Executable ExprToDARE
     GHC-Options:    -rtsopts -auto-all -caf-all
 
 Test-Suite TestDARE
-    type:          exitcode-stdio-1.0
-    main-is:       TestDARE.hs
+    type:             exitcode-stdio-1.0
+    main-is:          TestDARE.hs
     Default-Language: Haskell2010
-    build-depends: base, HTF >= 0.8, HaskellForMaths >= 0.4, crypto-api >= 0.10,
-                   monadcryptorandom >= 0.4, containers >= 0.4, dlist >= 0.5,
-                   mtl >= 2.0, random >= 1.0
-    hs-source-dirs: Lib Test
+    build-depends:    base, HTF >= 0.8, HaskellForMaths >= 0.4,
+                      crypto-api >= 0.10,
+                      monadcryptorandom >= 0.4, containers >= 0.4, dlist >= 0.5,
+                      mtl >= 2.0, random >= 1.0, diplomarbeit
+    hs-source-dirs:   Test
+    GHC-Options:      -rtsopts -auto-all -caf-all -prof

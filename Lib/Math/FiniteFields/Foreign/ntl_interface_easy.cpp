@@ -115,6 +115,18 @@ extern "C" {
         return *l == *r;
     }
 
+    OpaqueElement ff_element_from_bytes(const char *bytes, size_t len) {
+        GF2X *x = new GF2X();
+        GF2E *e = new GF2E();
+
+        GF2XFromBytes(*x, (const unsigned char *)bytes, len);
+        conv(*e, *x);
+
+        delete x;
+
+        return e;
+    }
+
 #ifdef __cplusplus
 }
 #endif

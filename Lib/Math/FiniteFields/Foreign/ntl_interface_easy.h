@@ -1,6 +1,8 @@
 #ifndef NTL_INTERFACE_EASY__H
 #define NTL_INTERFACE_EASY__H
 
+#include <sys/types.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -28,6 +30,8 @@ extern "C" {
     OpaqueElement ff_invert_element(OpaqueElement e);
 
     int ff_equals(OpaqueElement l, OpaqueElement r);
+
+    OpaqueElement ff_element_from_bytes(const char *bytes, size_t len);
 
 #ifdef __cplusplus
 }

@@ -4,12 +4,14 @@
 
 module Math.FiniteFields.Foreign.FFInterface where
 
+import Data.ByteString (ByteString)
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.C.String
 import Foreign.C.Types
 import Foreign.Marshal.Alloc (free)
 import System.IO.Unsafe
+import qualified Data.ByteString as BS
 
 withOpaqueElement :: OpaqueElement -> (Ptr OpaqueElement -> IO b) -> IO b
 {#pointer OpaqueElement foreign newtype #}
@@ -68,3 +70,14 @@ ffFinalizeInterface = {#call ff_finalize #}
 {#fun pure unsafe ff_equals as
     ^ { withOpaqueElement* `OpaqueElement', withOpaqueElement* `OpaqueElement' }
       -> `Bool' toBool #}
+
+--{#fun pure unsafe ff_element_from_bytes as
+--    ^ { withData `ByteString'& } -> `OpaqueElement' newObjectHandle* #}
+
+ffElementFromBytes :: ByteString -> OpaqueElement
+ffElementFromBytes str =
+    unsafePerformIO $
+    newObjectHandle $
+    unsafePerformIO $
+    BS.useAsCStringLen str $ \(strp, len) ->
+        {#call unsafe ff_element_from_bytes #} strp (fromIntegral len)
