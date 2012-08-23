@@ -269,6 +269,35 @@ prop_dareMulConstantsPlusElement el1 el2 el3 el4 r1 r2 r3 r4 =
         act = dareDecode M.empty outDARE
     in Just ((el1 * el2 + el3) + el4) == act
 
+prop_constantDareTimesElements :: Element -> [Element] -> Bool
+prop_constantDareTimesElements cel els =
+    let celpe = Constant cel
+        dare = dareEncodePrimaryExpr celpe
+        outDARE = foldl mulElementToDARE dare els
+        act = dareDecode M.empty outDARE
+     in Just (cel * product els) == act
+
+test_failedSample :: IO ()
+test_failedSample =
+    do let elc = f2Pow256FromString "[1 0 1 1 1]"
+           elsStr = [ "[0 1 0 1]", "[1 0 1 0 1 1]", "[1 0 0 0 1]"
+                    , "[0 1 1 0 1 0 1]", "[0 1 1]", "[1 0 1 0 0 0 1]"
+                    , "[0 1 0 0 1 0 1]", "[1 1]", "[1 1 0 1 1 1]"
+                    , "[0 1 1 1 0 1]", "[1 1 1 0 1 1]", "[0 0 0 1 0 1]"
+                    , "[0 0 1 1 0 0 1]", "[0 0 0 0 1]", "[0 1 1 1 1 1]"
+                    , "[0 1 1 0 0 0 1]", "[1 0 0 0 0 1]", "[1 0 1 1 1 1]"
+                    , "[1 1 1 0 1 0 1]", "[1 0 1 1 1 1]", "[0 1 0 0 0 0 1]"
+                    , "[1 0 1 1 1 1]", "[0 0 0 0 1 0 1]", "[0 1 1 1 1 1]"
+                    , "[1 0 1]", "[1 0 0 1 0 0 1]", "[1 0 0 0 1]"
+                    , "[0 1 0 0 0 0 1]", "[0 1 0 0 0 1]", "[1 0 1 1]", "[1]"
+                    , "[1 1 1 1 1 1]", "[1 1 1 1]", "[1 1 0 0 1 1]", "[1 0 1]"
+                    , "[1 1 1 1 0 1]", "[1 0 1 1 0 1]", "[0 0 0 0 0 1]"
+                    , "[1 0 0 1 1 1]", "[0 1 0 1]", "[0 0 1 0 0 1]"
+                    , "[0 1 0 0 0 0 1]", "[0 0 1 1 1]", "[0 0 1 0 0 1]"
+                    ]
+           els = map f2Pow256FromString elsStr
+       assertEqual True (prop_constantDareTimesElements elc els)
+
 prop_dareMulConstantsTimesElements :: Element
                                    -> Element
                                    -> Element

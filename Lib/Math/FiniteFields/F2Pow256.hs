@@ -1,6 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 
-module Math.FiniteFields.F2Pow256 (F2Pow256) where
+module Math.FiniteFields.F2Pow256 (F2Pow256, f2Pow256FromString) where
 
 import Data.Helpers (integralBytes)
 import Data.FieldTypes
@@ -29,6 +29,9 @@ instance Num F2Pow256 where
 
 fromIntegerF2Pow256 :: Integer -> F2Pow256
 fromIntegerF2Pow256 = F2Pow256 . FFI.ffElementFromBytes . integralBytes . abs
+
+f2Pow256FromString :: String -> F2Pow256
+f2Pow256FromString = F2Pow256 . FFI.ffElementFromString
 
 instance Eq F2Pow256 where
     (==) (F2Pow256 l) (F2Pow256 r) = FFI.ffEquals l r

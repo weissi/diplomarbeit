@@ -107,6 +107,9 @@ test_representation2Pow256Minus1 =
            exp = "[1" ++ (concat $ replicate 254 " 1") ++ " 1]"
        assertEqual exp act
 
+prop_readParsesShow :: Element -> Bool
+prop_readParsesShow e = e == (f2Pow256FromString (show e))
+
 allTestSuites :: [TestSuite]
 allTestSuites = [ allHTFTests ]
 
