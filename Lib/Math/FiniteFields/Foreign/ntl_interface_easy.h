@@ -9,9 +9,6 @@ extern "C" {
 
     typedef const void * OpaqueElement;
 
-    void ff_init(void);
-    void ff_finalize(void);
-
     void ff_print_element(OpaqueElement e);
     OpaqueElement ff_random_element(void);
 
@@ -31,7 +28,7 @@ extern "C" {
 
     int ff_equals(OpaqueElement l, OpaqueElement r);
 
-    OpaqueElement ff_element_from_bytes(const char *bytes, size_t len);
+    OpaqueElement ff_element_from_bytes(const unsigned char *bytes, size_t len);
 
 #ifdef __cplusplus
 }

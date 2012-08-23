@@ -7,7 +7,6 @@
 -- # LOCAL
 import Data.FieldTypes
 import Math.FiniteFields.F2Pow256
-import Math.FiniteFields.Foreign.FFInterface
 
 -- # HTF
 import System.Environment ( getArgs )
@@ -114,6 +113,5 @@ allTestSuites = [ allHTFTests ]
 testSuite :: TestSuite
 testSuite = makeAnonTestSuite (map testSuiteAsTest allTestSuites)
 
-main = do ffInitializeInterface
-          args <- getArgs
+main = do args <- getArgs
           runTestWithArgs args testSuite

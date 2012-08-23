@@ -17,7 +17,6 @@ import System.Random (Random(..), RandomGen(..))
 import Codec.DARE
 import Data.ExpressionTypes
 import Data.FieldTypes
-import Math.FiniteFields.Foreign.FFInterface (ffInitializeInterface)
 
 -- # HTF
 import System.Environment ( getArgs )
@@ -329,6 +328,5 @@ allTestSuites = [ allHTFTests ]
 testSuite :: TestSuite
 testSuite = makeAnonTestSuite (map testSuiteAsTest allTestSuites)
 
-main = do ffInitializeInterface
-          args <- getArgs
+main = do args <- getArgs
           runTestWithArgs args testSuite

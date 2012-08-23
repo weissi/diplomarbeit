@@ -33,12 +33,6 @@ newString p = do
 toBool :: CInt -> Bool
 toBool (CInt i) = if i == 0 then False else True
 
-ffInitializeInterface :: IO ()
-ffInitializeInterface = {#call ff_init #}
-
-ffFinalizeInterface :: IO ()
-ffFinalizeInterface = {#call ff_finalize #}
-
 {#fun pure unsafe ff_zero_element as
     ^ { } -> `OpaqueElement' newObjectHandle* #}
 
@@ -80,4 +74,4 @@ ffElementFromBytes str =
     newObjectHandle $
     unsafePerformIO $
     BS.useAsCStringLen str $ \(strp, len) ->
-        {#call unsafe ff_element_from_bytes #} strp (fromIntegral len)
+        {#call unsafe ff_element_from_bytes #} (castPtr strp) (fromIntegral len)

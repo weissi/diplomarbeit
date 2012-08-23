@@ -11,6 +11,8 @@
 
 NTL_CLIENT
 
+static bool initialized = false;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -19,19 +21,29 @@ extern "C" {
         GF2E::init(P);
     }
 
+    inline void check_init(void) {
+        if (!initialized) {
+            ff_init();
+            initialized = true;
+        }
+    }
+
     void ff_finalize(void) {
     }
 
     OpaqueElement ff_zero_element(void) {
+        check_init();
         return &GF2E::zero();
     }
 
     void ff_print_element(OpaqueElement opaque_e) {
+        check_init();
         GF2E *e = (GF2E *)opaque_e;
         cout << *e << endl;
     }
 
     void ff_free_element(OpaqueElement opaque_e) {
+        check_init();
         if (opaque_e != ff_zero_element()) {
             GF2E *e = (GF2E *)opaque_e;
             delete e;
@@ -39,12 +51,14 @@ extern "C" {
     }
 
     OpaqueElement ff_random_element(void) {
+        check_init();
         GF2E *e = new GF2E();
         *e = random_GF2E();
         return e;
     }
 
     OpaqueElement ff_element_from_string(const char *s) {
+        check_init();
         GF2E *e = new GF2E();
         stringstream ss(s);
         ss >> *e;
@@ -52,6 +66,7 @@ extern "C" {
     }
 
     const char *ff_element_to_string(OpaqueElement opaque_e) {
+        check_init();
         GF2E *e = (GF2E *)opaque_e;
         stringstream ss("");
         ss << *e;
@@ -67,12 +82,14 @@ extern "C" {
     }
 
     OpaqueElement ff_one_element(void) {
+        check_init();
         GF2E *one = new GF2E();
         conv(*one, 1L);
         return one;
     }
 
     OpaqueElement ff_add_elements(OpaqueElement opaque_l, OpaqueElement opaque_r) {
+        check_init();
         GF2E *l = (GF2E *)opaque_l;
         GF2E *r = (GF2E *)opaque_r;
         GF2E *o = new GF2E();
@@ -81,6 +98,7 @@ extern "C" {
     }
 
     OpaqueElement ff_sub_elements(OpaqueElement opaque_l, OpaqueElement opaque_r) {
+        check_init();
         GF2E *l = (GF2E *)opaque_l;
         GF2E *r = (GF2E *)opaque_r;
         GF2E *o = new GF2E();
@@ -89,6 +107,7 @@ extern "C" {
     }
 
     OpaqueElement ff_mul_elements(OpaqueElement opaque_l, OpaqueElement opaque_r) {
+        check_init();
         GF2E *l = (GF2E *)opaque_l;
         GF2E *r = (GF2E *)opaque_r;
         GF2E *o = new GF2E();
@@ -97,6 +116,7 @@ extern "C" {
     }
 
     OpaqueElement ff_div_elements(OpaqueElement opaque_l, OpaqueElement opaque_r) {
+        check_init();
         GF2E *l = (GF2E *)opaque_l;
         GF2E *r = (GF2E *)opaque_r;
         GF2E *o = new GF2E();
@@ -105,6 +125,7 @@ extern "C" {
     }
 
     OpaqueElement ff_invert_element(OpaqueElement opaque_e) {
+        check_init();
         OpaqueElement one = ff_one_element();
         OpaqueElement inv = ff_div_elements(one, opaque_e);
         ff_free_element(one);
@@ -112,17 +133,19 @@ extern "C" {
     }
 
     int ff_equals(OpaqueElement opaque_l, OpaqueElement opaque_r) {
+        check_init();
         GF2E *l = (GF2E *)opaque_l;
         GF2E *r = (GF2E *)opaque_r;
 
         return *l == *r;
     }
 
-    OpaqueElement ff_element_from_bytes(const char *bytes, size_t len) {
+    OpaqueElement ff_element_from_bytes(const unsigned char *bytes, size_t len) {
+        check_init();
         GF2X *x = new GF2X();
         GF2E *e = new GF2E();
 
-        GF2XFromBytes(*x, (const unsigned char *)bytes, len);
+        GF2XFromBytes(*x, bytes, len);
         conv(*e, *x);
 
         delete x;

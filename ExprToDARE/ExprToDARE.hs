@@ -7,14 +7,12 @@ import Data.ExpressionTypes (Expr(..))
 import Data.FieldTypes (FieldElement(..))
 --import Math.Algebra.Field.Base (F97)
 import Math.FiniteFields.F2Pow256
-import Math.FiniteFields.Foreign.FFInterface
 import qualified Data.DList as DL
 import qualified Data.Map as M
 
 main :: IO ()
 main =
     do putStrLn "ExprToDARE: START"
-       ffInitializeInterface
        test
        putStrLn "EXERCISE 2"
        g <- (newGenIO :: IO SystemRandom)
