@@ -48,11 +48,17 @@ prop_equalsNotEqualsDifferent l r = (l == r) /= (l /= r)
 prop_additionAssociative :: Element -> Element -> Element -> Bool
 prop_additionAssociative a b c = (a + b) + c == a + (b + c)
 
+prop_differenceAssociative :: Element -> Element -> Element -> Bool
+prop_differenceAssociative a b c = (a - b) - c == a - (b - c)
+
 prop_multiplicationAssociative :: Element -> Element -> Element -> Bool
 prop_multiplicationAssociative a b c = (a * b) * c == a * (b * c)
 
 prop_multiplicativeInverse :: Element -> Bool
 prop_multiplicativeInverse e = e == 0 || e * (invert e) == 1
+
+prop_additiveInverse :: Element -> Bool
+prop_additiveInverse e = e - e == 0 && e + (-e) == 0
 
 prop_elementPlusZeroEqualsElement :: Element -> Bool
 prop_elementPlusZeroEqualsElement e = e == e + 0
