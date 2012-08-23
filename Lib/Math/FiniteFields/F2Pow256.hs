@@ -1,5 +1,3 @@
-{-# LANGUAGE BangPatterns #-}
-
 module Math.FiniteFields.F2Pow256 (F2Pow256, f2Pow256FromString) where
 
 import Data.Helpers (integralBytes)
@@ -10,8 +8,8 @@ import qualified Math.FiniteFields.Foreign.FFInterface as FFI
 newtype F2Pow256 = F2Pow256 { unF2Pow256 :: FFI.OpaqueElement }
 
 binaryOp :: (FFI.OpaqueElement -> FFI.OpaqueElement -> FFI.OpaqueElement)
-         -> (F2Pow256 -> F2Pow256 -> F2Pow256)
-binaryOp op = \(F2Pow256 l) (F2Pow256 r) -> F2Pow256 $ l `op` r
+         -> F2Pow256 -> F2Pow256 -> F2Pow256
+binaryOp op (F2Pow256 l) (F2Pow256 r) = F2Pow256 $ l `op` r
 
 instance FieldElement F2Pow256 where
     invert = F2Pow256 . FFI.ffInvertElement . unF2Pow256
