@@ -59,14 +59,14 @@ instance IntegerAsType n => Random (Fp n) where
     random g =
         let (rint, g') = random g
             rint' = rint :: Integer
-            in trace ("rint="++show rint++", out="++show (fromIntegral rint')) (fromIntegral rint', g')
+            in (fromIntegral rint', g')
     randomR (lo, hi) g =
         let loint = (read . show) lo :: Integer
             hiint = (read . show) hi :: Integer
             (rint, g') = randomR (loint, hiint) g
             rint' = rint :: Integer
             rfp = fromIntegral rint'
-            in trace ("lo="++show lo++", hi="++show hi++", rint="++show rint++", out="++show rfp) (rfp, g')
+            in (rfp, g')
 
 execDare :: FieldElement el => Expr el -> IO (Maybe el)
 execDare expr =

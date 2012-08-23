@@ -72,8 +72,8 @@ maximaMatrixFromLBSStmt matrixSize (Offset (Reg o) dir (Reg i) sf, lineNo) =
     fromString ";"
     where dirString =
               case dir of
-                OffsetPlus -> "+" 
-                OffsetMinus -> "-" 
+                OffsetPlus -> "+"
+                OffsetMinus -> "-"
           sfString =
               case sf of
                 ScaleFactorConstant c -> show c
@@ -125,7 +125,6 @@ main = do
                          putStr $ show i ++ ", "
                          print $ lbsProgramLength lbs
                          print $ runLBS _VARS_ lbs
-                         --withFile "/dev/null" WriteMode (\h -> TIO.hPutStr h (renderLBSProgram lbs))
                          loop (i+1) end e'
                 else do
                     return ()
