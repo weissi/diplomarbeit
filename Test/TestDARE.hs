@@ -298,6 +298,26 @@ test_failedSample =
            els = map f2Pow256FromString elsStr
        assertEqual True (prop_constantDareTimesElements elc els)
 
+prop_failedSampleReplay1 =
+    withQCArgs (\a -> a { replay = read "Just (1378020622 498340256,20)"})
+    prop_dareMulConstantsTimesElements
+
+prop_failedSampleReplay2 =
+    withQCArgs (\a -> a { replay = read "Just (1938147973 1336516117,38)"})
+    prop_constantDareTimesElements
+
+prop_failedSampleReplay3 =
+    withQCArgs (\a -> a { replay = read "Just (342912626 1336516082,35)"})
+    prop_failedSampleReplay2
+
+prop_failedSampleReplay4 =
+    withQCArgs (\a -> a { replay = read "Just (601739998 1336516039,78)"})
+    prop_failedSampleReplay2
+
+prop_failedSampleReplay5 =
+    withQCArgs (\a -> a { replay = read "Just (461744124 1336516110,45)"})
+    prop_constantDareTimesElements
+
 prop_dareMulConstantsTimesElements :: Element
                                    -> Element
                                    -> Element

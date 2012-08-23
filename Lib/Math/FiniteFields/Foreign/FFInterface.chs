@@ -11,7 +11,7 @@ import Foreign.C.String
 import Foreign.C.Types
 import Foreign.Marshal.Alloc (free)
 import System.IO.Unsafe
-import qualified Data.ByteString as BS
+import qualified Data.ByteString.Unsafe as BS
 
 withOpaqueElement :: OpaqueElement -> (Ptr OpaqueElement -> IO b) -> IO b
 {#pointer OpaqueElement foreign newtype #}
@@ -73,5 +73,5 @@ ffElementFromBytes str =
     unsafePerformIO $
     newObjectHandle $
     unsafePerformIO $
-    BS.useAsCStringLen str $ \(strp, len) ->
+    BS.unsafeUseAsCStringLen str $ \(strp, len) ->
         {#call unsafe ff_element_from_bytes #} (castPtr strp) (fromIntegral len)
