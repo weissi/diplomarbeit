@@ -146,13 +146,11 @@ extern "C" {
 
     OpaqueElement ff_element_from_bytes(const unsigned char *bytes,size_t len) {
         check_init();
-        GF2X *x = new GF2X();
+        GF2X x;
         GF2E *e = new GF2E();
 
-        GF2XFromBytes(*x, bytes, len);
-        conv(*e, *x);
-
-        delete x;
+        GF2XFromBytes(x, bytes, len);
+        conv(*e, x);
 
         return e;
     }
