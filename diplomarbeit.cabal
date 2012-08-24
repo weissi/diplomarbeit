@@ -61,6 +61,7 @@ Test-Suite TestDARE
                       mtl >= 2.0, random >= 1.0, diplomarbeit
     hs-source-dirs:   Test
     GHC-Options:      -rtsopts -auto-all -caf-all
+    GHC-Options:    -O2
 
 Test-Suite TestF2Pow256
     type:             exitcode-stdio-1.0
@@ -69,6 +70,7 @@ Test-Suite TestF2Pow256
     build-depends:    base, HTF >= 0.8, diplomarbeit
     hs-source-dirs:   Test
     GHC-Options:      -rtsopts -auto-all -caf-all
+    GHC-Options:    -O2
 
 Test-Suite TestMisc
     type:             exitcode-stdio-1.0
@@ -77,3 +79,4 @@ Test-Suite TestMisc
     build-depends:    base, HTF >= 0.8, diplomarbeit, bytestring >= 0.9
     hs-source-dirs:   Test
     GHC-Options:      -rtsopts -auto-all -caf-all
+    GHC-Options:    -O2
