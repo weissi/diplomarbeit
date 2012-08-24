@@ -4,6 +4,7 @@
 import Data.Word
 import Data.ByteString (pack, useAsCStringLen)
 import Foreign.C.String
+import System.Exit (exitWith)
 
 -- # Site Packages
 
@@ -68,4 +69,4 @@ testSuite :: TestSuite
 testSuite = makeAnonTestSuite (map testSuiteAsTest allTestSuites)
 
 main = do args <- getArgs
-          runTestWithArgs args testSuite
+          runTestWithArgs args testSuite >>= exitWith

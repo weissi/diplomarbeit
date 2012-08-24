@@ -11,6 +11,7 @@ import Crypto.Random (SystemRandom, GenError, CryptoRandomGen, newGenIO)
 import Math.Algebra.Field.Base
 import Math.Common.IntegerAsType (IntegerAsType)
 import Math.FiniteFields.F2Pow256
+import System.Exit (exitWith)
 import System.Random (Random(..), RandomGen(..))
 
 -- # Local
@@ -378,4 +379,4 @@ testSuite :: TestSuite
 testSuite = makeAnonTestSuite (map testSuiteAsTest allTestSuites)
 
 main = do args <- getArgs
-          runTestWithArgs args testSuite
+          runTestWithArgs args testSuite >>= exitWith

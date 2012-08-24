@@ -10,6 +10,7 @@ import Math.FiniteFields.F2Pow256
 
 -- # HTF
 import System.Environment ( getArgs )
+import System.Exit (exitWith)
 import Test.Framework
 import TestHelpers
 
@@ -123,4 +124,4 @@ testSuite :: TestSuite
 testSuite = makeAnonTestSuite (map testSuiteAsTest allTestSuites)
 
 main = do args <- getArgs
-          runTestWithArgs args testSuite
+          runTestWithArgs args testSuite >>= exitWith
