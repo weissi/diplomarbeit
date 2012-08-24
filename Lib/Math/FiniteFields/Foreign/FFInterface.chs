@@ -7,7 +7,7 @@ module Math.FiniteFields.Foreign.FFInterface where
 
 import Data.ByteString (ByteString)
 import Foreign.Ptr
-import Foreign.ForeignPtr
+import Foreign.ForeignPtr.Safe
 import Foreign.C.String
 import Foreign.C.Types
 import Foreign.Marshal.Alloc (free)
@@ -30,9 +30,14 @@ withOpaqueElement :: OpaqueElement -> (Ptr OpaqueElement -> IO b) -> IO b
 foreign import ccall "ntl_interface_easy.h &ff_free_element"
   ffFreeElementPtr :: FunPtr (Ptr OpaqueElement -> IO ())
 
-newObjectHandle :: Ptr OpaqueElement -> IO OpaqueElement
-newObjectHandle p =
+newGarbageCollectedPointer :: Ptr OpaqueElement -> IO OpaqueElement
+newGarbageCollectedPointer p =
     do fp <- newForeignPtr ffFreeElementPtr p
+       return $ OpaqueElement fp
+
+newNonCollectedPointer :: Ptr OpaqueElement -> IO OpaqueElement
+newNonCollectedPointer p =
+    do fp <- newForeignPtr_ p
        return $ OpaqueElement fp
 
 newString :: CString -> IO String
@@ -42,32 +47,32 @@ newString p = do
   return str
 
 {#fun pure unsafe ff_zero_element as
-    ^ { } -> `OpaqueElement' newObjectHandle* #}
+    ^ { } -> `OpaqueElement' newNonCollectedPointer* #}
 
 {#fun pure unsafe ff_one_element as
-    ^ { } -> `OpaqueElement' newObjectHandle* #}
+    ^ { } -> `OpaqueElement' newGarbageCollectedPointer* #}
 
 {#fun pure unsafe ff_add_elements as
     ^ { withOpaqueElement* `OpaqueElement', withOpaqueElement* `OpaqueElement' }
-      -> `OpaqueElement' newObjectHandle* #}
+      -> `OpaqueElement' newGarbageCollectedPointer* #}
 
 {#fun pure unsafe ff_sub_elements as
     ^ { withOpaqueElement* `OpaqueElement', withOpaqueElement* `OpaqueElement' }
-      -> `OpaqueElement' newObjectHandle* #}
+      -> `OpaqueElement' newGarbageCollectedPointer* #}
 
 {#fun pure unsafe ff_mul_elements as
     ^ { withOpaqueElement* `OpaqueElement', withOpaqueElement* `OpaqueElement' }
-      -> `OpaqueElement' newObjectHandle* #}
+      -> `OpaqueElement' newGarbageCollectedPointer* #}
 
 {#fun pure unsafe ff_invert_element as
     ^ { withOpaqueElement* `OpaqueElement' }
-      -> `OpaqueElement' newObjectHandle* #}
+      -> `OpaqueElement' newGarbageCollectedPointer* #}
 
 {#fun pure unsafe ff_element_to_string as
     ^ { withOpaqueElement* `OpaqueElement' } -> `String' newString* #}
 
 {#fun pure unsafe ff_element_from_string as
-    ^ { `String' } -> `OpaqueElement' newObjectHandle* #}
+    ^ { `String' } -> `OpaqueElement' newGarbageCollectedPointer* #}
 
 {#fun pure unsafe ff_equals as
     ^ { withOpaqueElement* `OpaqueElement', withOpaqueElement* `OpaqueElement' }
@@ -76,7 +81,7 @@ newString p = do
 ffElementFromBytes :: ByteString -> OpaqueElement
 ffElementFromBytes str =
     unsafePerformIO $
-    newObjectHandle $
+    newGarbageCollectedPointer $
     unsafePerformIO $
     BS.unsafeUseAsCStringLen str $ \(strp, len) ->
         {#call unsafe ff_element_from_bytes #} (castPtr strp) (fromIntegral len)
