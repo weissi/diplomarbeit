@@ -1,4 +1,5 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE BangPatterns #-}
 
 #include "ntl_interface_easy.h"
 
@@ -10,8 +11,18 @@ import Foreign.ForeignPtr
 import Foreign.C.String
 import Foreign.C.Types
 import Foreign.Marshal.Alloc (free)
+import Foreign.Marshal.Utils (toBool)
 import System.IO.Unsafe
 import qualified Data.ByteString.Unsafe as BS
+
+{- REMINDER: Seems not necessary, but there are use-after-free errors
+ -           if the bang pattern or the entire usage of toBoolM gets
+ -           deleted?!?
+ -}
+toBoolM :: (Eq a, Num a) => a -> IO Bool
+toBoolM a =
+    do let !a' = toBool a
+       return a'
 
 withOpaqueElement :: OpaqueElement -> (Ptr OpaqueElement -> IO b) -> IO b
 {#pointer OpaqueElement foreign newtype #}
@@ -29,9 +40,6 @@ newString p = do
   str <- peekCString p
   free p
   return str
-
-toBool :: CInt -> Bool
-toBool (CInt i) = if i == 0 then False else True
 
 {#fun pure unsafe ff_zero_element as
     ^ { } -> `OpaqueElement' newObjectHandle* #}
@@ -63,10 +71,7 @@ toBool (CInt i) = if i == 0 then False else True
 
 {#fun pure unsafe ff_equals as
     ^ { withOpaqueElement* `OpaqueElement', withOpaqueElement* `OpaqueElement' }
-      -> `Bool' toBool #}
-
---{#fun pure unsafe ff_element_from_bytes as
---    ^ { withData `ByteString'& } -> `OpaqueElement' newObjectHandle* #}
+      -> `Bool' toBoolM* #}
 
 ffElementFromBytes :: ByteString -> OpaqueElement
 ffElementFromBytes str =
