@@ -1,5 +1,6 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE BangPatterns #-}
+{-# OPTIONS_GHC -fno-cse -fno-full-laziness #-} -- recommended by GHC manual
 
 #include "ntl_interface_easy.h"
 
