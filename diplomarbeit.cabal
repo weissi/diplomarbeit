@@ -28,22 +28,22 @@ Library
                       Data.FieldTypes, Math.FiniteFields.F2Pow256,
                       Math.FiniteFields.Foreign.FFInterface,
                       Data.Helpers
-    include-dirs:     Lib/Math/FiniteFields/Foreign
-    hs-source-dirs:   Lib
+    include-dirs:     lib/Math/FiniteFields/Foreign
+    hs-source-dirs:   lib
     GHC-Options:      -Wall
     GHC-Options:      -Werror
     GHC-Options:      -rtsopts -auto-all -caf-all
     Build-tools:      c2hs -any
     Extra-libraries:  ntl, stdc++
-    C-Sources:        Lib/Math/FiniteFields/Foreign/ntl_interface_easy.cpp
+    C-Sources:        lib/Math/FiniteFields/Foreign/ntl_interface_easy.cpp
     CC-Options:       -Wall -pedantic -ggdb
 
 Executable ExprToMRM
     main-is:          ExprToMRM.hs
     Default-Language: Haskell2010
     build-depends:    base, text >= 0.11, containers >= 0.4, dlist >= 0.5,
-                      mtl >= 2.0
-    hs-source-dirs:   ExprToMRM Lib
+                      mtl >= 2.0, diplomarbeit
+    hs-source-dirs:   programs
     GHC-Options:      -Wall
     GHC-Options:      -Werror
     GHC-Prof-Options: -rtsopts -auto-all -caf-all
@@ -54,7 +54,7 @@ Executable ExprToDARE
     build-depends:    base, monadcryptorandom >= 0.4, crypto-api >= 0.10,
                       containers >= 0.4, HaskellForMaths >= 0.4, dlist >= 0.5,
                       diplomarbeit
-    hs-source-dirs:   ExprToDARE
+    hs-source-dirs:   programs
     GHC-Options:      -Wall
     GHC-Options:      -Werror
     GHC-Prof-Options: -rtsopts -auto-all -caf-all
@@ -67,7 +67,7 @@ Test-Suite TestDARE
                       crypto-api >= 0.10,
                       monadcryptorandom >= 0.4, containers >= 0.4, dlist >= 0.5,
                       mtl >= 2.0, random >= 1.0, diplomarbeit
-    hs-source-dirs:   Test
+    hs-source-dirs:   test
     GHC-Prof-Options: -rtsopts -auto-all -caf-all
 
 Test-Suite TestF2Pow256
@@ -75,7 +75,7 @@ Test-Suite TestF2Pow256
     main-is:          TestF2Pow256.hs
     Default-Language: Haskell2010
     build-depends:    base, HTF >= 0.8, diplomarbeit
-    hs-source-dirs:   Test
+    hs-source-dirs:   test
     GHC-Prof-Options: -rtsopts -auto-all -caf-all
 
 Test-Suite TestMisc
@@ -83,5 +83,5 @@ Test-Suite TestMisc
     main-is:          TestMisc.hs
     Default-Language: Haskell2010
     build-depends:    base, HTF >= 0.8, diplomarbeit, bytestring >= 0.9
-    hs-source-dirs:   Test
+    hs-source-dirs:   test
     GHC-Prof-Options: -rtsopts -auto-all -caf-all
