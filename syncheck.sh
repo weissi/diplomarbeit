@@ -37,10 +37,19 @@ while read file; do
     check "$file" '^.{81,}$' -EHn "line too long"
     check "$file" ' $' -EHn "trailing whitespace"
     check "$file" '	' -Hn "tab found"
-done < <(find . \( -name '*.h' -or -name '*.cpp' -or -name '*.hs' \
-                   -or -name '*.chs' \) \
-                -and -not \( -path './dist/*' -or \
-                             -path './diplomarbeit-web/*' \) -type f)
+done < <(find . \(     -name '*.h' \
+                   -or -name '*.cpp' \
+                   -or -name '*.hs' \
+                   -or -name '*.chs' \
+                   -or -name '*.tex' \
+                   -or -name '*.sh' \
+                \) \
+                -and -not \( -path './dist/*' \
+                             -or -path './diplomarbeit-web/*' \
+                             -or -path './syncheck.sh' \
+                          \) \
+                -type f \
+        )
 
 if [ $RET -eq 0 ]; then
     echo "CONGRATULATIONS, looks fine"
