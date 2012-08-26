@@ -1,5 +1,14 @@
 #!/bin/bash
 
+HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
+cd "$HERE"
+
+if [ "$1" = "-c" ]; then
+    echo "Building in continuous mode"
+    iwatch -e modify -t '\.tex$' -c ./build.sh .
+    exit 0
+fi
+
 STEP="main program"
 function err() {
     echo "UNEXPECTED ERROR (in $STEP)"
@@ -8,9 +17,7 @@ function err() {
 
 trap err ERR
 
-HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
 TEXOPTS="-output-directory build -halt-on-error"
-cd "$HERE"
 
 function try_pdflatex() {
     set +e
