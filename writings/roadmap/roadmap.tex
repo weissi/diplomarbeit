@@ -40,20 +40,20 @@ David \& Goliath OAFE protocol\cite{davidgoliath}.
 As the main building block OAFEs---as provided by the David \& Goliath protocol
 \cite{davidgoliath}---are used. However, the first step is to securely express
 the input function $f(x_G, x_D)$ in terms of affine functions. These affine
-functions can then be securely evaluated using OAFEs. At a first glace, the task
-of expressing a general function $f(x_G, x_D)$ using affine functions may seem a
-rather easy task. The challenge is to do it securely: The other party should
-obviously not be able to learn $G$ when it is given the linear functions
+functions can then be securely evaluated using OAFEs. At a first glance, the
+task of expressing a general function $f(x_G, x_D)$ using affine functions may
+seem a rather easy task. The challenge is to do it securely: The other party
+should obviously not be able to learn $G$ when it is given the linear functions
 expressing the partly evaluated function $f(G, x_D)$ (value $G$ already set).
-Additionally, the process works non--interactive: The first party fixes its
-input $x_G = G$, partly evaluated $f(G, x_D)$, transforms it to affine functions
-and sends them to the second party. The affine functions themselves are either a
-constant or hidden inside an OAFE calculation. After the second party provided
-their input $x_D$ to the OAFEs, it gets (from the OAFEs) the evaluated results
-of the linear functions. The second party is now---using a provided
-decoder---able to securely and fully evaluate $f(x_G, x_D)$ using only the
-values received from the OAFEs and the constants. Neither party will learn more
-of the other party's input than the final result will tell it anyway.
+Additionally, the process should work non--interactively: The first party fixes
+its input $x_G = G$, partly evaluates $f(G, x_D)$, transforms it to affine
+functions and sends them as OAFEs to the second party. The affine functions
+themselves are either a constant or hidden inside an OAFE calculation. After the
+second party provided their input $x_D$ to the OAFEs, it gets (from the OAFEs)
+the evaluated results of the linear functions. The second party is now---using a
+provided decoder---able to securely and fully evaluate $f(x_G, x_D)$ using only
+the values received from the OAFEs and the constants. Neither party will learn
+more of the other party's input than the final result will tell it anyway.
 
 The transformation from general functions to affine functions used in this
 thesis will lead to a slightly modified form of \emph{Decomposable Affine
@@ -64,7 +64,7 @@ learning with errors (LWE) problem. This leads to further changes: The
 \emph{affinization gadget} \cite{gac2012} is modified and the
 \emph{key--shrinking gadget} \cite{gac2012} is not needed.
 
-The following sections will describe the whole process.
+\noindent{}The following sections will describe the whole process.
 
 
 \subsection{Affinization Gadget}
@@ -82,13 +82,18 @@ reveal no more information that the result of a full decoding of the respective
 ARE. The safety is proven in \emph{How to Garble Arithmetic Circuits}
 \cite{gac2012}.
 
-\begin{align}
-\mathcal{V} & = \{ x\ |\ x\ \text{a variable over}\ K \} \\
-\mathcal{F}_{AR} & = \{ s * x + i\ |\ s, i \in K, x \in \mathcal{V} \} \cup
-\{ v\ |\ v \in K \} \\
-\mathcal{E}_{AR} & = \{ (M, A) \mid M \subseteq \mathcal{F}_{AR} \times
-\mathcal{F}_{AR}, A \subseteq \mathcal{F}_{AR}; \text{$M$ and $A$ multisets} \}
-\end{align}
+\begin{align*}
+  \mathcal{V} = & \{ x \mid x~\text{a variable over}~K \} \\
+%
+  \mathcal{F}_{AR} = & \{ s * x + i \mid s, i \in K, x \in \mathcal{V} \}
+  \cup \{ v \mid v \in K \} \\
+%
+  \mathcal{E}_{AR} = & \{ (M, A) \mid
+    M \subseteq \mathcal{F}_{AR} \times \mathcal{F}_{AR},
+    A \subseteq, \mathcal{F}_{AR};
+    A, M~\text{finite multi--sets} \}
+%
+\end{align*}
 
 
 \subsubsection{Encoding}
@@ -128,7 +133,7 @@ r & = \sum_{a \in A} a + \sum_{m \in M'} m
 \end{align}
 
 
-\subsection{Randomized Varibles}
+\subsection{Randomized Variables}
 \label{sec:randomized-variables}
 
 Whenever a circuit is not directly transformable to one single ARE, sub--AREs
@@ -211,7 +216,7 @@ $R_j \leftarrow R_j \pm R_i \cdot c$ or $R_j \leftarrow R_j \pm R_i \cdot x_u$ .
 
 \paragraph{Depth $d > 0$}
 
-Having LBS progams that do $R_j \leftarrow R_j \pm R_i \cdot l(x_G, x_D)$  and
+Having LBS programs that do $R_j \leftarrow R_j \pm R_i \cdot l(x_G, x_D)$  and
 $R_j \leftarrow R_j \pm R_i \cdot r(x_G, x_D)$ we can
 transform formulas of depth $d > 0$ to a LBS program using only formulas of
 of depth $d - 1$ until $d = 0$.
@@ -233,7 +238,8 @@ R_j & \leftarrow R_j - R_i \cdot r(x_G, x_D)
 
 
 \subparagraph{Multiplicative:} We can construct a LBS program doing $R_j
-\leftarrow R_j + R_i \cdot (l \cdot r)(x_G, x_D)$ less obviously by the LBS program
+\leftarrow R_j + R_i \cdot (l \cdot r)(x_G, x_D)$ less obviously by the LBS
+program
 
 \begin{align*}
 R_k & \leftarrow R_k - R_j \cdot r(x_G, x_D) \\
@@ -307,10 +313,10 @@ The grouping process is very straightforward, too: From the process described in
 section \ref{sec:FormulasToMatrixMuls} we obtain matrices $\widehat{M_1}$ to
 $\widehat{M_n}$ which each have the effect of exactly one LBS program statement.
 Using associativity, we group together a variable amount of matrices
-$\widehat{M_1}$ to $\widehat{M_n}$. Each group is complete when there is at least
-one reference to the \emph{other party's input} $x_D$.  Matrices $M_1$ to $M_m$
-where $M_1$ to $M_{m-1}$ definitely have at least one reference to $x_D$ and
-$M_m$ may or may not are the result of this step.  Obviously the following
+$\widehat{M_1}$ to $\widehat{M_n}$. Each group is complete when there is at
+least one reference to the \emph{other party's input} $x_D$.  Matrices $M_1$ to
+$M_m$ where $M_1$ to $M_{m-1}$ definitely have at least one reference to $x_D$
+and $M_m$ may or may not are the result of this step.  Obviously the following
 properties hold:
 
 \begin{align*}
