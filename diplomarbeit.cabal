@@ -6,11 +6,22 @@ Author:         Johannes Weiß
 Maintainer:     weiss@tux4u.de
 Cabal-Version:  >= 1.10
 Build-Type:     Simple
+Category:       Thesis
+Description:    Diplomarbeit of Johannes Weiss
+Synopsis:       Diplomarbeit of Johannes Weiss
+
+Source-Repository head
+    Type:     git
+    Location: https://github.com/weissi/diplomarbeit.git
 
 Library
-    Build-Depends:    base, HaskellForMaths >= 0.4, monadcryptorandom >= 0.4,
-                      crypto-api >= 0.10, containers >= 0.4, mtl >= 2.0,
-                      dlist >= 0.5, text >= 0.11, bytestring >= 0.9,
+    Build-Depends:    base == 4.*,
+                      HaskellForMaths >= 0.4,
+                      monadcryptorandom >= 0.4,
+                      crypto-api >= 0.10,
+                      containers >= 0.4, mtl >= 2.0,
+                      dlist >= 0.5,
+                      text >= 0.11, bytestring >= 0.9,
                       blaze-builder >= 0.3
     Default-Language: Haskell2010
     Exposed-modules:  Codec.DARE, Codec.LBS, Data.ExpressionTypes,
@@ -21,7 +32,6 @@ Library
     hs-source-dirs:   Lib
     GHC-Options:      -Wall
     GHC-Options:      -Werror
-    GHC-Options:      -O2
     GHC-Options:      -rtsopts -auto-all -caf-all
     Build-tools:      c2hs -any
     Extra-libraries:  ntl, stdc++
@@ -29,27 +39,25 @@ Library
     CC-Options:       -Wall -pedantic -ggdb
 
 Executable ExprToMRM
-    main-is:        ExprToMRM.hs
+    main-is:          ExprToMRM.hs
     Default-Language: Haskell2010
-    build-depends:  base, text >= 0.11, containers >= 0.4, dlist >= 0.5,
-                    mtl >= 2.0
-    hs-source-dirs: ExprToMRM Lib
-    GHC-Options:    -Wall
-    GHC-Options:    -Werror
-    GHC-Options:    -O2
-    GHC-Options:    -rtsopts -auto-all -caf-all
+    build-depends:    base, text >= 0.11, containers >= 0.4, dlist >= 0.5,
+                      mtl >= 2.0
+    hs-source-dirs:   ExprToMRM Lib
+    GHC-Options:      -Wall
+    GHC-Options:      -Werror
+    GHC-Prof-Options: -rtsopts -auto-all -caf-all
 
 Executable ExprToDARE
-    main-is:        ExprToDARE.hs
+    main-is:          ExprToDARE.hs
     Default-Language: Haskell2010
-    build-depends:  base, monadcryptorandom >= 0.4, crypto-api >= 0.10,
-                    containers >= 0.4, HaskellForMaths >= 0.4, dlist >= 0.5,
-                    diplomarbeit
-    hs-source-dirs: ExprToDARE
-    GHC-Options:    -Wall
-    GHC-Options:    -Werror
-    GHC-Options:    -O2
-    GHC-Options:    -rtsopts -auto-all -caf-all
+    build-depends:    base, monadcryptorandom >= 0.4, crypto-api >= 0.10,
+                      containers >= 0.4, HaskellForMaths >= 0.4, dlist >= 0.5,
+                      diplomarbeit
+    hs-source-dirs:   ExprToDARE
+    GHC-Options:      -Wall
+    GHC-Options:      -Werror
+    GHC-Prof-Options: -rtsopts -auto-all -caf-all
 
 Test-Suite TestDARE
     type:             exitcode-stdio-1.0
@@ -60,8 +68,7 @@ Test-Suite TestDARE
                       monadcryptorandom >= 0.4, containers >= 0.4, dlist >= 0.5,
                       mtl >= 2.0, random >= 1.0, diplomarbeit
     hs-source-dirs:   Test
-    GHC-Options:      -rtsopts -auto-all -caf-all
-    GHC-Options:    -O2
+    GHC-Prof-Options: -rtsopts -auto-all -caf-all
 
 Test-Suite TestF2Pow256
     type:             exitcode-stdio-1.0
@@ -69,8 +76,7 @@ Test-Suite TestF2Pow256
     Default-Language: Haskell2010
     build-depends:    base, HTF >= 0.8, diplomarbeit
     hs-source-dirs:   Test
-    GHC-Options:      -rtsopts -auto-all -caf-all
-    GHC-Options:    -O2
+    GHC-Prof-Options: -rtsopts -auto-all -caf-all
 
 Test-Suite TestMisc
     type:             exitcode-stdio-1.0
@@ -78,5 +84,4 @@ Test-Suite TestMisc
     Default-Language: Haskell2010
     build-depends:    base, HTF >= 0.8, diplomarbeit, bytestring >= 0.9
     hs-source-dirs:   Test
-    GHC-Options:      -rtsopts -auto-all -caf-all
-    GHC-Options:    -O2
+    GHC-Prof-Options: -rtsopts -auto-all -caf-all
