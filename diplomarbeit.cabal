@@ -59,6 +59,16 @@ Executable ExprToDARE
     GHC-Options:      -Werror
     GHC-Prof-Options: -rtsopts -auto-all -caf-all
 
+Executable FiniteFieldMatrixTests
+    main-is:          FiniteFieldMatrixTests.hs
+    Default-Language: Haskell2010
+    hs-source-dirs:   programs
+    build-depends:    base,
+                      diplomarbeit,
+                      hmatrix >= 0.14
+    GHC-Options:      -Wall
+    GHC-Prof-Options: -rtsopts -auto-all -caf-all
+
 Test-Suite TestDARE
     type:             exitcode-stdio-1.0
     main-is:          TestDARE.hs

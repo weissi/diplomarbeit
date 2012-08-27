@@ -11,29 +11,36 @@
 
 NTL_CLIENT
 
+#define MEM_DEBUGGING
+
 static bool initialized = false;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-    void ff_init(void) {
+    static void ff_init(void) {
         GF2X P = BuildIrred_GF2X(256);
         GF2E::init(P);
     }
 
-    inline void check_init(void) {
+    static inline void check_init(void) {
         if (!initialized) {
             ff_init();
             initialized = true;
         }
     }
 
-    void ff_finalize(void) {
+    static inline GF2E *allocGF2E(void) {
+        GF2E *e = new GF2E();
+#ifdef MEM_DEBUGGING
+        cout << "GF2E: ALLOC: " << (void*)e << endl;
+#endif
+        return e;
     }
 
     OpaqueElement ff_zero_element(void) {
         check_init();
-        return &GF2E::zero();
+        return (OpaqueElement)&GF2E::zero();
     }
 
     void ff_print_element(OpaqueElement opaque_e) {
@@ -46,23 +53,26 @@ extern "C" {
         check_init();
         if (opaque_e != ff_zero_element()) {
             GF2E *e = (GF2E *)opaque_e;
+#ifdef MEM_DEBUGGING
+            cout << "GF2E:  FREE: " << (void*)e << endl;
+#endif
             delete e;
         }
     }
 
     OpaqueElement ff_random_element(void) {
         check_init();
-        GF2E *e = new GF2E();
+        GF2E *e = allocGF2E();
         *e = random_GF2E();
-        return e;
+        return (OpaqueElement)e;
     }
 
     OpaqueElement ff_element_from_string(const char *s) {
         check_init();
-        GF2E *e = new GF2E();
+        GF2E *e = allocGF2E();
         stringstream ss(s);
         ss >> *e;
-        return e;
+        return (OpaqueElement)e;
     }
 
     const char *ff_element_to_string(OpaqueElement opaque_e) {
@@ -83,9 +93,9 @@ extern "C" {
 
     OpaqueElement ff_one_element(void) {
         check_init();
-        GF2E *one = new GF2E();
+        GF2E *one = allocGF2E();
         conv(*one, 1L);
-        return one;
+        return (OpaqueElement)one;
     }
 
     OpaqueElement ff_add_elements(OpaqueElement opaque_l,
@@ -93,9 +103,9 @@ extern "C" {
         check_init();
         GF2E *l = (GF2E *)opaque_l;
         GF2E *r = (GF2E *)opaque_r;
-        GF2E *o = new GF2E();
+        GF2E *o = allocGF2E();
         *o = *l + *r;
-        return o;
+        return (OpaqueElement)o;
     }
 
     OpaqueElement ff_sub_elements(OpaqueElement opaque_l,
@@ -103,9 +113,9 @@ extern "C" {
         check_init();
         GF2E *l = (GF2E *)opaque_l;
         GF2E *r = (GF2E *)opaque_r;
-        GF2E *o = new GF2E();
+        GF2E *o = allocGF2E();
         *o = *l - *r;
-        return o;
+        return (OpaqueElement)o;
     }
 
     OpaqueElement ff_mul_elements(OpaqueElement opaque_l,
@@ -113,9 +123,9 @@ extern "C" {
         check_init();
         GF2E *l = (GF2E *)opaque_l;
         GF2E *r = (GF2E *)opaque_r;
-        GF2E *o = new GF2E();
+        GF2E *o = allocGF2E();
         *o = *l * *r;
-        return o;
+        return (OpaqueElement)o;
     }
 
     OpaqueElement ff_div_elements(OpaqueElement opaque_l,
@@ -123,9 +133,9 @@ extern "C" {
         check_init();
         GF2E *l = (GF2E *)opaque_l;
         GF2E *r = (GF2E *)opaque_r;
-        GF2E *o = new GF2E();
+        GF2E *o = allocGF2E();
         *o = *l / *r;
-        return o;
+        return (OpaqueElement)o;
     }
 
     OpaqueElement ff_invert_element(OpaqueElement opaque_e) {
@@ -133,7 +143,7 @@ extern "C" {
         OpaqueElement one = ff_one_element();
         OpaqueElement inv = ff_div_elements(one, opaque_e);
         ff_free_element(one);
-        return inv;
+        return (OpaqueElement)inv;
     }
 
     int ff_equals(OpaqueElement opaque_l, OpaqueElement opaque_r) {
@@ -147,12 +157,31 @@ extern "C" {
     OpaqueElement ff_element_from_bytes(const unsigned char *bytes,size_t len) {
         check_init();
         GF2X x;
-        GF2E *e = new GF2E();
+        GF2E *e = allocGF2E();
 
         GF2XFromBytes(x, bytes, len);
         conv(*e, x);
 
-        return e;
+        return (OpaqueElement)e;
+    }
+
+    size_t ff_sizeof_element(void) {
+        return sizeof(GF2E);
+    }
+
+    void ff_copy_element(UnsafeOpaqueElement opaque_dest,
+                         OpaqueElement opaque_src) {
+        GF2E *dest = (GF2E *)opaque_dest;
+        GF2E *src = (GF2E *)opaque_src;
+
+        memset(dest, 0, sizeof(GF2E));
+
+#ifdef MEM_DEBUGGING
+        cout << "Copying from " << opaque_src << " to " << opaque_dest << endl;
+#endif
+
+        *dest = *src;
+        assert(src->_GF2E__rep.xrep.rep != dest->_GF2E__rep.xrep.rep);
     }
 
 #ifdef __cplusplus

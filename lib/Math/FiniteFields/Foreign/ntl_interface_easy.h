@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
     typedef const void * OpaqueElement;
+    typedef const void * UnsafeOpaqueElement;
 
     void ff_print_element(OpaqueElement e);
     OpaqueElement ff_random_element(void);
@@ -29,6 +30,10 @@ extern "C" {
     int ff_equals(OpaqueElement l, OpaqueElement r);
 
     OpaqueElement ff_element_from_bytes(const unsigned char *bytes, size_t len);
+
+    size_t ff_sizeof_element(void);
+
+    void ff_copy_element(UnsafeOpaqueElement dest, OpaqueElement src);
 
 #ifdef __cplusplus
 }

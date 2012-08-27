@@ -1,6 +1,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE BangPatterns #-}
 {-# OPTIONS_GHC -fno-cse -fno-full-laziness #-} -- recommended by GHC manual
+{-# OPTIONS_GHC -Wwarn #-}
 
 #include "ntl_interface_easy.h"
 
@@ -8,11 +9,12 @@ module Math.FiniteFields.Foreign.FFInterface where
 
 import Data.ByteString (ByteString)
 import Foreign.Ptr
-import Foreign.ForeignPtr.Safe
+import Foreign.ForeignPtr
 import Foreign.C.String
 import Foreign.C.Types
 import Foreign.Marshal.Alloc (free)
 import Foreign.Marshal.Utils (toBool)
+import Foreign.Storable (Storable(..))
 import System.IO.Unsafe
 import qualified Data.ByteString.Unsafe as BS
 
@@ -25,8 +27,34 @@ toBoolM a =
     do let !a' = toBool a
        return a'
 
+instance Storable OpaqueElement where
+    sizeOf _ = ffSizeofElement
+    alignment _ = 1
+    peek = peekOpaqueElement
+    poke = pokeOpaqueElement
+
+instance Storable UnsafeOpaqueElement where
+    sizeOf _ = ffSizeofElement
+    alignment _ = 1
+    peek p = fmap UnsafeOpaqueElement (peek (castPtr p))
+    poke p (UnsafeOpaqueElement r) = poke (castPtr p) r
+
+instance Show UnsafeOpaqueElement where
+    show (UnsafeOpaqueElement ptr) = show ptr
+
+peekOpaqueElement :: Ptr OpaqueElement -> IO OpaqueElement
+peekOpaqueElement pfp = newNonCollectedPointer pfp
+
+pokeOpaqueElement :: Ptr OpaqueElement -> OpaqueElement -> IO ()
+pokeOpaqueElement pfp e = ffCopyElement (UnsafeOpaqueElement $ castPtr pfp) e
+
+ffSizeOfOpaqueElement :: Int
+ffSizeOfOpaqueElement = {#sizeof OpaqueElement #}
+
 withOpaqueElement :: OpaqueElement -> (Ptr OpaqueElement -> IO b) -> IO b
 {#pointer OpaqueElement foreign newtype #}
+
+{#pointer UnsafeOpaqueElement newtype #}
 
 foreign import ccall "ntl_interface_easy.h &ff_free_element"
   ffFreeElementPtr :: FunPtr (Ptr OpaqueElement -> IO ())
@@ -86,3 +114,10 @@ ffElementFromBytes str =
     unsafePerformIO $
     BS.unsafeUseAsCStringLen str $ \(strp, len) ->
         {#call unsafe ff_element_from_bytes #} (castPtr strp) (fromIntegral len)
+
+{#fun pure unsafe ff_sizeof_element as ^ { } -> `Int'  #};
+
+{#fun unsafe ff_copy_element as
+    ^ { id `UnsafeOpaqueElement', withOpaqueElement* `OpaqueElement' } -> `()'#}
+
+-- vim: set filetype=haskell :
