@@ -73,7 +73,7 @@ Test-Suite TestDARE
     type:             exitcode-stdio-1.0
     main-is:          TestDARE.hs
     Default-Language: Haskell2010
-    build-depends:    base, HTF >= 0.8, HaskellForMaths >= 0.4,
+    build-depends:    base, HTF >= 0.9, HaskellForMaths >= 0.4,
                       crypto-api >= 0.10,
                       monadcryptorandom >= 0.4, containers >= 0.4, dlist >= 0.5,
                       mtl >= 2.0, random >= 1.0, diplomarbeit
@@ -84,7 +84,7 @@ Test-Suite TestF2Pow256
     type:             exitcode-stdio-1.0
     main-is:          TestF2Pow256.hs
     Default-Language: Haskell2010
-    build-depends:    base, HTF >= 0.8, diplomarbeit
+    build-depends:    base, HTF >= 0.9, diplomarbeit
     hs-source-dirs:   test
     GHC-Prof-Options: -rtsopts -auto-all -caf-all
 
@@ -92,6 +92,6 @@ Test-Suite TestMisc
     type:             exitcode-stdio-1.0
     main-is:          TestMisc.hs
     Default-Language: Haskell2010
-    build-depends:    base, HTF >= 0.8, diplomarbeit, bytestring >= 0.9
+    build-depends:    base, HTF >= 0.9, diplomarbeit, bytestring >= 0.9
     hs-source-dirs:   test
     GHC-Prof-Options: -rtsopts -auto-all -caf-all

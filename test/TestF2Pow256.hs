@@ -9,8 +9,6 @@ import Data.FieldTypes
 import Math.FiniteFields.F2Pow256
 
 -- # HTF
-import System.Environment ( getArgs )
-import System.Exit (exitWith)
 import Test.Framework
 import TestHelpers
 
@@ -117,11 +115,4 @@ test_representation2Pow256Minus1 =
 prop_readParsesShow :: Element -> Bool
 prop_readParsesShow e = e == (f2Pow256FromString (show e))
 
-allTestSuites :: [TestSuite]
-allTestSuites = [ allHTFTests ]
-
-testSuite :: TestSuite
-testSuite = makeAnonTestSuite (map testSuiteAsTest allTestSuites)
-
-main = do args <- getArgs
-          runTestWithArgs args testSuite >>= exitWith
+main = htfMain htf_thisModulesTests

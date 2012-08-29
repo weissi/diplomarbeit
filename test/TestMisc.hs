@@ -4,7 +4,6 @@
 import Data.Word
 import Data.ByteString (pack, useAsCStringLen)
 import Foreign.C.String
-import System.Exit (exitWith)
 
 -- # Site Packages
 
@@ -12,7 +11,6 @@ import System.Exit (exitWith)
 import Data.Helpers
 
 -- # HTF
-import System.Environment ( getArgs )
 import Test.Framework
 import TestHelpers
 
@@ -62,11 +60,4 @@ test_cRepresentation256 =
            s <- peekCAStringLen (sptr, len)
            assertEqual "\NUL\SOH" s
 
-allTestSuites :: [TestSuite]
-allTestSuites = [ allHTFTests ]
-
-testSuite :: TestSuite
-testSuite = makeAnonTestSuite (map testSuiteAsTest allTestSuites)
-
-main = do args <- getArgs
-          runTestWithArgs args testSuite >>= exitWith
+main = htfMain htf_thisModulesTests

@@ -11,7 +11,6 @@ import Crypto.Random (SystemRandom, GenError, CryptoRandomGen, newGenIO)
 import Math.Algebra.Field.Base
 import Math.Common.IntegerAsType (IntegerAsType)
 import Math.FiniteFields.F2Pow256
-import System.Exit (exitWith)
 import System.Random (Random(..), RandomGen(..))
 
 -- # Local
@@ -20,7 +19,6 @@ import Data.ExpressionTypes
 import Data.FieldTypes
 
 -- # HTF
-import System.Environment ( getArgs )
 import Test.Framework
 import TestHelpers
 
@@ -372,11 +370,4 @@ prop_dareEncryptedMulConstants el1 el2 el3 k1b k2b k3b r1 r2 r3 r4 =
         \(kpos, kpos2, kpos3) ->
             Just (el1 * el2 + el3) == dareDecode M.empty (act kpos kpos2 kpos3)
 
-allTestSuites :: [TestSuite]
-allTestSuites = [ allHTFTests ]
-
-testSuite :: TestSuite
-testSuite = makeAnonTestSuite (map testSuiteAsTest allTestSuites)
-
-main = do args <- getArgs
-          runTestWithArgs args testSuite >>= exitWith
+main = htfMain htf_thisModulesTests
