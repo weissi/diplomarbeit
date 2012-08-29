@@ -11,7 +11,10 @@
 
 NTL_CLIENT
 
-#define MEM_DEBUGGING
+/*
+ * No mem debugging right now :-)
+ * #define MEM_DEBUGGING
+ */
 
 static bool initialized = false;
 
