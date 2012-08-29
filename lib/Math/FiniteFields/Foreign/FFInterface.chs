@@ -93,6 +93,10 @@ newString p = do
     ^ { withOpaqueElement* `OpaqueElement', withOpaqueElement* `OpaqueElement' }
       -> `OpaqueElement' newGarbageCollectedPointer* #}
 
+{#fun pure unsafe ff_div_elements as
+    ^ { withOpaqueElement* `OpaqueElement', withOpaqueElement* `OpaqueElement' }
+      -> `OpaqueElement' newGarbageCollectedPointer* #}
+
 {#fun pure unsafe ff_invert_element as
     ^ { withOpaqueElement* `OpaqueElement' }
       -> `OpaqueElement' newGarbageCollectedPointer* #}

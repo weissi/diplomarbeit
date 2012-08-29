@@ -27,6 +27,10 @@ instance Num F2Pow256 where
     abs = error "F2Pow256.abs not implemented"
     fromInteger = fromIntegerF2Pow256
 
+instance Fractional F2Pow256 where
+    (/) = binaryOp FFI.ffDivElements
+    fromRational = error "F2Pow256: fromRational undefined"
+
 instance Storable F2Pow256 where
     sizeOf = sizeOf . unF2Pow256
     alignment = sizeOf . unF2Pow256
