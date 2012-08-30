@@ -27,7 +27,7 @@ Library
     Exposed-modules:  Codec.DARE, Codec.LBS, Data.ExpressionTypes,
                       Data.FieldTypes, Math.FiniteFields.F2Pow256,
                       Math.FiniteFields.Foreign.FFInterface,
-                      Data.Helpers
+                      Data.Helpers, Math.MatrixOnLists
     include-dirs:     lib/Math/FiniteFields/Foreign
     hs-source-dirs:   lib
     GHC-Options:      -Wall
