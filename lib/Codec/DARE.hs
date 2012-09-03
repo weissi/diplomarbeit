@@ -52,13 +52,13 @@ type VariableName = String
 type VarMapping el = Map VariableName el
 
 data PrimaryExpression el = Variable VariableName
-                         | Constant el
+                          | Constant el
 
 data LinearExpr el = LinearExpr { leSlope     :: el
-                               , leVariable  :: VariableName
-                               , leIntercept :: el
-                               }
-                  | ConstLinearExpr el
+                                , leVariable  :: VariableName
+                                , leIntercept :: el
+                                }
+                   | ConstLinearExpr el
 
 data DARE el = DARE [(LinearExpr el, LinearExpr el)]
                     [LinearExpr el]
