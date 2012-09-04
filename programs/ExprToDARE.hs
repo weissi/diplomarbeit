@@ -1,14 +1,22 @@
+{-# OPTIONS_GHC -Wwarn #-}
 module Main where
 
-import Codec.DARE
 import Control.Monad.CryptoRandom (runCRand)
 import Crypto.Random (SystemRandom, newGenIO)
-import Data.ExpressionTypes (Expr(..))
-import Data.FieldTypes (FieldElement(..))
---import Math.Algebra.Field.Base (F97)
-import Math.FiniteFields.F2Pow256
+import Math.Algebra.Field.Base (F97)
 import qualified Data.DList as DL
 import qualified Data.Map as M
+
+import Codec.DARE
+import Data.DAREEvaluation
+import Data.ExpressionTypes (Expr(..))
+import Data.FieldTypes (FieldElement(..))
+
+--import Math.FiniteFields.F2Pow256
+import Math.Algebra.Field.Base (Fp)
+import Math.Common.IntegerAsType (IntegerAsType)
+type Element = F97
+
 
 main :: IO ()
 main =
@@ -18,10 +26,20 @@ main =
        g <- (newGenIO :: IO SystemRandom)
        let (_, dares) = exprToRP g testExpr1
        print $ DL.toList dares
-       print $ runRP _TestVarMap_ dares
+       putStrLn $ "DIRECT EVALUATION: " ++ (show $ runRP _TestVarMap_ dares)
        putStrLn "ExprToDARE: done :-)"
+       let erp = prepareRPEvaluation dares
+       print erp
+       case runERP erp _TestVarMap_ of
+         Left err -> putStrLn $ "ERROR: " ++ err
+         Right val -> putStrLn $ "OAFE EVALUATION SUCCESS: " ++ show val
+       return ()
 
-type Element = F2Pow256
+instance IntegerAsType n => FieldElement (Fp n) where
+    invert n =
+        case n of
+          0 -> error "0 is not invertible"
+          n' -> 1 / n'
 
 testExpr1 :: Expr Element
 testExpr1 = 4 * _X_ + _Y_ + _X_ * _X_ * _X_

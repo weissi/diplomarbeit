@@ -19,15 +19,19 @@ Library
                       HaskellForMaths >= 0.4,
                       monadcryptorandom >= 0.4,
                       crypto-api >= 0.10,
-                      containers >= 0.4, mtl >= 2.0,
+                      containers >= 0.4,
+                      mtl >= 2.0,
                       dlist >= 0.5,
-                      text >= 0.11, bytestring >= 0.9,
-                      blaze-builder >= 0.3
+                      text >= 0.11,
+                      bytestring >= 0.9,
+                      blaze-builder >= 0.3,
+                      failure >= 0.2
     Default-Language: Haskell2010
     Exposed-modules:  Codec.DARE, Codec.LBS, Data.ExpressionTypes,
                       Data.FieldTypes, Math.FiniteFields.F2Pow256,
                       Math.FiniteFields.Foreign.FFInterface,
-                      Data.Helpers, Math.MatrixOnLists
+                      Data.Helpers, Math.MatrixOnLists, Data.DARETypes,
+                      Data.DAREEvaluation
     include-dirs:     lib/Math/FiniteFields/Foreign
     hs-source-dirs:   lib
     GHC-Options:      -Wall

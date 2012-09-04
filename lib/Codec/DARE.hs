@@ -22,9 +22,7 @@ module Codec.DARE ( LinearExpr(..)
                   ) where
 
 -- # STANDARD LIBRARY
-import Data.DList (DList)
 import Data.List (foldl')
-import Data.Map (Map)
 import Control.Monad (liftM2)
 import Control.Monad.State.Strict (State, get, put, execState)
 import Control.Monad.Writer.Lazy (Writer, tell, runWriter)
@@ -35,42 +33,17 @@ import qualified Data.Map as M
 -- # SITE PACKAGES
 import Control.Monad.CryptoRandom (CRandT, getCRandom, runCRandT)
 import Crypto.Random (GenError, CryptoRandomGen)
---import Math.Algebra.Field.Base (Fp)
---import Math.Common.IntegerAsType (IntegerAsType)
 
 -- # LOCAL
+import Data.DARETypes ( VarMapping, VariableName, DARE(..)
+                      , PrimaryExpression(..), RP, RPStmt
+                      , LinearExpr(..)
+                      , mulElementToLinearExpression
+                      )
 import Data.ExpressionTypes (Expr(..), Operator(..))
 import Data.FieldTypes (FieldElement(..))
 
---instance IntegerAsType n => FieldElement (Fp n) where
---    invert n =
---        case n of
---          0 -> error "0 is not invertible"
---          n' -> 1 / n'
-
-type VariableName = String
-type VarMapping el = Map VariableName el
-
-data PrimaryExpression el = Variable VariableName
-                          | Constant el
-
-data LinearExpr el = LinearExpr { leSlope     :: el
-                                , leVariable  :: VariableName
-                                , leIntercept :: el
-                                }
-                   | ConstLinearExpr el
-
-data DARE el = DARE [(LinearExpr el, LinearExpr el)]
-                    [LinearExpr el]
-                    deriving Show
-
 type PrimaryExpressionEncryptionKey el = (el, el)
-
-instance (Show el, FieldElement el) => Show (LinearExpr el) where
-    show le =
-        case le of
-          LinearExpr s v i -> show s ++ " * " ++ v ++ " + " ++ show i
-          ConstLinearExpr cle -> show cle
 
 getRandomElement :: forall m g el. (Monad m, CryptoRandomGen g, FieldElement el)
                  => CRandT g GenError m el
@@ -204,15 +177,6 @@ addToLinearExpression le el =
       ConstLinearExpr c -> ConstLinearExpr (c + el)
       LinearExpr s v i -> LinearExpr s v (i + el)
 
-mulElementToLinearExpression :: FieldElement el
-                             => LinearExpr el
-                             -> el
-                             -> LinearExpr el
-mulElementToLinearExpression le el =
-    case le of
-      ConstLinearExpr c -> ConstLinearExpr (c * el)
-      LinearExpr s v i -> LinearExpr (s * el) v (i * el)
-
 addToDARE :: FieldElement el
           => DARE el
           -> el
@@ -280,8 +244,6 @@ dareDecode varMap (DARE muls adds) =
                                         (calcLinearExpr varMap ler)
 
 type RPGenMonad g el = CRandT g GenError (Writer (RP el))
-type RPStmt el = (VariableName, DARE el)
-type RP el = DList (RPStmt el)
 
 _CONST_0_ :: FieldElement e => PrimaryExpression e
 _CONST_0_ = Constant 0
