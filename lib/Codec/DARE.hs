@@ -11,7 +11,6 @@ module Codec.DARE ( LinearExpr(..)
                   , dareEncodePrimaryExpr
                   , dareDecode
                   , exprToRP
-                  , runRP
                   -- Just for the tests
                   , dareEncodeMul
                   , dareEncodeAdd
@@ -24,7 +23,6 @@ module Codec.DARE ( LinearExpr(..)
 -- # STANDARD LIBRARY
 import Data.List (foldl')
 import Control.Monad (liftM2)
-import Control.Monad.State.Strict (State, get, put, execState)
 import Control.Monad.Writer.Lazy (Writer, tell, runWriter)
 import Control.Monad.Trans (lift)
 import qualified Data.DList as DL
@@ -36,9 +34,10 @@ import Crypto.Random (GenError, CryptoRandomGen)
 
 -- # LOCAL
 import Data.DARETypes ( VarMapping, VariableName, DARE(..)
-                      , PrimaryExpression(..), RP, RPStmt
+                      , PrimaryExpression(..)
                       , LinearExpr(..)
                       , mulElementToLinearExpression
+                      , RP
                       )
 import Data.ExpressionTypes (Expr(..), Operator(..))
 import Data.FieldTypes (FieldElement(..))
@@ -315,26 +314,3 @@ exprToRP g expr =
              Left err -> Left err
              Right (_, gen) -> Right gen
        in (errOrGen, dares `DL.append` lastDare)
-
-type RunRPStateMonad el = State (VarMapping el)
-
-execRPStmt :: FieldElement el => RPStmt el -> (RunRPStateMonad el) (Maybe el)
-execRPStmt (outVar, dare) =
-    do varMap <- get
-       let !valM = dareDecode varMap dare
-           varMap' =
-              case valM of
-               Just val -> M.insert outVar val varMap
-               Nothing -> varMap
-       put varMap'
-       return valM
-
-runRP :: forall el. FieldElement el
-      => VarMapping el
-      -> RP el
-      -> (Maybe el, VarMapping el)
-runRP initialVarMap rp =
-  let outVarMap :: VarMapping el
-      outVarMap = execState (mapM_ execRPStmt (DL.toList rp))
-                            initialVarMap
-    in (M.lookup "z" outVarMap, outVarMap)

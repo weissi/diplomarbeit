@@ -1,12 +1,13 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE FlexibleContexts #-}
-module Data.DAREEvaluation ( EvaluatableRP(..)
+module Data.DAREEvaluation ( ERP
                            , EDARE (..)
                            , OAFEReference(..)
                            , prepareRPEvaluation
-                           , evaluateRP
+                           , evaluateERP
                            , runERP
+                           , runRP
                            ) where
 
 -- # STANDARD LIBRARY
@@ -14,7 +15,9 @@ import Data.Map (Map)
 import Data.List (foldl')
 import Control.Monad (foldM)
 import Control.Monad.Trans (lift)
-import Control.Monad.State (StateT, get, put, execStateT)
+import Control.Monad.State.Strict ( State, StateT, get, put
+                                  , execStateT, execState
+                                  )
 import qualified Data.DList as DL
 import qualified Data.Map as M
 
@@ -26,6 +29,7 @@ import Data.DARETypes ( DARE(..), RP, RPStmt
                       , LinearExpr(..), mulElementToLinearExpression
                       , VariableName)
 import Data.FieldTypes (FieldElement(..))
+import Codec.DARE (dareDecode)
 
 import Debug.Trace
 
@@ -40,7 +44,7 @@ data EDARE val el =
           , edConst      :: el
           } deriving Show
 
-data EvaluatableRP el =
+data ERP el =
     EvaluatableRP { erpEDares     :: [(VariableName, EDARE OAFEReference el)]
                   , erpOAFEConfig :: OAFEConfiguration el
                   } deriving Show
@@ -72,7 +76,7 @@ edAddMulTerm edare oarefs =
 
 prepareRPEvaluation :: forall el. FieldElement el
                     => RP el
-                    -> EvaluatableRP el
+                    -> ERP el
 prepareRPEvaluation rp =
     let rpList :: [RPStmt el]
         rpList = DL.toList rp
@@ -200,7 +204,7 @@ execERPStmt oac (outVar, edare) =
        return val
 
 runERP :: forall el. (FieldElement el, Show el)
-       => EvaluatableRP el
+       => ERP el
        -> VarMapping el
        -> Either String el
 runERP (EvaluatableRP edares oac) vars =
@@ -259,11 +263,34 @@ evaluateDARE edare vals =
           rAdds = foldl' (+) 0 adds
       return $ rMuls + rAdds + c
 
-evaluateRP :: FieldElement el
-           => EvaluatableRP el
-           -> OAFEEvaluation el
-           -> Either String el
-evaluateRP _ vals =
+evaluateERP :: FieldElement el
+            => ERP el
+            -> OAFEEvaluation el
+            -> Either String el
+evaluateERP _ vals =
    case evaluateDARE undefined vals of
      Left err -> Left $ show (err :: DAREEvaluationFailure)
      Right e -> Right $ e
+
+type RunRPStateMonad el = State (VarMapping el)
+
+execRPStmt :: FieldElement el => RPStmt el -> (RunRPStateMonad el) (Maybe el)
+execRPStmt (outVar, dare) =
+    do varMap <- get
+       let !valM = dareDecode varMap dare
+           varMap' =
+              case valM of
+               Just val -> M.insert outVar val varMap
+               Nothing -> varMap
+       put varMap'
+       return valM
+
+runRP :: forall el. FieldElement el
+      => VarMapping el
+      -> RP el
+      -> (Maybe el, VarMapping el)
+runRP initialVarMap rp =
+  let outVarMap :: VarMapping el
+      outVarMap = execState (mapM_ execRPStmt (DL.toList rp))
+                            initialVarMap
+    in (M.lookup "z" outVarMap, outVarMap)

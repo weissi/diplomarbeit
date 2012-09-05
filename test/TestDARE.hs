@@ -15,6 +15,7 @@ import System.Random (Random(..), RandomGen(..))
 
 -- # Local
 import Codec.DARE
+import Data.DAREEvaluation
 import Data.ExpressionTypes
 import Data.FieldTypes
 
