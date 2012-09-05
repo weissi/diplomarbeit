@@ -27,7 +27,9 @@ import Control.Failure (Failure, failure)
 -- # LOCAL
 import Data.DARETypes ( DARE(..), RP, RPStmt
                       , LinearExpr(..), mulElementToLinearExpression
-                      , VariableName)
+                      , VariableName
+                      , VarMapping
+                      )
 import Data.FieldTypes (FieldElement(..))
 import Codec.DARE (dareDecode)
 
@@ -190,7 +192,6 @@ initiallyEvaluateOAFE oac vars =
     foldM (evaluateOAFE oac) M.empty $ M.toList vars
 
 type RunERPStateMonad m el = StateT (OAFEEvaluation el) m
-type VarMapping el = Map String el
 
 execERPStmt :: (Failure DAREEvaluationFailure f, FieldElement el)
             => OAFEConfiguration el

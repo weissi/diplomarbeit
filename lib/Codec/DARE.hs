@@ -1,10 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE BangPatterns #-}
-module Codec.DARE ( LinearExpr(..)
-                  , DARE
-                  , PrimaryExpression (..)
-                  , VarMapping
-                  , dareEncodeMulRnd
+module Codec.DARE ( dareEncodeMulRnd
                   , dareEncodeAddRnd
                   , dareEncodeDareAddRnd
                   , dareEncodeEncMulRnd

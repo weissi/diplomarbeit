@@ -9,6 +9,7 @@ import qualified Data.Map as M
 
 import Codec.DARE
 import Data.DAREEvaluation
+import Data.DARETypes (PrimaryExpression(..), VarMapping)
 import Data.ExpressionTypes (Expr(..))
 import Data.FieldTypes (FieldElement(..))
 
