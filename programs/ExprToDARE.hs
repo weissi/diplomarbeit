@@ -13,10 +13,18 @@ import Data.DARETypes (PrimaryExpression(..), VarMapping)
 import Data.ExpressionTypes (Expr(..))
 import Data.FieldTypes (FieldElement(..))
 
---import Math.FiniteFields.F2Pow256
-import Math.Algebra.Field.Base (Fp)
-import Math.Common.IntegerAsType (IntegerAsType)
-type Element = F97
+import Math.FiniteFields.F2Pow256
+type Element = F2Pow256
+
+--import Math.Algebra.Field.Base (Fp)
+--import Math.Common.IntegerAsType (IntegerAsType)
+--type Element = F97
+--instance IntegerAsType n => FieldElement (Fp n) where
+--    invert n =
+--        case n of
+--          0 -> error "0 is not invertible"
+--          n' -> 1 / n'
+
 
 
 main :: IO ()
@@ -33,14 +41,9 @@ main =
        print erp
        case runERP erp _TestVarMap_ of
          Left err -> putStrLn $ "ERROR: " ++ err
-         Right val -> putStrLn $ "OAFE EVALUATION SUCCESS: " ++ show val
+         Right val -> putStrLn $ "OAFE EVALUATION: SUCCESS: " ++ show val
+       print $ (map fromInteger [1..10] :: [Element])
        return ()
-
-instance IntegerAsType n => FieldElement (Fp n) where
-    invert n =
-        case n of
-          0 -> error "0 is not invertible"
-          n' -> 1 / n'
 
 testExpr1 :: Expr Element
 testExpr1 = 4 * _X_ + _Y_ + _X_ * _X_ * _X_
