@@ -1,48 +1,55 @@
 module Data.DARETypes ( VariableName
                       , VarMapping
                       , PrimaryExpression(..)
-                      , LinearExpr(..)
                       , DARE(..)
                       , RP, RPStmt
-                      , mulElementToLinearExpression
+                      , Key, KeyPair, BiLinearExpr, BiKeyPair, BiEncPrimExpr(..)
+                      , leftVar, rightVar
                       ) where
 
 import Data.DList (DList)
-import Data.Map (Map)
+import qualified Data.DList as DL
 
-import Data.FieldTypes (FieldElement(..))
+import Data.FieldTypes (Field(..))
+import Data.LinearExpression (LinearExpr(..), VarMapping)
 
 type VariableName = String
-type VarMapping el = Map VariableName el
 
 data PrimaryExpression el = Variable VariableName
                           | Constant el
 
-data LinearExpr el = LinearExpr { leSlope     :: el
-                                , leVariable  :: VariableName
-                                , leIntercept :: el
-                                }
-                   | ConstLinearExpr el
+type Key el = el
+type KeyPair el = (Key el, Key el)
+type BiLinearExpr el = (LinearExpr el, LinearExpr el)
+data BiEncPrimExpr el = BiConst el
+                      | BiVar (KeyPair el) VariableName
+                      deriving Show
 
-data DARE el = DARE [(LinearExpr el, LinearExpr el)]
-                    [LinearExpr el]
-                    deriving Show
+type BiKeyPair el = (KeyPair el, KeyPair el)
+
+data DARE el = DARE (BiKeyPair el)
+                    (DList (BiLinearExpr el, BiLinearExpr el))
+                    (DList (BiLinearExpr el))
 
 type RPStmt el = (VariableName, DARE el)
 type RP el = DList (RPStmt el)
 
-mulElementToLinearExpression :: FieldElement el
-                             => LinearExpr el
-                             -> el
-                             -> LinearExpr el
-mulElementToLinearExpression le el =
-    case le of
-      ConstLinearExpr c -> ConstLinearExpr (c * el)
-      LinearExpr s v i -> LinearExpr (s * el) v (i * el)
+instance (Field el, Show el) => Show (DARE el) where
+    show = prettyPrintDARE
 
-instance (Show el, FieldElement el) => Show (LinearExpr el) where
-    show le =
-        case le of
-          LinearExpr s v i -> show s ++ " * " ++ v ++ " + " ++ show i
-          ConstLinearExpr cle -> show cle
+leftVar :: VariableName -> VariableName
+leftVar v = "enc_" ++ v ++ "~_1"
 
+rightVar :: VariableName -> VariableName
+rightVar v = "enc_" ++ v ++ "~_2"
+
+prettyPrintDARE :: (Field el, Show el) => DARE el -> String
+prettyPrintDARE (DARE keys muls adds) =
+    let showSubList :: Show a => String -> [a] -> String
+        showSubList b as =
+            case as of
+              [] -> ""
+              (a:as') -> "\t" ++ b ++ show a ++ "\n" ++ showSubList b as'
+     in "DARE " ++ show keys ++ "\n" ++
+            showSubList "M: " (DL.toList muls) ++
+            showSubList "A: " (DL.toList adds)

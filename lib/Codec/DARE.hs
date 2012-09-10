@@ -3,7 +3,6 @@
 module Codec.DARE ( dareEncodeMulRnd
                   , dareEncodeAddRnd
                   , dareEncodeDareAddRnd
-                  , dareEncodeEncMulRnd
                   , dareEncodePrimaryExpr
                   , dareDecode
                   , exprToRP
@@ -11,13 +10,11 @@ module Codec.DARE ( dareEncodeMulRnd
                   , dareEncodeMul
                   , dareEncodeAdd
                   , dareEncodeDareAdd
-                  , dareEncodeEncMul
-                  , addToDARE
-                  , mulElementToDARE
                   ) where
 
 -- # STANDARD LIBRARY
-import Data.List (foldl')
+import Data.List (foldl', nub)
+import Data.Map (Map)
 import Control.Monad (liftM2)
 import Control.Monad.Writer.Lazy (Writer, tell, runWriter)
 import Control.Monad.Trans (lift)
@@ -29,25 +26,24 @@ import Control.Monad.CryptoRandom (CRandT, getCRandom, runCRandT)
 import Crypto.Random (GenError, CryptoRandomGen)
 
 -- # LOCAL
-import Data.DARETypes ( VarMapping, VariableName, DARE(..)
+import Data.DARETypes ( VariableName, VarMapping, DARE(..), RP
                       , PrimaryExpression(..)
-                      , LinearExpr(..)
-                      , mulElementToLinearExpression
-                      , RP
+                      , Key, KeyPair, BiKeyPair, BiEncPrimExpr(..)
+                      , leftVar, rightVar
                       )
 import Data.ExpressionTypes (Expr(..), Operator(..))
-import Data.FieldTypes (FieldElement(..))
+import Data.FieldTypes (Field(..))
+import Data.LinearExpression (LinearExpr(..))
+import qualified Data.LinearExpression as LE
 
-type PrimaryExpressionEncryptionKey el = (el, el)
-
-getRandomElement :: forall m g el. (Monad m, CryptoRandomGen g, FieldElement el)
+getRandomElement :: forall m g el. (Monad m, CryptoRandomGen g, Field el)
                  => CRandT g GenError m el
 getRandomElement =
     do rint <- getCRandom :: CRandT g GenError m Int
        return $ fromIntegral rint
 
 getRandomInvertibleElement :: forall m g el.
-                              (Monad m, CryptoRandomGen g, FieldElement el)
+                              (Monad m, CryptoRandomGen g, Field el)
                            => CRandT g GenError m el
 getRandomInvertibleElement =
     loop
@@ -58,255 +54,356 @@ getRandomInvertibleElement =
                    then return rel
                    else loop
 
-genLinearExpr :: FieldElement el
-              => el
-              -> PrimaryExpression el
-              -> el
-              -> LinearExpr el
-genLinearExpr a b c =
-    case b of
-      Variable b' -> LinearExpr { leSlope = a
-                                , leVariable = b'
-                                , leIntercept = c
-                                }
-      Constant b' -> ConstLinearExpr (a * b' + c)
-
-calcLinearExpr :: FieldElement el => VarMapping el -> LinearExpr el -> Maybe el
-calcLinearExpr varMap le =
-    case le of
-      ConstLinearExpr cle -> Just cle
-      LinearExpr s v i ->
-          do vVal <- M.lookup v varMap
-             return $ s * vVal + i
-
 -- |DARE for a multiplication getting randoms from generator
-dareEncodeMulRnd :: (Monad m, CryptoRandomGen g, FieldElement el)
-                 => PrimaryExpression el
-                 -> PrimaryExpression el
-                 -> PrimaryExpression el
+dareEncodeMulRnd :: (Monad m, CryptoRandomGen g, Field el)
+                 => KeyPair el
+                 -> BiEncPrimExpr el
+                 -> BiEncPrimExpr el
                  -> CRandT g GenError m (DARE el)
-dareEncodeMulRnd x1 x2 x3 =
+dareEncodeMulRnd skp x1 x2 =
     do r1 <- getRandomElement
        r2 <- getRandomElement
        r3 <- getRandomElement
        r4 <- getRandomElement
-       return $ dareEncodeMul x1 x2 x3 r1 r2 r3 r4
+       r5 <- getRandomElement
+       r6 <- getRandomElement
+       r7 <- getRandomElement
+       r8 <- getRandomElement
+       return $ dareEncodeMul skp x1 x2 r1 r2 r3 r4 r5 r6 r7 r8
 
--- |DARE for an encrypted multiplication getting randoms from generator
-dareEncodeEncMulRnd :: (Monad m, CryptoRandomGen g, FieldElement el)
-                    => (PrimaryExpression el, PrimaryExpressionEncryptionKey el)
-                    -> (PrimaryExpression el, PrimaryExpressionEncryptionKey el)
-                    -> (PrimaryExpression el, PrimaryExpressionEncryptionKey el)
-                    -> CRandT g GenError m (DARE el)
-dareEncodeEncMulRnd x1 x2 x3 =
-    do r1 <- getRandomElement
-       r2 <- getRandomElement
-       r3 <- getRandomElement
-       r4 <- getRandomElement
-       return $ dareEncodeEncMul x1 x2 x3 r1 r2 r3 r4
+-- |DARE for a multiplication f(x1, x2) = x1 * x2
+-- modeled after How to Garble Arithmetic Circuits, p. 13
+dareEncodeMul :: forall el. Field el
+              => KeyPair el
+              -> BiEncPrimExpr el
+              -> BiEncPrimExpr el
+              -> el
+              -> el
+              -> el
+              -> el
+              -> el
+              -> el
+              -> el
+              -> el
+              -> DARE el
+dareEncodeMul skp@(skL, skR) x1 x2 r1 r2 r3 r4 r5 r6 r7 r8 =
+    let le1L = decodeAndApplyL skp skL      x1 (-r1)
+        le2L = decodeAndApplyR skp (skL*r2) x1 r3
+        le3L = decodeAndApplyL skp 1        x2 (-r2)
+        le4L = decodeAndApplyR skp r1       x2 r4
+        le1R = decodeAndApplyR skp skR      x1 (-r5)
+        le2R = decodeAndApplyL skp (skR*r6) x1 r7
+        le3R = decodeAndApplyR skp 1        x2 (-r6)
+        le4R = decodeAndApplyL skp r5       x2 r8
+        bkp :: BiKeyPair el
+        bkp = (skp, (r1*r2+r3+r4, r5*r6+r7+r8))
+        in DARE bkp                               -- < the BiKeyPair
+                (DL.fromList [ ((le1L, le1R)      -- / the multiplcative
+                             , (le3L, le3R))      -- \   terms
+                             ]
+                )
+                (DL.fromList [ (le2L, le2R)       -- / the additive
+                             , (le4L, le4R)       -- \    terms
+                             ]
+                )
 
 -- |DARE for an addition getting randoms from generator
-dareEncodeAddRnd :: (Monad m, CryptoRandomGen g, FieldElement el)
-                 => PrimaryExpression el
-                 -> PrimaryExpression el
+dareEncodeAddRnd :: (Monad m, CryptoRandomGen g, Field el)
+                 => KeyPair el
+                 -> BiEncPrimExpr el
+                 -> BiEncPrimExpr el
                  -> CRandT g GenError m (DARE el)
-dareEncodeAddRnd x1 x2 =
-    do r <- getRandomElement
-       return $ dareEncodeAdd x1 x2 r
+dareEncodeAddRnd skp x1 x2 =
+    do r1 <- getRandomElement
+       r2 <- getRandomElement
+       r3 <- getRandomElement
+       r4 <- getRandomElement
+       return $ dareEncodeAdd skp x1 x2 r1 r2 r3 r4
 
 -- |DARE for an addition f(x1, x2) = x1 + x2
 -- see How to Garble Arithmetic Circuits, p. 13
-dareEncodeAdd :: FieldElement el
-              => PrimaryExpression el
-              -> PrimaryExpression el
-              -> el
-              -> DARE el
-dareEncodeAdd x1 x2 r =
-    let dareL = dareEncodePrimaryExpr x1
-        dareR = dareEncodePrimaryExpr x2
-        in dareEncodeDareAdd dareL dareR r
-
--- |DARE for a multiplication (+ addition) f(x1, x2, x3) = x1 * x2 + x3
--- see How to Garble Arithmetic Circuits, p. 13
-dareEncodeMul :: FieldElement el
-              => PrimaryExpression el
-              -> PrimaryExpression el
-              -> PrimaryExpression el
+dareEncodeAdd :: forall el. (Field el)
+              => KeyPair el
+              -> BiEncPrimExpr el
+              -> BiEncPrimExpr el
               -> el
               -> el
               -> el
               -> el
               -> DARE el
-dareEncodeMul x1 x2 x3 r1 r2 r3 r4 =
-    let le1 = genLinearExpr 1 x1 (-r1)
-        le2 = genLinearExpr r2 x1 (-r1*r2 + r3)
-        le3 = genLinearExpr 1 x2 (-r2)
-        le4 = genLinearExpr r1 x2 r4
-        le5 = genLinearExpr 1 x3 (-r3-r4)
-        in DARE [(le1, le3)] [le2, le4, le5]
+dareEncodeAdd skp@(skL, skR) x1 x2 r1 r2 r3 r4 =
+    let bkp :: BiKeyPair el
+        bkp = (skp, (r1 + r3, r2 + r4))
+        le1L = decodeAndApplyL skp skL x1 r1
+        le1R = decodeAndApplyR skp skR x1 r2
+        le2L = decodeAndApplyL skp skL x2 r3
+        le2R = decodeAndApplyR skp skR x2 r4
+     in DARE bkp
+             DL.empty
+             (DL.fromList [ (le1L, le1R)
+                          , (le2L, le2R)
+                          ]
+             )
 
--- |DARE for an encrypted multiplication
-dareEncodeEncMul :: FieldElement el
-                 => (PrimaryExpression el, PrimaryExpressionEncryptionKey el)
-                 -> (PrimaryExpression el, PrimaryExpressionEncryptionKey el)
-                 -> (PrimaryExpression el, PrimaryExpressionEncryptionKey el)
-                 -> el
-                 -> el
-                 -> el
-                 -> el
-                 -> DARE el
-dareEncodeEncMul (x1, (k1a,k1b)) (x2, (k2a,k2b)) (x3, (k3a,k3b)) r1 r2 r3 r4 =
-    let le1 = genLinearExpr (invert k1a) x1 (-k1b - r1) -- r1
-        le2 = genLinearExpr (r2 * invert k1a) x1 (-r2*k1b - r1*r2 + r3) -- r1
-        le3 = genLinearExpr (invert k2a) x2 (-k2b - r2) -- r2
-        le4 = genLinearExpr (r1 * invert k2a) x2 (-r1*k2b + r4) -- r2
-        le5 = genLinearExpr (invert k3a) x3 (-k3b -r3-r4) -- r3
-        in DARE [(le1, le3)] [le2, le4, le5]
+decodeAndApply :: Field el
+               => (VariableName -> VariableName)
+               -> (KeyPair el -> Key el)
+               -> KeyPair el
+               -> el
+               -> BiEncPrimExpr el
+               -> el
+               -> LinearExpr el
+decodeAndApply prjVar prjKey skp slope x intercept =
+    LE.apply slope (decodeBiEncPrimExpr skp prjVar prjKey x) intercept
 
-addToLinearExpression :: FieldElement el
-                      => LinearExpr el
-                      -> el
-                      -> LinearExpr el
-addToLinearExpression le el =
-    case le of
-      ConstLinearExpr c -> ConstLinearExpr (c + el)
-      LinearExpr s v i -> LinearExpr s v (i + el)
+decodeAndApplyL :: Field el
+                => KeyPair el
+                -> el
+                -> BiEncPrimExpr el
+                -> el
+                -> LinearExpr el
+decodeAndApplyL = decodeAndApply leftVar fst
 
-addToDARE :: FieldElement el
-          => DARE el
-          -> el
-          -> DARE el
-addToDARE (DARE muls adds) el =
-    case adds of
-      [] -> DARE muls [ConstLinearExpr el]
-      (x:xs) -> DARE muls (addToLinearExpression x el : xs)
+decodeAndApplyR :: Field el
+                => KeyPair el
+                -> el
+                -> BiEncPrimExpr el
+                -> el
+                -> LinearExpr el
+decodeAndApplyR = decodeAndApply rightVar snd
 
-mulElementToDARE :: forall el. FieldElement el
-                 => DARE el
-                 -> el
-                 -> DARE el
-mulElementToDARE (DARE muls adds) el =
-    let mulElementToLinearExpressions :: FieldElement el
-                                      => (LinearExpr el, LinearExpr el)
-                                      -> el
-                                      -> (LinearExpr el, LinearExpr el)
-        mulElementToLinearExpressions (le1, le2) e =
-            ( mulElementToLinearExpression le1 e
-            , le2
-            )
-        muls' :: [(LinearExpr el, LinearExpr el)]
-        muls' = map (`mulElementToLinearExpressions` el) muls
-        adds' :: [LinearExpr el]
-        adds' = map (`mulElementToLinearExpression` el) adds
-     in DARE muls' adds'
+decodeBiEncPrimExpr :: forall el. Field el
+                    => KeyPair el
+                    -> (VariableName -> VariableName)
+                    -> (KeyPair el -> Key el)
+                    -> BiEncPrimExpr el
+                    -> LinearExpr el
+decodeBiEncPrimExpr skp prjVar prjKey bepc =
+    case bepc of
+      BiConst el -> ConstLinearExpr el
+      BiVar dkp var ->
+          let skInv :: Key el  -- the inverted static key
+              skInv = (invert . prjKey) skp
+           in LinearExpr skInv (prjVar var) (-prjKey dkp * skInv)
 
 -- |DARE for an addition of two DAREs
-dareEncodeDareAdd :: FieldElement el
-                  => DARE el
+dareEncodeDareAdd :: Field el
+                  => KeyPair el
                   -> DARE el
-                  -> el
                   -> DARE el
-dareEncodeDareAdd dl dr r =
-    DARE (dlMuls' ++ drMuls') (dlAdds' ++ drAdds')
-    where DARE dlMuls' dlAdds' = addToDARE dl (-r)
-          DARE drMuls' drAdds' = addToDARE dr r
+                  -> DARE el
+dareEncodeDareAdd skp
+                  (DARE (dlSkp, dlDkp) dlMuls dlAdds)
+                  (DARE (drSkp, drDkp) drMuls drAdds) =
+    let (dlDkpL, dlDkpR) = dlDkp
+        (drDkpL, drDkpR) = drDkp
+        dkp = (dlDkpL + drDkpL, dlDkpR + drDkpR)
+        _ = if (skp /= dlSkp) || (skp /= drSkp) then error "skps differ" else ()
+     in DARE (skp, dkp) (dlMuls `DL.append` drMuls) (dlAdds `DL.append` drAdds)
 
 -- |DARE for a DARE addition getting randoms from generator
-dareEncodeDareAddRnd :: (Monad m, CryptoRandomGen g, FieldElement el)
-                     => DARE el
+dareEncodeDareAddRnd :: (Monad m, CryptoRandomGen g, Field el)
+                     => KeyPair el
+                     -> DARE el
                      -> DARE el
                      -> CRandT g GenError m (DARE el)
-dareEncodeDareAddRnd dl dr =
-    do r <- getRandomElement
-       return (dareEncodeDareAdd dl dr r)
+dareEncodeDareAddRnd skp dl dr =
+    do return (dareEncodeDareAdd skp dl dr)
 
--- |DARE encode constatnt
-dareEncodePrimaryExpr :: FieldElement el => PrimaryExpression el -> DARE el
-dareEncodePrimaryExpr c = DARE [] [genLinearExpr 1 c 0]
+dareEncodePrimaryExprRnd :: (Monad m, CryptoRandomGen g, Field el)
+                         => KeyPair el
+                         -> BiEncPrimExpr el
+                         -> CRandT g GenError m (DARE el)
+dareEncodePrimaryExprRnd skp e =
+    do r1 <- getRandomElement
+       r2 <- getRandomElement
+       return $ dareEncodePrimaryExpr skp e r1 r2
+
+-- |DARE encode primary expressions
+dareEncodePrimaryExpr :: Field el
+                      => KeyPair el
+                      -> BiEncPrimExpr el
+                      -> el
+                      -> el
+                      -> DARE el
+dareEncodePrimaryExpr skp@(skpL, skpR) e r1 r2 =
+    case e of
+      BiConst c ->
+          DARE (skp, (r1, r2))
+               DL.empty
+               (DL.singleton ( ConstLinearExpr (skpL * c + r1)
+                             , ConstLinearExpr (skpR * c + r2)
+                             )
+               )
+      BiVar dkp v ->
+          DARE (skp, dkp)
+               DL.empty
+               (DL.singleton ( LinearExpr 1 (leftVar v) 0
+                             , LinearExpr 1 (rightVar v) 0
+                             )
+               )
 
 -- |DARE decoder
-dareDecode :: forall el. FieldElement el => VarMapping el -> DARE el -> Maybe el
-dareDecode varMap (DARE muls adds) =
-    case sequence (addValsM ++ mulValsM) of
-      Nothing -> Nothing
-      Just vals -> Just $ foldl' (+) 0 vals
-    where addValsM :: [Maybe el]
-          addValsM = map (calcLinearExpr varMap) adds
-          mulValsM :: [Maybe el]
-          mulValsM = map doMul muls
-          doMul :: (LinearExpr el, LinearExpr el) -> Maybe el
-          doMul (lel, ler) = liftM2 (*) (calcLinearExpr varMap lel)
-                                        (calcLinearExpr varMap ler)
+dareDecode :: forall el. Field el
+           => VarMapping el
+           -> DARE el
+           -> Maybe (el, el)
+dareDecode varMap (DARE _ muls adds) =
+    do l <- outL
+       r <- outR
+       return (l, r)
+    where addValsM :: ((LinearExpr el, LinearExpr el) -> LinearExpr el)
+                   -> [Maybe el]
+          addValsM prj = map (LE.evaluate varMap) (map prj $ DL.toList adds)
+          mulValsM :: ((LinearExpr el, LinearExpr el) -> LinearExpr el)
+                   -> [Maybe el]
+          mulValsM prj = map (doMul prj) $ DL.toList muls
+          doMul prj (lel, ler) = liftM2 (*) (LE.evaluate varMap (prj lel))
+                                        (LE.evaluate varMap (prj ler))
+          outL = case sequence (addValsM fst ++ mulValsM fst) of
+                   Nothing -> Nothing
+                   Just vals -> Just $ (foldl' (+) 0 vals)
+          outR = case sequence (addValsM snd ++ mulValsM snd) of
+                   Nothing -> Nothing
+                   Just vals -> Just $ (foldl' (+) 0 vals)
 
 type RPGenMonad g el = CRandT g GenError (Writer (RP el))
 
-_CONST_0_ :: FieldElement e => PrimaryExpression e
+_CONST_0_ :: Field e => PrimaryExpression e
 _CONST_0_ = Constant 0
 
-_NO_DARE_ENCRYPTION_ :: FieldElement el => (el, el)
-_NO_DARE_ENCRYPTION_ = (1, 0)
-
-priExFromExpr :: FieldElement el => Expr el -> Maybe (PrimaryExpression el)
-priExFromExpr expr =
+priExFromExpr :: Field el
+              => Map VariableName (KeyPair el)
+              -> Expr el
+              -> Maybe (BiEncPrimExpr el)
+priExFromExpr dkps expr =
     case expr of
       Op {} -> Nothing
-      Var v -> Just $ Variable v
-      Literal l -> Just $ Constant l
+      Var v -> Just $ varToBiVar dkps v
+      Literal l -> Just $ BiConst l
 
-exprToRP' :: (CryptoRandomGen g, FieldElement el)
-          => Expr el
+varToBiVar :: Field el
+           => Map VariableName (KeyPair el)
+           -> VariableName
+           -> BiEncPrimExpr el
+varToBiVar dkps v =
+    case M.lookup v dkps of
+      Just dkp -> BiVar dkp v
+      Nothing -> error $ "lookup in initial dkps failed for "++v
+
+exprToRP' :: (CryptoRandomGen g, Field el)
+          => KeyPair el
+          -> Map VariableName (KeyPair el)
+          -> Expr el
           -> VariableName
           -> (RPGenMonad g el) (DARE el)
-exprToRP' expr outVar =
+exprToRP' skp initDkps expr outVar =
     case expr of
       Op op exprL exprR ->
           case op of
             Plus ->
-                case (priExFromExpr exprL, priExFromExpr exprR) of
+                case ( priExFromExpr initDkps exprL
+                     , priExFromExpr initDkps exprR
+                     ) of
                   (Just peL, Just peR) ->
-                      dareEncodeAddRnd peL peR
-                  _ -> do l <- exprToRP' exprL ('L':outVar)
-                          r <- exprToRP' exprR ('R':outVar)
-                          dareEncodeDareAddRnd l r
+                      dareEncodeAddRnd skp peL peR
+                  _ -> do l <- exprToRP' skp initDkps exprL ('L':outVar)
+                          r <- exprToRP' skp initDkps exprR ('R':outVar)
+                          dareEncodeDareAddRnd skp l r
             Minus -> error "DARE compiler: minus not implemented"
             Times ->
-                case (priExFromExpr exprL, priExFromExpr exprR) of
+                case ( priExFromExpr initDkps exprL
+                     , priExFromExpr initDkps exprR
+                     ) of
                   (Just peL, Just peR) ->
-                      dareEncodeMulRnd peL peR _CONST_0_
-                  _ -> do l <- exprToRP' exprL ('L':outVar)
-                          r <- exprToRP' exprR ('R':outVar)
+                      dareEncodeMulRnd skp peL peR
+                  _ -> do l <- exprToRP' skp initDkps exprL ('L':outVar)
+                          r <- exprToRP' skp initDkps exprR ('R':outVar)
                           encVarL <- putDare l ('l':outVar)
                           encVarR <- putDare r ('r':outVar)
-                          dareEncodeEncMulRnd encVarL
-                                              encVarR
-                                              (_CONST_0_, _NO_DARE_ENCRYPTION_)
-      Var v -> return $ dareEncodePrimaryExpr $ Variable v
-      Literal l -> return $ dareEncodePrimaryExpr $ Constant l
-      where putDare :: (CryptoRandomGen g, FieldElement el)
+                          dareEncodeMulRnd skp encVarL encVarR
+      Var v -> dareEncodePrimaryExprRnd skp $ varToBiVar initDkps v
+      Literal l -> dareEncodePrimaryExprRnd skp $ BiConst l
+      where putDare :: (CryptoRandomGen g, Field el)
                     => DARE el
                     -> VariableName
-                    -> (RPGenMonad g el) ( PrimaryExpression el
-                                         , PrimaryExpressionEncryptionKey el
-                                         )
-            putDare dare varName =
-               do r1 <- getRandomInvertibleElement
-                  r2 <- getRandomElement
-                  let dare' = mulElementToDARE (addToDARE dare r2) r1
-                  lift $ tell $ DL.singleton (varName, dare')
-                  return (Variable varName, (r1, r2))
+                    -> (RPGenMonad g el) (BiEncPrimExpr el)
+            putDare dare@(DARE (_, dkp) _ _) varName =
+               do lift $ tell $ DL.singleton (varName, dare)
+                  return $ BiVar dkp varName
 
-exprToRP :: (CryptoRandomGen g, FieldElement el)
+finalDARE :: forall el. forall g. (CryptoRandomGen g, Field el)
+          => KeyPair el
+          -> KeyPair el
+          -> VariableName
+          -> (RPGenMonad g el) (DARE el)
+finalDARE skp dkp varName =
+    do --r1 <- getRandomElement
+       let decodedL :: LinearExpr el
+           decodedL = decodeBiEncPrimExpr skp leftVar fst (BiVar dkp varName)
+           decodedR :: LinearExpr el
+           decodedR = decodeBiEncPrimExpr skp rightVar snd (BiVar dkp varName)
+           l1 :: LinearExpr el
+           l1 = decodedL
+           l2 :: LinearExpr el
+           l2 = ConstLinearExpr 0
+           r1 :: LinearExpr el
+           r1 = ConstLinearExpr 0
+           r2 :: LinearExpr el
+           r2 = decodedR
+       return $ DARE ((1,1), (0,0)) DL.empty (DL.fromList [(l1, r1), (l2, r2)])
+
+collectInitialVariables :: forall el. Field el => Expr el -> [VariableName]
+collectInitialVariables expr =
+    let collect' =
+            case expr of
+              Literal _ -> []
+              Var v -> [v]
+              Op _ el er -> collectInitialVariables el ++
+                            collectInitialVariables er
+     in nub collect'
+
+genDynamicKey :: forall m g el. (Monad m, CryptoRandomGen g, Field el)
+              => VariableName
+              -> CRandT g GenError m (VariableName, (el, el))
+genDynamicKey v =
+    do dkL <- getRandomElement
+       dkR <- getRandomElement
+       return (v, (dkL, dkR))
+
+initialVarDARE :: (CryptoRandomGen g, Field el)
+               => KeyPair el
+               -> (VariableName, KeyPair el)
+               -> (RPGenMonad g el) ()
+initialVarDARE skp@(skL, skR) (v, dkp@(dkL, dkR)) =
+    let dare = DARE (skp, dkp)
+                    DL.empty
+                    (DL.singleton (LinearExpr skL v dkL, LinearExpr skR v dkR))
+     in lift $ tell $ DL.singleton (v, dare)
+
+exprToRP :: forall g. forall el. (CryptoRandomGen g, Field el)
          => g
          -> Expr el
          -> (Either GenError g, RP el)
 exprToRP g expr =
-   let (ge, dares) = runWriter (runCRandT (exprToRP' expr "z") g)
+   let act :: (RPGenMonad g el) (DARE el)
+       act = do skpL <- getRandomInvertibleElement
+                skpR <- getRandomInvertibleElement
+                let initVars = collectInitialVariables expr
+                dkps <- mapM genDynamicKey initVars
+                let initialKeys = M.fromList dkps
+                mapM_ (initialVarDARE (skpL, skpR)) dkps
+                zDare <- exprToRP' (skpL, skpR) initialKeys expr "z"
+                lift $ tell $ DL.singleton ("z", zDare)
+                let (DARE (_, dkp) _ _) = zDare
+                finalDARE (skpL, skpR) dkp "z"
+       (ge, dares) = runWriter (runCRandT act g)
        lastDare =
            case ge of
              Left _ -> DL.empty
-             Right (ld, _) -> DL.singleton ("z", ld)
+             Right (ld, _) -> DL.singleton ("OUT", ld)
        errOrGen =
            case ge of
              Left err -> Left err
              Right (_, gen) -> Right gen
-       in (errOrGen, dares `DL.append` lastDare)
+   in (errOrGen, dares `DL.append` lastDare)

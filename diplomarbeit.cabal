@@ -29,8 +29,9 @@ Library
     Default-Language: Haskell2010
     Exposed-modules:  Codec.DARE, Codec.LBS, Data.ExpressionTypes,
                       Data.FieldTypes, Math.FiniteFields.F2Pow256,
+                      Data.LinearExpression,
                       Math.FiniteFields.Foreign.FFInterface,
-                      Data.Helpers, Math.MatrixOnLists, Data.DARETypes,
+                      Data.Helpers, Math.MatrixOnLists, Data.DARETypes
                       Data.DAREEvaluation
     include-dirs:     lib/Math/FiniteFields/Foreign
     hs-source-dirs:   lib

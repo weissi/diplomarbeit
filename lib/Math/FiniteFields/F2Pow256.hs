@@ -13,7 +13,7 @@ binaryOp :: (FFI.OpaqueElement -> FFI.OpaqueElement -> FFI.OpaqueElement)
          -> F2Pow256 -> F2Pow256 -> F2Pow256
 binaryOp op (F2Pow256 l) (F2Pow256 r) = F2Pow256 $ l `op` r
 
-instance FieldElement F2Pow256 where
+instance Field F2Pow256 where
     invert = F2Pow256 . FFI.ffInvertElement . unF2Pow256
 
 instance Show F2Pow256 where
