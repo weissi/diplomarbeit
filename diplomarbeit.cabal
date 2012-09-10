@@ -100,3 +100,16 @@ Test-Suite TestMisc
     build-depends:    base, HTF >= 0.9, diplomarbeit, bytestring >= 0.9
     hs-source-dirs:   test
     GHC-Prof-Options: -rtsopts -auto-all -caf-all
+
+Benchmark BenchDARE
+    Type:             exitcode-stdio-1.0
+    HS-Source-Dirs:   bench
+    Main-Is:          BenchDARE.hs
+    Default-Language: Haskell2010
+    Build-Depends:    base,
+                      diplomarbeit,
+                      criterion >= 0.6,
+                      HaskellForMaths >= 0.4,
+                      crypto-api >= 0.10,
+                      monadcryptorandom >= 0.4,
+                      containers >= 0.4
