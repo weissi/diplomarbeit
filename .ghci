@@ -1,5 +1,4 @@
-:set -iLib:Test:ExprToDARE:ExprToMRM:dist/build
+:set -ilib:test:bench:programs:dist/build
 :set -Ldist/build/Lib/Math/FiniteFields/Foreign
 :set +s
-:load Codec.DARE
-:load Data.Helpers
+:load Codec.DARE Data.Helpers Data.ExpressionTypes Data.LinearExpression
