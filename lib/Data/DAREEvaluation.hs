@@ -27,6 +27,9 @@ import Control.Failure (Failure, failure)
 -- # LOCAL
 import Data.DARETypes ( DARE(..), RP, RPStmt
                       , leftVar, rightVar
+                      , _SPECIAL_VAR_OUT_
+                      , _SPECIAL_VAR_PRE_OUT_
+                      , _SPECIAL_VAR_ADDED_PRE_OUT_
                       )
 import Data.FieldTypes (Field(..))
 import Data.LinearExpression ( LinearExpr(..), VariableName, VarMapping
@@ -209,7 +212,6 @@ prepareDAREEvaluation (DARE _ dareMuls dareAdds) oafeCfg =
 data DAREEvaluationFailure = UnknownFailure String String
                            | UnknownVariable String String
                            | IndexOutOfBounds String Int String
-                           | NonWellFormedResult String
                            deriving Show
 
 evaluateOAFE :: (Failure DAREEvaluationFailure f, Field el)
@@ -245,8 +247,23 @@ execERPStmt oac (outVar, edare) =
     do varMap <- get
        val <- lift $ evaluateDARE edare varMap
        oae <- lift $ evaluateOAFE oac varMap (outVar, val)
-       put oae
+       oae' <- lift $ possiblyCalculateAddedPreOutVar oae
+       put oae'
        return val
+    where
+      possiblyCalculateAddedPreOutVar oae =
+          let svl = leftVar _SPECIAL_VAR_PRE_OUT_
+              svr = rightVar _SPECIAL_VAR_PRE_OUT_
+              svalM = if outVar == svl || outVar == svr
+                         then case (M.lookup svl oae, M.lookup svr oae) of
+                                (Just [valL], Just [valR]) ->
+                                    Just (valL+valR)
+                                _ -> Nothing
+                         else Nothing
+           in case svalM of
+                Just sval ->
+                    evaluateOAFE oac oae (_SPECIAL_VAR_ADDED_PRE_OUT_, sval)
+                Nothing -> return oae
 
 runERP :: forall el. (Field el)
        => ERP el
@@ -257,20 +274,18 @@ runERP (EvaluatableRP edares oac) vars =
       Left err -> Left $ show (err :: DAREEvaluationFailure)
       Right val -> Right $ head val
     where doIt =
-              do let oac' = M.insert "enc_OUT~_1" [(1,0)] oac
-                     oac'' = M.insert "enc_OUT~_2" [(1,0)] oac'
-                 oae <- initiallyEvaluateOAFE oac'' vars
-                 out <- execStateT (mapM_ (execERPStmt oac'') edares) oae
-                 case (M.lookup "enc_OUT~_1" out, M.lookup "enc_OUT~_2" out) of
-                   (Just valL, Just valR) ->
-                      if valL == valR
-                         then return valL
-                         else failure $ NonWellFormedResult "runERP"
-                   (Just _, Nothing) ->
-                       failure$UnknownFailure "output R not calculated" "runERP"
-                   (Nothing, Just _) ->
-                       failure$UnknownFailure "output L not calculated" "runERP"
-                   (Nothing, Nothing) ->
+              do let oac' = oac `M.union`
+                            M.fromList
+                                [ (leftVar _SPECIAL_VAR_OUT_, [(1,0)])
+                                , (rightVar _SPECIAL_VAR_OUT_, [(1,0)])
+                                , (leftVar _SPECIAL_VAR_PRE_OUT_, [(1,0)])
+                                , (rightVar _SPECIAL_VAR_PRE_OUT_, [(1,0)])
+                                ]
+                 oae <- initiallyEvaluateOAFE oac' vars
+                 out <- execStateT (mapM_ (execERPStmt oac') edares) oae
+                 case M.lookup (leftVar _SPECIAL_VAR_OUT_) out of
+                   Just val -> return val
+                   Nothing ->
                        failure $ UnknownFailure "output not calculated" "runERP"
 
 evaluateDARE' :: forall f. forall el.
@@ -331,13 +346,18 @@ execRPStmt :: (Field el)
 execRPStmt (outVar, dare) =
     do varMap <- get
        let !valsM = dareDecode varMap dare
-           varMap'' =
+           varMap''' =
               case valsM of
                Just (valL, valR) ->
                   let varMap' = M.insert (leftVar outVar) valL varMap
-                   in M.insert (rightVar outVar) valR varMap'
+                      varMap'' = if outVar == _SPECIAL_VAR_PRE_OUT_
+                                    then M.insert _SPECIAL_VAR_ADDED_PRE_OUT_
+                                                  (valL + valR)
+                                                  varMap'
+                                    else varMap'
+                   in M.insert (rightVar outVar) valR varMap''
                Nothing -> varMap
-       put varMap''
+       put varMap'''
        return valsM
 
 runRP :: forall el. (Field el)
@@ -349,8 +369,8 @@ runRP initialVarMap rp =
       outVarMap = execState (mapM_ execRPStmt (DL.toList rp))
                             initialVarMap
       out =
-          case ( M.lookup (leftVar "OUT") outVarMap
-               , M.lookup (rightVar "OUT") outVarMap
+          case ( M.lookup (leftVar _SPECIAL_VAR_OUT_) outVarMap
+               , M.lookup (rightVar _SPECIAL_VAR_OUT_) outVarMap
                ) of
             (Just l, Just r) ->
                if l == r then Just l else error "the impossible happened"

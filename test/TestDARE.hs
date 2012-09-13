@@ -56,11 +56,11 @@ _VAL_Y_ = 42
 
 _TEST_VAR_MAP_ :: Field el => VarMapping el
 _TEST_VAR_MAP_ = M.fromList [ ("x", _VAL_X_)
-                            , ("enc_x~_1", _VAL_X_)
-                            , ("enc_x~_2", _VAL_X_)
+                            , (leftVar "x", _VAL_X_)
+                            , (rightVar "x", _VAL_X_)
                             , ("y", _VAL_Y_)
-                            , ("enc_y~_1", _VAL_Y_)
-                            , ("enc_y~_2", _VAL_Y_)
+                            , (leftVar "y", _VAL_Y_)
+                            , (rightVar "y", _VAL_Y_)
                             ]
 
 deriveSkp :: Field el => el -> el -> (el, el)

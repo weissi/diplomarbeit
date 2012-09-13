@@ -5,6 +5,8 @@ module Data.DARETypes ( VariableName
                       , RP, RPStmt
                       , Key, KeyPair, BiLinearExpr, BiKeyPair, BiEncPrimExpr(..)
                       , leftVar, rightVar
+                      , _SPECIAL_VAR_OUT_, _SPECIAL_VAR_ADDED_PRE_OUT_
+                      , _SPECIAL_VAR_PRE_OUT_
                       ) where
 
 import Data.DList (DList)
@@ -38,10 +40,19 @@ instance (Field el, Show el) => Show (DARE el) where
     show = prettyPrintDARE
 
 leftVar :: VariableName -> VariableName
-leftVar v = "enc_" ++ v ++ "~_1"
+leftVar v = "__enc_" ++ v ++ "~_1"
 
 rightVar :: VariableName -> VariableName
-rightVar v = "enc_" ++ v ++ "~_2"
+rightVar v = "__enc_" ++ v ++ "~_2"
+
+_SPECIAL_VAR_OUT_ :: VariableName
+_SPECIAL_VAR_OUT_ = "out"
+
+_SPECIAL_VAR_ADDED_PRE_OUT_ :: VariableName
+_SPECIAL_VAR_ADDED_PRE_OUT_ = "__added_z"
+
+_SPECIAL_VAR_PRE_OUT_ :: VariableName
+_SPECIAL_VAR_PRE_OUT_ = "z"
 
 prettyPrintDARE :: (Field el, Show el) => DARE el -> String
 prettyPrintDARE (DARE keys muls adds) =

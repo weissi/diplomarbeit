@@ -30,6 +30,8 @@ import Data.DARETypes ( VariableName, VarMapping, DARE(..), RP
                       , PrimaryExpression(..)
                       , Key, KeyPair, BiKeyPair, BiEncPrimExpr(..)
                       , leftVar, rightVar
+                      , _SPECIAL_VAR_OUT_, _SPECIAL_VAR_ADDED_PRE_OUT_
+                      , _SPECIAL_VAR_PRE_OUT_
                       )
 import Data.ExpressionTypes (Expr(..), Operator(..))
 import Data.FieldTypes (Field(..))
@@ -337,21 +339,14 @@ finalDARE :: forall el. forall g. (CryptoRandomGen g, Field el)
           -> KeyPair el
           -> VariableName
           -> (RPGenMonad g el) (DARE el)
-finalDARE skp dkp varName =
-    do --r1 <- getRandomElement
-       let decodedL :: LinearExpr el
-           decodedL = decodeBiEncPrimExpr skp leftVar fst (BiVar dkp varName)
-           decodedR :: LinearExpr el
-           decodedR = decodeBiEncPrimExpr skp rightVar snd (BiVar dkp varName)
-           l1 :: LinearExpr el
-           l1 = decodedL
-           l2 :: LinearExpr el
-           l2 = ConstLinearExpr 0
-           r1 :: LinearExpr el
-           r1 = ConstLinearExpr 0
-           r2 :: LinearExpr el
-           r2 = decodedR
-       return $ DARE ((1,1), (0,0)) DL.empty (DL.fromList [(l1, r1), (l2, r2)])
+finalDARE (skpL, skpR) (dkpL, dkpR) varName =
+    do let finalSK = skpL + skpR
+           finalDK = dkpL + dkpR
+           finalSKinv = invert finalSK
+           decodedLE = LinearExpr finalSKinv varName (-finalDK * finalSKinv)
+       return $ DARE ((1,1), (0,0))
+                     DL.empty
+                     (DL.singleton (decodedLE, decodedLE))
 
 collectInitialVariables :: forall el. Field el => Expr el -> [VariableName]
 collectInitialVariables expr =
@@ -381,27 +376,37 @@ initialVarDARE skp@(skL, skR) (v, dkp@(dkL, dkR)) =
                     (DL.singleton (LinearExpr skL v dkL, LinearExpr skR v dkR))
      in lift $ tell $ DL.singleton (v, dare)
 
+genSkp :: (CryptoRandomGen g, Field el) => (RPGenMonad g el) (KeyPair el)
+genSkp =
+    do skpL <- getRandomInvertibleElement
+       skpR <- getRandomInvertibleElement
+       if skpL + skpR == 0 -- the sum has to be invertible, too
+          then genSkp
+          else return (skpL, skpR)
+
 exprToRP :: forall g. forall el. (CryptoRandomGen g, Field el)
          => g
          -> Expr el
          -> (Either GenError g, RP el)
 exprToRP g expr =
    let act :: (RPGenMonad g el) (DARE el)
-       act = do skpL <- getRandomInvertibleElement
-                skpR <- getRandomInvertibleElement
+       act = do skp <- genSkp
                 let initVars = collectInitialVariables expr
                 dkps <- mapM genDynamicKey initVars
                 let initialKeys = M.fromList dkps
-                mapM_ (initialVarDARE (skpL, skpR)) dkps
-                zDare <- exprToRP' (skpL, skpR) initialKeys expr "z"
-                lift $ tell $ DL.singleton ("z", zDare)
+                mapM_ (initialVarDARE skp) dkps
+                zDare <- exprToRP' skp
+                                   initialKeys
+                                   expr
+                                   _SPECIAL_VAR_ADDED_PRE_OUT_
+                lift $ tell $ DL.singleton (_SPECIAL_VAR_PRE_OUT_, zDare)
                 let (DARE (_, dkp) _ _) = zDare
-                finalDARE (skpL, skpR) dkp "z"
+                finalDARE skp dkp _SPECIAL_VAR_ADDED_PRE_OUT_
        (ge, dares) = runWriter (runCRandT act g)
        lastDare =
            case ge of
              Left _ -> DL.empty
-             Right (ld, _) -> DL.singleton ("OUT", ld)
+             Right (ld, _) -> DL.singleton (_SPECIAL_VAR_OUT_, ld)
        errOrGen =
            case ge of
              Left err -> Left err
