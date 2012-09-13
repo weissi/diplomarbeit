@@ -85,7 +85,7 @@ ARE. The safety is proven in \emph{How to Garble Arithmetic Circuits}
 \begin{align*}
   \mathcal{V} = & \{ x \mid x~\text{a variable over}~K \} \\
 %
-  \mathcal{F}_{AR} = & \{ s * x + i \mid s, i \in K, x \in \mathcal{V} \}
+  \mathcal{F}_{AR} = & \{ s \cdot x + i \mid s, i \in K, x \in \mathcal{V} \}
   \cup \{ v \mid v \in K \} \\
 %
   \mathcal{E}_{AR} = & \{ (M, A) \mid
@@ -137,18 +137,21 @@ r & = \sum_{a \in A} a + \sum_{m \in M'} m
 \label{sec:randomized-variables}
 
 Whenever a circuit is not directly transformable to one single ARE, sub--AREs
-get replaced \emph{Randomized Variables} (RV). RVs are just (sub--)ARE that get
-transmitted to the second party (see section \ref{sec:using-dare}). But since a
-ARE reveals as much information as its decoded form, the original ARE cannot
-just be transmitted as the final overall ARE. That would reveal intermediate
-information. Therefore, RVs get an additional garbling step: Say the following
-property would hold for a variable $v$ being the decoded value of an ARE $e$:
+get replaced by \emph{Randomized Variables} (RV). RVs are just (sub--)ARE that
+get transmitted to the second party (see section \ref{sec:using-dare}) which
+fully evaluates them and saves the result just like an ordinary input variable
+(such as $x_D$). Following AREs may then use the RVs as pseudo--inputs. But
+since a ARE reveals as much information as its decoded form, the original ARE
+cannot just be transmitted as the final overall ARE. That would reveal
+intermediate information. Therefore, RVs get an additional garbling step: Say
+the following property would hold for a variable $v$ being the decoded value of
+an ARE $e$:
 
 \begin{align}
-v = DEC(e \in \mathcal{E}_RE)
+  v = DEC(e \in \mathcal{E}_{AR})
 \end{align}
 
-\noindent{}Then a modified ARE $\hat{e} \in \mathcal{E}_RE^+$ decoding to a
+\noindent{}Then a modified ARE $\hat{e} \in \mathcal{E}_{AR}^+$ decoding to a
 value $\hat{v}$
 
 \begin{align}
@@ -163,6 +166,53 @@ $\beta$ would get transmitted.
 
 This section will contain a security proof (UC secure \cite{canetti05}) of the
 RV concept.
+
+
+\subsection{Checked Bi--Randomized Variables}
+\label{sec:bi-randomized-variables}
+
+The RV technique (see section \ref{sec:randomized-variables}) prevents the
+second party from getting intermediate information. But, for a corrupted second
+party, there is still the possibility of gaining information: The second party
+could modify a RV be before applying it in one of the following AREs. That will
+not directly reveal additional information, since the second party does not know
+the decoded value of the RV. But some information could be revealed: Except for
+a negligible probability ($\frac{1}{Char(K)}$), the decoded value is non--zero.
+In some circumstances that can be use to test an input of the first party
+against zero.
+
+To address this issue, every input made to an OAFE by the second party is
+secured as a \emph{Checked Bi--Randomized Variable} (CBRV). For a value $v$,
+it's CBRV $\hat{v}$ ($\alpha_l, \alpha_r \in K \setminus \{0\}; \beta, \beta'
+\in K)$ is
+
+\begin{align}
+  \widetilde{v} = (\widetilde{v_1}, \widetilde{v_2}) =
+  (\alpha_l \cdot v + \beta, \alpha_r \cdot v + \beta')
+\end{align}
+
+$\alpha_l$ and $\alpha_r$ are the \emph{static keys}, $\beta$ and $\beta'$ the
+\emph{dynamic keys} of a CBRV. The static keys are constant for the entire
+procedure, $\beta$ and $\beta'$ are fresh, independent random numbers for every
+new CBRV. Only the first party knows these keys. The initial CBRVs that are
+needed for the standard inputs of the second party are generated using an OAFE
+that evaluates for every input $x$:
+
+\begin{align}
+  \widetilde{x} = (\alpha_l \cdot x + \beta_1, \alpha_r \cdot x + \beta_2)
+\end{align}
+
+The first party is---because it generates and knows all the keys---in possession
+of the encoding and decoding functions
+
+\begin{align}
+  E(x) &= (\alpha_l \cdot x + \beta_1, \alpha_r \cdot x + \beta_2) \\
+  D(\widetilde{x}) &= (\frac{\widetilde{x_1} - \beta_1}{\alpha_l},
+                       \frac{\widetilde{x_2} - \beta_2}{\alpha_r})
+\end{align}
+
+A CBRF $\widetilde{x}$ is well--formed iff the tuple $D(\widetilde{x})$ consists
+of two equal values.
 
 
 \section{Using Linear Bijection Straight--Line Programs}
