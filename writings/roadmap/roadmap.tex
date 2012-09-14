@@ -171,20 +171,24 @@ RV concept.
 \subsection{Checked Bi--Randomized Variables}
 \label{sec:bi-randomized-variables}
 
+\subsubsection{General Technique}
+
 The RV technique (see section \ref{sec:randomized-variables}) prevents the
 second party from getting intermediate information. But, for a corrupted second
-party, there is still the possibility of gaining information: The second party
-could modify a RV be before applying it in one of the following AREs. That will
-not directly reveal additional information, since the second party does not know
-the decoded value of the RV. But some information could be revealed: Except for
-a negligible probability ($\frac{1}{Char(K)}$), the decoded value is non--zero.
-In some circumstances that can be use to test an input of the first party
+party, there is still the possibility of gaining supplemental information: The
+second party could forge an RV value before applying it to one of the following
+AREs. This will not directly reveal additional information because the second
+party does not know the encryption keys used for the RV. So, the second party is
+unaware of the decoded value of the RV. But except for a negligible probability
+($\frac{1}{Char(K)}$), the decoded value is non--zero. The knowledge of a random
+but non--zero value can then be used to test a secret input of the first party
 against zero.
 
-To address this issue, every input made to an OAFE by the second party is
-secured as a \emph{Checked Bi--Randomized Variable} (CBRV). For a value $v$,
-it's CBRV $\hat{v}$ ($\alpha_l, \alpha_r \in K \setminus \{0\}; \beta, \beta'
-\in K)$ is
+To address this issue, a similar but secure technique is proposed in here:
+\emph{Checked Bi--Randomized Variables} (CBRVs). Every input made to an OAFE by
+the second party is encoded as a CBRV. The CBRVs $\hat{v}$ corresponding to a
+value $v$ are: ($\alpha_l, \alpha_r \in K \setminus \{0\}; \beta, \beta' \in
+K$)
 
 \begin{align}
   \widetilde{v} = (\widetilde{v_1}, \widetilde{v_2}) =
@@ -192,11 +196,12 @@ it's CBRV $\hat{v}$ ($\alpha_l, \alpha_r \in K \setminus \{0\}; \beta, \beta'
 \end{align}
 
 $\alpha_l$ and $\alpha_r$ are the \emph{static keys}, $\beta$ and $\beta'$ the
-\emph{dynamic keys} of a CBRV. The static keys are constant for the entire
-procedure, $\beta$ and $\beta'$ are fresh, independent random numbers for every
-new CBRV. Only the first party knows these keys. The initial CBRVs that are
-needed for the standard inputs of the second party are generated using an OAFE
-that evaluates for every input $x$:
+\emph{dynamic keys} of the CBRV. The static keys are (non--zero) numbers
+uniformly at random but constant for the entire procedure. $\beta$ and $\beta'$
+are fresh, independent and uniformly distributed random numbers for every CBRV
+generated while processing a circuit. Only the first party knows these secret
+keys. The initial CBRVs used to feed the second party's regular inputs party are
+generated using an OAFE that evaluates for every input $x$:
 
 \begin{align}
   \widetilde{x} = (\alpha_l \cdot x + \beta_1, \alpha_r \cdot x + \beta_2)
@@ -213,6 +218,64 @@ of the encoding and decoding functions
 
 A CBRF $\widetilde{x}$ is well--formed iff the tuple $D(\widetilde{x})$ consists
 of two equal values.
+
+
+\subsubsection{Performing Arithmetic Operations on CBRVs}
+
+
+
+\subsubsection{Evaluating the Last ARE}
+
+In contrast to the RV technique (section \ref{sec:randomized-variables}), the
+CBRV technique encodes all values. So even the final value, the result of the
+entire calculation, is encrypted. The encryption works as follows: After
+evaluation the last ARE, the second party is in possession of an CBRV tuple
+$\widetilde{r} = (\widetilde{r_1}, \widetilde{r_2})$. The second party then
+calculates $\widehat{r} = \widetilde{r_1} + \widetilde{r_2}$ and decodes it to
+$r$ using a specific final OAFE. This OAFE was set up by the first party at the
+beginning as follows: Assuming $\widetilde{r_1}$ was encrypted using $(\alpha_l,
+\beta_{r_1})$ and $\widetilde{r_2}$ was encrypted using $(\alpha_r,
+\beta_{r_2})$ the first party knows $\widehat{r}$ has to be encrypted using
+$(\alpha_l + \alpha_r, \beta_{r_1} + \beta_{r_2})$. Given this knowledge the
+final OAFE setup is $\frac{1}{\alpha_l + \alpha_r} \cdot \widehat{r} -
+\frac{\beta_{r_1} + \beta_{r_2}}{\alpha_l + \alpha_r}$.
+
+The gain of this technique is that the second party is getting caught if it
+cheated. If it cheated somewhere in the process and forged one of its CBRV
+tuples $\widetilde{x} = (\widetilde{x_1}, \widetilde{x_2})$ to $\widetilde{x'} =
+(\widetilde{x_1} + \Delta_1, \widetilde{x_2} + \Delta_2)$, the CBRV
+$\widetilde{x'}$ becomes---except for a negligible probability---non--wellformed
+(see section \ref{sec:bi-randomized-variables}). The result is that the final
+result will become uniform randomness (assuming $\widetilde{x}$ is forged to
+$\widetilde{x'_1} = \widetilde{x_1} + \Delta_1$ and $\widetilde{x'_2} =
+\widetilde{x_2} + \Delta_2$):
+
+\begin{align*}
+  \widehat{x'} = & \widetilde{x'_1} + \widetilde{x'_2} = \widetilde{x_1} +
+  \Delta_1 + \widetilde{x_2} + \Delta_2 \\
+  %
+  \Rightarrow x' = & \frac{1}{\alpha_l + \alpha_r} \cdot \widehat{x'} -
+  \frac{\beta_{x_1} +
+  \beta_{x_2}}{\alpha_l + \alpha_r} \\
+  %
+  \Leftrightarrow x' = & \frac{\widetilde{x_1} + \Delta_1 +
+  \widetilde{x_2} + \Delta_2}{\alpha_l + \alpha_r} -
+  \frac{\beta_{x_1} +\beta_{x_2}}{\alpha_l + \alpha_r}\\
+  %
+  \Leftrightarrow x' = & \frac{(\alpha_l x + \beta_{x_1}) + \Delta_1 +
+  (\alpha_r x + \beta_{x_2}) + \Delta_2}{\alpha_r + \alpha_l} -
+  \frac{\beta_{x_1} +\beta_{x_2}}{\alpha_l + \alpha_r} \\
+  %
+  \Leftrightarrow x' = & \frac{(\alpha_l+\alpha_r)x + (\beta_{x_1}+\beta_{x_2} +
+  \Delta_1+\Delta_2)}{\alpha_l+\alpha_r} -
+  \frac{\beta_{x_1} +\beta_{x_2}}{\alpha_l + \alpha_r} \\
+  %
+  \Leftrightarrow x' = & x + \frac{\beta_{x_1}+\beta_{x_2}}{\alpha_l+\alpha_r}
+  + \frac{\Delta_1 + \Delta_2}{\alpha_l + \alpha_r} -
+  \frac{\beta_{x_1}+\beta_{x_2}}{\alpha_l + \alpha_r} \\
+  %
+  \Leftrightarrow x' = & x + \frac{\Delta_1 + \Delta_2}{\alpha_l + \alpha_r}
+\end{align*}
 
 
 \section{Using Linear Bijection Straight--Line Programs}
