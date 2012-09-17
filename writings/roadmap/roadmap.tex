@@ -22,6 +22,8 @@
 \usepackage{listings}
 \usepackage{color}
 
+\newcommand{\JWtodo}[1]{\fbox{TODO: #1}}
+
 \title{Diplomarbeit -- Roadmap}
 
 \author{Johannes Weiß}
@@ -34,8 +36,8 @@ This writing describes the process of securely evaluating arithmetic functions
 such as $f(x_G,x_D) = ...$ over finite fields. The main building block is the
 David \& Goliath OAFE protocol\cite{davidgoliath}.
 
-\section{Using Decomposable Affine Randomized Encodings}
-\label{sec:using-dare}
+\section{Using Affine Randomized Encodings}
+\label{sec:are}
 
 As the main building block OAFEs---as provided by the David \& Goliath protocol
 \cite{davidgoliath}---are used. However, the first step is to securely express
@@ -67,7 +69,7 @@ learning with errors (LWE) problem. This leads to further changes: The
 \noindent{}The following sections will describe the whole process.
 
 
-\subsection{Affinization Gadget}
+\subsection{Affine Randomized Encodings}
 \label{sec:affinization-gadget}
 
 \subsubsection{Definitions}
@@ -126,19 +128,19 @@ Decoding a fully evaluated ARE $\mathcal{E}_{AR} = \{(M,A)\}$ as $r =
 DEC(\mathcal{E}_{AR})$ is
 straightforward:
 
-\begin{align}
+\begin{align*}
 M' &= \Bigg\{ m_1 \cdot m_2\ \Bigg|\ \begin{pmatrix}m_1\\m_2\end{pmatrix}
 \in M \Bigg\} \\
 r & = \sum_{a \in A} a + \sum_{m \in M'} m
-\end{align}
+\end{align*}
 
 
 \subsection{Randomized Variables}
-\label{sec:randomized-variables}
+\label{sec:rv}
 
 Whenever a circuit is not directly transformable to one single ARE, sub--AREs
 get replaced by \emph{Randomized Variables} (RV). RVs are just (sub--)ARE that
-get transmitted to the second party (see section \ref{sec:using-dare}) which
+get transmitted to the second party (see section \ref{sec:are}) which
 fully evaluates them and saves the result just like an ordinary input variable
 (such as $x_D$). Following AREs may then use the RVs as pseudo--inputs. But
 since a ARE reveals as much information as its decoded form, the original ARE
@@ -147,89 +149,184 @@ intermediate information. Therefore, RVs get an additional garbling step: Say
 the following property would hold for a variable $v$ being the decoded value of
 an ARE $e$:
 
-\begin{align}
+\begin{align*}
   v = DEC(e \in \mathcal{E}_{AR})
-\end{align}
+\end{align*}
 
 \noindent{}Then a modified ARE $\hat{e} \in \mathcal{E}_{AR}^+$ decoding to a
 value $\hat{v}$
 
-\begin{align}
+\begin{align*}
 \hat{v} = \alpha \cdot (v + \beta) = DEC(\hat{e})
-\end{align}
+\end{align*}
 
 \noindent{}with secret keys---known only by the first party---$\alpha$ and
 $\beta$ would get transmitted.
 
 \subsubsection{Security Proof}
-\label{sec:randomized-variables-proof}
+\label{sec:rv-proof}
 
 This section will contain a security proof (UC secure \cite{canetti05}) of the
 RV concept.
 
 
 \subsection{Checked Bi--Randomized Variables}
-\label{sec:bi-randomized-variables}
+\label{sec:cbrv}
 
-\subsubsection{General Technique}
+The RV technique (see section \ref{sec:rv}) prevents the
+second party from directly gaining intermediate information. But, for a
+corrupted second party, there is still the possibility of gaining supplemental
+information: The second party could forge an RV value before applying it to one
+of the following AREs. This will not directly reveal additional information
+because the second party does not know the encryption keys used for the RV. So,
+the second party is unaware of the decoded value of the RV. But except for a
+negligible probability $\left(\frac{1}{Char(K)}\right)$, the decoded value is
+non--zero.  The knowledge of a random but non--zero value can then be used to
+test a secret input of the first party against zero. \JWtodo{Beispiel hierfür,
+siehe z.B. Google Doc.}
 
-The RV technique (see section \ref{sec:randomized-variables}) prevents the
-second party from getting intermediate information. But, for a corrupted second
-party, there is still the possibility of gaining supplemental information: The
-second party could forge an RV value before applying it to one of the following
-AREs. This will not directly reveal additional information because the second
-party does not know the encryption keys used for the RV. So, the second party is
-unaware of the decoded value of the RV. But except for a negligible probability
-($\frac{1}{Char(K)}$), the decoded value is non--zero. The knowledge of a random
-but non--zero value can then be used to test a secret input of the first party
-against zero.
-
-To address this issue, a similar but secure technique is proposed in here:
+To address this issue, a similar but secure technique is proposed in here: The
 \emph{Checked Bi--Randomized Variables} (CBRVs). Every input made to an OAFE by
 the second party is encoded as a CBRV. The CBRVs $\hat{v}$ corresponding to a
-value $v$ are: ($\alpha_l, \alpha_r \in K \setminus \{0\}; \beta, \beta' \in
-K$)
+value $v$ are: ($\alpha_l, \alpha_r \in K \setminus \{0\}; \beta, \beta' \in K$)
 
-\begin{align}
+\begin{align*}
   \widetilde{v} = (\widetilde{v_1}, \widetilde{v_2}) =
   (\alpha_l \cdot v + \beta, \alpha_r \cdot v + \beta')
-\end{align}
+\end{align*}
 
 $\alpha_l$ and $\alpha_r$ are the \emph{static keys}, $\beta$ and $\beta'$ the
 \emph{dynamic keys} of the CBRV. The static keys are (non--zero) numbers
 uniformly at random but constant for the entire procedure. $\beta$ and $\beta'$
 are fresh, independent and uniformly distributed random numbers for every CBRV
-generated while processing a circuit. Only the first party knows these secret
-keys. The initial CBRVs used to feed the second party's regular inputs party are
-generated using an OAFE that evaluates for every input $x$:
+component generated while processing a circuit. Only the first party knows these
+secret keys. The initial CBRVs used to feed the second party's regular inputs
+party are generated using an OAFE that evaluates for every input $x$:
 
-\begin{align}
+\begin{align*}
   \widetilde{x} = (\alpha_l \cdot x + \beta_1, \alpha_r \cdot x + \beta_2)
-\end{align}
+\end{align*}
 
 The first party is---because it generates and knows all the keys---in possession
 of the encoding and decoding functions
 
-\begin{align}
-  E(x) &= (\alpha_l \cdot x + \beta_1, \alpha_r \cdot x + \beta_2) \\
-  D(\widetilde{x}) &= (\frac{\widetilde{x_1} - \beta_1}{\alpha_l},
-                       \frac{\widetilde{x_2} - \beta_2}{\alpha_r})
-\end{align}
+\begin{align*}
+  E(x) &= \left(\alpha_l \cdot x + \beta_1, \alpha_r \cdot x + \beta_2\right) \\
+  D(\widetilde{x}) &= \left(\frac{\widetilde{x_1} - \beta_1}{\alpha_l},
+                       \frac{\widetilde{x_2} - \beta_2}{\alpha_r}\right)
+\end{align*}
 
 A CBRF $\widetilde{x}$ is well--formed iff the tuple $D(\widetilde{x})$ consists
 of two equal values.
 
 
-\subsubsection{Performing Arithmetic Operations on CBRVs}
+\subsection{Checked Bi-Randomized Affine Encodings}
+\label{sec:cbrae}
+
+\emph{Checked Bi-Randomized Affine Encodings} (CBRAEs) are very similar to AREs
+(section \ref{sec:are}) but use CBRVs (section \ref{sec:cbrv}) instead of plain
+values and RVs (section \ref{sec:rv}).
+
+\begin{align}
+  \mathcal{V} = & \{ x \mid x~\text{a variable over}~K \} \\
+%
+  \mathcal{F}_{AR} = & \{ s \cdot x + i \mid s, i \in K, x \in \mathcal{V} \}
+  \cup \{ v \mid v \in K \} \\
+%
+  \mathcal{B}_{AR} = & \{ (\alpha_l \cdot f + \beta, \alpha_r \cdot f + \beta' )
+  \mid \alpha_l, \alpha_r \in K \setminus \{0\}; \beta, \beta' \in K; f \in
+  \mathcal{F}_{AR} \} \\
+%
+  \label{rel:cbrae}
+  \mathcal{E}_{AR} = & \{ (M, A) \mid
+    M \subseteq \mathcal{B}_{AR} \times \mathcal{B}_{AR},
+    A \subseteq, \mathcal{B}_{AR};
+    A, M~\text{finite multi--sets} \}
+%
+\end{align}
+
+\noindent Intuitively, $\mathcal{V}$ are ordinary inputs and CBRVs,
+$\mathcal{F}_{AR}$ represent linear, encrypted particles that encode parts of
+the final function. To prevent illegal information gaining by a corrupted second
+party, $\mathcal{B}_{AR}$ represents checked and encoded intermediate values
+(see section \ref{sec:cbrv}) that can safely be passed to untrusted parties.
+$\mathcal{E}_{AR}$ is the final encoding, powerful enough to encode arbitrary
+arithmetic functions. $\mathcal{E}_{AR}$s are full--blown CBRAEs as presented in
+this thesis. The decoding part remains as in section
+\ref{sec:affinization_decoding}. The result will be a tuple that can then be
+decoded in one last step as in section \ref{sec:eval-final-value}.
 
 
+\subsubsection{Encoding Arithmetic Operations as CBRAEs}
+\label{sec:encode-cbrae}
 
-\subsubsection{Evaluating the Last ARE}
+As in section \ref{sec:cbrv} we assume the universal decoding function
+$D(\widetilde{x})$. With CBRVs, the arithmetic operations are mapped as follows:
 
-In contrast to the RV technique (section \ref{sec:randomized-variables}), the
+
+\paragraph{Addition}
+
+Two CBRVs $\widetilde{x}$ and $\widetilde{y}$ can be added componentwise to
+$\widetilde{z} = \left(\widetilde{x_1} + \widetilde{y_1}, \widetilde{x_2} +
+\widetilde{y_2}\right)$. Since the first party is in
+possession of the encryption keys ($\widetilde{x} = \left(\alpha_l \cdot x +
+\beta_1, \alpha_r \cdot x + \beta_2\right)$, $\widetilde{y} = \left(\alpha_l
+\cdot x + \beta_3, \alpha_r \cdot x + \beta_4\right)$) it's obvious that:
+$\widetilde{z} = \left(\alpha_l \cdot (x+y) + (\beta_1 + \beta_3), \alpha_r
+\cdot (x+y) + (\beta_2 + \beta_4)\right)$ and $\widetilde{z}$ is well--formed.
+
+Having two CBRAEs, they can be added by simply concatenating the multiplicative
+($M$ in relation \ref{rel:cbrae}) and additive ($A$) parts.
+
+
+\paragraph{Addition -- Alternative Form}
+
+The alternative addition form is
+$\widetilde{z} =
+\left( E\left(D(\widetilde{x_1}) + D(\widetilde{y_1})\right),
+       E\left(D(\widetilde{x_2}) + D(\widetilde{y_2})\right)
+\right)$.
+Since $E(x)$ and $D(x)$ are both linear functions,
+$E\left(D(\ldots) +D(\ldots)\right)$
+are linear expressions, too that can be evaluated using two OAFE calls.
+
+
+\paragraph{Multiplication}
+
+As for ordinary AREs, the multiplication is not as powerful as the addition,
+direct multiplication of two CBRAEs is not possible. CBRAE multiplication is
+done using CBRVs sent to the second party. Then, these CBRVs get multiplied as
+described here:
+
+\begin{align*}
+  e & \in \mathcal{E}_{AR}; \widetilde{x}, \widetilde{y} \in \mathcal{B}_{RV};
+  r_1, r_2, r_3, r_4, r_5, r_6, r_7, r_8 \in K;
+  \alpha_l, \alpha_r \in K \setminus \{0\} \\
+  %
+  e & = \widetilde{x} \otimes \widetilde{y} \\
+  %
+  e & = \Bigg(\Big\{\big( \alpha_l \cdot D(\widetilde{x_1}) - r_1,
+                          \alpha_r \cdot D(\widetilde{x_2}) -r_5 \big) \\
+    &\qquad ,     \big(   1        \cdot D(\widetilde{y_1}) - r_2,
+                          1        \cdot D(\widetilde{y_2}) - r_6 \big) \Big\}\\
+    &\qquad   \Big\{\big( \alpha_lr_2 \cdot D(\widetilde{x_2}) + r_3,
+                          \alpha_rr_2 \cdot D(\widetilde{x_1}) + r_7 \big) \\
+    &\qquad ,       \big ( r_1        \cdot D(\widetilde{y_2}) + r_4,
+                           r_5        \cdot D(\widetilde{y_1}) + r_8 \big)
+              \Big\}\Bigg) \\
+\end{align*}
+
+The decryption keys of $e$ are $\alpha_l$, $\alpha_r$ (static keys) and
+$\beta = r_1r_2 + r_3 + r_4$, $\beta' = r_5r_6 + r_7 + r_8$ (dynamic keys).
+
+
+\subsubsection{Evaluating the Final Value}
+\label{sec:eval-final-value}
+
+In contrast to the RV technique (section \ref{sec:rv}), the
 CBRV technique encodes all values. So even the final value, the result of the
 entire calculation, is encrypted. The encryption works as follows: After
-evaluation the last ARE, the second party is in possession of an CBRV tuple
+evaluation the last CBRAE, the second party is in possession of an CBRV tuple
 $\widetilde{r} = (\widetilde{r_1}, \widetilde{r_2})$. The second party then
 calculates $\widehat{r} = \widetilde{r_1} + \widetilde{r_2}$ and decodes it to
 $r$ using a specific final OAFE. This OAFE was set up by the first party at the
@@ -245,7 +342,7 @@ cheated. If it cheated somewhere in the process and forged one of its CBRV
 tuples $\widetilde{x} = (\widetilde{x_1}, \widetilde{x_2})$ to $\widetilde{x'} =
 (\widetilde{x_1} + \Delta_1, \widetilde{x_2} + \Delta_2)$, the CBRV
 $\widetilde{x'}$ becomes---except for a negligible probability---non--wellformed
-(see section \ref{sec:bi-randomized-variables}). The result is that the final
+(see section \ref{sec:cbrv}). The result is that the final
 result will become uniform randomness (assuming $\widetilde{x}$ is forged to
 $\widetilde{x'_1} = \widetilde{x_1} + \Delta_1$ and $\widetilde{x'_2} =
 \widetilde{x_2} + \Delta_2$):
