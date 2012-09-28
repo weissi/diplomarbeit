@@ -8,6 +8,7 @@ module Data.DAREEvaluation ( ERP(..)
                            , OAFEEvaluation
                            , OAFEEvaluationRequest
                            , OAFEEvaluationResponse
+                           , VariableName, VarMapping
                            , processOAFEEvaluationRequest
                            , prepareRPEvaluation
                            , evaluateERP

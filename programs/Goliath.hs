@@ -14,15 +14,18 @@ import qualified Data.ByteString as BS
 import Crypto.Random (SystemRandom, newGenIO)
 import Data.Conduit ( Conduit, MonadResource
                     , ($$), ($=), (=$=)
-                    , yield, runResourceT
+                    , runResourceT
                     )
 import qualified Data.Conduit.List as CL
 import qualified Data.Conduit.Network as CN
+import qualified Data.Map as M
 
 -- # LOCAL
 import Codec.DARE (exprToRP)
-import Data.DAREEvaluation ( OAFEConfiguration, ERP(..)
+import Data.DAREEvaluation ( OAFEConfiguration, ERP(..), EDARE(..)
+                           , VariableName
                            , prepareRPEvaluation
+                           , OAFEReference
                            )
 import Data.OAFEComm (oafeConfigSerializeConduit, areSerializeConduit)
 import Data.Helpers (takeOneConduit)
@@ -43,7 +46,8 @@ die err =
        exitWith $ ExitFailure 1
 
 oacSerializeConduit :: MonadResource m
-                    => Conduit (OAFEConfiguration Element) m BS.ByteString
+                    => Conduit (VariableName, [(Element, Element)])
+                               m BS.ByteString
 oacSerializeConduit = oafeConfigSerializeConduit
 
 configureToken :: CN.ClientSettings -> OAFEConfiguration Element -> IO ()
@@ -53,18 +57,19 @@ configureToken tokenSettings oac =
        putStrLn "OK"
     where confTokenApp :: MonadResource m => CN.Application m
           confTokenApp _ sink =
-              yield oac
+              CL.sourceList (M.toList oac)
               $= oacSerializeConduit
               $$ sink
 
-configureDavid :: SetupDavidToGoliath -> ERP Element -> IO ()
-configureDavid sd2g erp =
-   let edares = erpEDares erp
-       davidNetConf = clientSettingsFromSetupD2G sd2g
-   in (runResourceT $ CN.runTCPClient davidNetConf (connected edares))
+configureDavid :: SetupDavidToGoliath
+               -> [(VariableName, EDARE OAFEReference Element)]
+               -> IO ()
+configureDavid sd2g edares =
+   let davidNetConf = clientSettingsFromSetupD2G sd2g
+   in (runResourceT $ CN.runTCPClient davidNetConf connected)
       `catch` (\e -> putStrLn $ "Connect to David failed: " ++
                                 show (e :: IOException))
-   where connected edares _ sink =
+   where connected _ sink =
              CL.sourceList edares
              $= areSerializeConduit
              $$ sink
@@ -74,15 +79,16 @@ runGoliath tokenConf setupD2G =
     do g <- (newGenIO :: IO SystemRandom)
        putStr "Generating DARES... "
        let (errM, dares) = exprToRP g _TEST_EXPR_
-       case errM of
-         Left err -> putStrLn "ERROR" >> die ("ERROR: " ++ show err)
-         Right _ -> putStrLn "OK"
        let erp = prepareRPEvaluation dares
            oac = erpOAFEConfig erp
+           edares = erpEDares erp
        putStrLn "Setting up Token ..."
        configureToken tokenConf oac
        putStrLn "Setting up David ..."
-       configureDavid setupD2G erp
+       configureDavid setupD2G edares
+       case errM of
+         Left err -> putStrLn "ERROR" >> die ("ERROR: " ++ show err)
+         Right _ -> putStrLn "OK"
 
 evalClient :: MonadResource m => TChan TokenConfInfo -> CN.Application m
 evalClient cTokens src sink =
@@ -93,8 +99,9 @@ evalClient cTokens src sink =
     =$= sg2dSerializeConduit
     $$ sink
     where newEvalClient setupD2G =
-              do myToken <- liftIO $ atomically $ readTChan cTokens
-                 liftIO $ runGoliath (fst myToken) setupD2G
+              do liftIO $ putStrLn "David connected"
+                 myToken <- liftIO $ atomically $ readTChan cTokens
+                 _ <- liftIO $ forkIO $ runGoliath (fst myToken) setupD2G
                  return (snd myToken)
 
 spawnTokenGenerator :: TChan TokenConfInfo -> IO ()

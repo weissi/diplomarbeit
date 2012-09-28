@@ -13,7 +13,7 @@ import qualified Data.ByteString as BS
 
 -- # SITE PACKAGES
 import Data.Conduit ( Conduit, MonadResource, runResourceT
-                    , ($=), (=$=), ($$)
+                    , ($=), (=$=), ($$), yield
                     )
 import Data.Conduit.Network (Application)
 import qualified Data.Conduit.List as CL
@@ -28,13 +28,12 @@ import Data.DAREEvaluation ( OAFEConfiguration, OAFEEvaluationRequest
 import Data.OAFEComm ( oafeConfigParseConduit, oafeConfigSerializeConduit
                      , oafeEvaluationRequestParseConduit
                      , oafeEvaluationResponseSerializeConduit)
-import Data.Helpers (takeOneConduit)
 import Data.LinearExpression (VariableName)
 
 import StaticConfiguration
 
 configParseConduit :: MonadResource m
-                   => Conduit ByteString m (OAFEConfiguration Element)
+                   => Conduit ByteString m (VariableName, [(Element, Element)])
 configParseConduit = oafeConfigParseConduit
 
 evalRequestParseConduit :: MonadResource m
@@ -46,7 +45,7 @@ evalResponseSerializeConduit :: MonadResource m
 evalResponseSerializeConduit = oafeEvaluationResponseSerializeConduit
 
 serializeConduit :: MonadResource m
-                 => Conduit (OAFEConfiguration Element) m ByteString
+                 => Conduit (VariableName, [(Element, Element)]) m ByteString
 serializeConduit = oafeConfigSerializeConduit
 
 tokenEvaluatorStartThread :: TMVar (OAFEConfiguration Element) -> IO ()
@@ -84,24 +83,26 @@ tokenClient vAcceptConfig vOAC src sink =
               then putTMVar vAcceptConfig () >> return True
               else return False
        if accept
-          then src
-               $= configParseConduit
-               =$= takeOneConduit
-               =$= CL.mapM_ launchTokenEvaluation
-               =$= CL.map (const (BS.pack [79, 75, 10]))
-               $$ sink
+          then do m <- receiver
+                  sender m
           else CL.sourceList [BS.pack [70, 85, 76, 76, 10]] $$ sink
     where launchTokenEvaluation oac =
-              liftIO $
               do atomically $ putTMVar vOAC oac
-                 _ <- forkIO $ tokenEvaluatorStartThread vOAC
                  return ()
+          receiver =
+              do l <- src $= configParseConduit $$ CL.consume
+                 return $ M.fromList l
+          sender m =
+              do do liftIO $ launchTokenEvaluation m
+                    yield (BS.pack [79, 75, 10]) $$ sink
+
 
 main :: IO ()
 main =
     do putStrLn "TOKEN: START"
        vAcceptConfig <- atomically $ newEmptyTMVar
        vOAC <- atomically $ newEmptyTMVar
+       _ <- forkIO $ tokenEvaluatorStartThread vOAC
        runResourceT $ CN.runTCPServer _SRV_CONF_TOKEN_FROM_GOLIATH_
                                       (tokenClient vAcceptConfig vOAC)
        putStrLn "TOKEN: DONE"

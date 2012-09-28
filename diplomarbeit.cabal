@@ -89,7 +89,8 @@ Executable Goliath
                       network-conduit >= 0.5,
                       transformers >= 0.3,
                       stm >= 2.4,
-                      crypto-api >= 0.10
+                      crypto-api >= 0.10,
+                      containers >= 0.4
     hs-source-dirs:   programs
     GHC-Options:      -Wall
     GHC-Options:      -Werror

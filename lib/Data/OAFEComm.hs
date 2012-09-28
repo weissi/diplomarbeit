@@ -17,7 +17,6 @@ module Data.OAFEComm ( oafeConfigAsProtoBuf
 
 -- # STDLIB
 import qualified Data.Foldable as F
-import qualified Data.Map as M
 import qualified Data.Sequence as S
 
 -- # SITE PACKAGES
@@ -28,14 +27,13 @@ import qualified Data.Conduit.List as CL
 
 -- # LOCAL
 import Data.Conduit.ProtoBufConduit (pbufParse, pbufSerialize)
-import Data.DAREEvaluation ( EDARE(..), OAFEConfiguration, OAFEReference(..)
+import Data.DAREEvaluation ( EDARE(..), OAFEReference(..)
                            , OAFEEvaluationRequest, OAFEEvaluationResponse
                            )
 import Data.FieldTypes (Field(..))
 import Data.LinearExpression (VariableName)
 
 -- # PROTOBUF
-import qualified Data.ProtoBufs.OAFE.OAFEConfigSet as Pb
 import qualified Data.ProtoBufs.OAFE.LinearExpr as Pb
 import qualified Data.ProtoBufs.OAFE.OAFEConfig as Pb
 import qualified Data.ProtoBufs.OAFE.OAFEEvaluationRequest as Pb
@@ -47,7 +45,7 @@ import qualified Data.ProtoBufs.ARE.OAFEReference as PbARE
 
 -- # CONDUITS
 oafeConfigParseConduit :: (MonadResource m, Field el, Read el)
-                       => Conduit BS.ByteString m (OAFEConfiguration el)
+                       => Conduit BS.ByteString m (VariableName, [(el, el)])
 oafeConfigParseConduit = pbufParse =$= CL.map oafeConfigFromProtoBuf
 
 oafeEvaluationRequestParseConduit :: (MonadResource m, Field el, Read el)
@@ -56,7 +54,7 @@ oafeEvaluationRequestParseConduit =
     pbufParse =$= CL.map oafeEvaluationRequestFromProtoBuf
 
 oafeConfigSerializeConduit :: (MonadResource m, Field el, Show el)
-                           => Conduit (OAFEConfiguration el) m BS.ByteString
+                           => Conduit (VariableName, [(el, el)]) m BS.ByteString
 oafeConfigSerializeConduit = CL.map oafeConfigAsProtoBuf =$= pbufSerialize
 
 oafeEvaluationResponseSerializeConduit :: (MonadResource m, Field el, Show el)
@@ -92,16 +90,9 @@ areParseConduit =
     pbufParse =$= CL.map decodeARE
 
 -- # DE/ENCODING
-oafeConfigAsProtoBuf :: (Field el, Show el)
-                     => OAFEConfiguration el
-                     -> Pb.OAFEConfigSet
-oafeConfigAsProtoBuf oac =
-    let oacs = map (uncurry encodeOAFEConfiguration) (M.toList oac)
-     in Pb.OAFEConfigSet { Pb.configs = S.fromList oacs }
-
 oafeConfigFromProtoBuf :: (Field el, Read el)
-                       => Pb.OAFEConfigSet
-                       -> OAFEConfiguration el
+                       => Pb.OAFEConfig
+                       -> (VariableName, [(el, el)])
 oafeConfigFromProtoBuf = decodeOAFEConfiguration
 
 oafeEvaluationResponseAsProtoBuf :: (Field el, Show el)
@@ -130,18 +121,15 @@ oafeEvaluationResponseFromProtoBuf (Pb.OAFEEvaluationResponse var vals) =
     (uToString var, map (read . uToString) $ F.toList vals)
 
 decodeOAFEConfiguration :: (Read el, Field el)
-                        => Pb.OAFEConfigSet
-                        -> OAFEConfiguration el
-decodeOAFEConfiguration oacs =
-    let dec (Pb.OAFEConfig var exprs) =
-            (uToString var, map decodeLinearExpr $ F.toList exprs)
-     in M.fromList $ map dec (F.toList (Pb.configs oacs))
+                        => Pb.OAFEConfig
+                        -> (VariableName, [(el, el)])
+decodeOAFEConfiguration (Pb.OAFEConfig var exprs) =
+    (uToString var, map decodeLinearExpr $ F.toList exprs)
 
-encodeOAFEConfiguration :: (Show el, Field el)
-                        => VariableName
-                        -> [(el, el)]
-                        -> Pb.OAFEConfig
-encodeOAFEConfiguration v les =
+oafeConfigAsProtoBuf :: (Show el, Field el)
+                     => (VariableName, [(el, el)])
+                     -> Pb.OAFEConfig
+oafeConfigAsProtoBuf (v, les) =
     Pb.OAFEConfig (uFromString v) (S.fromList $ map encodeLinearExpr les)
 
 encodeLinearExpr :: (Show el, Field el) => (el, el) -> Pb.LinearExpr

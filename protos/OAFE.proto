@@ -1,8 +1,4 @@
 # OAFE configuration
-message OAFEConfigSet {
-  repeated OAFEConfig configs = 1;
-}
-
 message OAFEConfig {
   required string variable = 1;
   repeated LinearExpr expressions = 2;

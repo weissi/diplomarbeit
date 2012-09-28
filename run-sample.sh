@@ -26,6 +26,7 @@ cd "$HERE"
 DIRECT=0
 if [ "$1" = "-n" ]; then
     DIRECT=1
+    shift
 fi
 
 function unbuffer() {
@@ -35,13 +36,14 @@ function unbuffer() {
 # NAME
 function run_component() {
     NAME="$1"
+    shift
     echo "$NAME: Starting"
     if [ $DIRECT -eq 1 ]; then
         unbuffer dist/build/$NAME/$NAME
     else
         while read line; do
             echo "$NAME: $line"
-        done < <(unbuffer dist/build/$NAME/$NAME)
+        done < <(unbuffer dist/build/$NAME/$NAME "$@")
     fi
     echo "$NAME: Exited"
 }
@@ -54,13 +56,13 @@ set +e
 killall David Goliath Token &> /dev/null
 set -e
 
-run_component_bg Goliath
+run_component_bg Goliath "$@"
 GPID=$!
 sleep 0.2
-run_component_bg Token
+run_component_bg Token "$@"
 TPID=$!
 sleep 0.5
-run_component_bg David
+run_component_bg David "$@"
 DPID=$!
 
 echo $DPID
@@ -70,6 +72,6 @@ echo $DPID $TPID $GPID
 set +e
 jobs -p | while read line; do
     echo "Killing $line"
-    kill $line &> /dev/null
+    kill -INT $line &> /dev/null
 done
-killall David Goliath Token &> /dev/null
+killall -INT David Goliath Token &> /dev/null
