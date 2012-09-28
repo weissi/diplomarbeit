@@ -16,7 +16,8 @@ module Codec.DARE ( dareEncodeMulRnd
 import Data.List (foldl', nub)
 import Data.Map (Map)
 import Control.Monad (liftM2)
-import Control.Monad.Writer.Lazy (Writer, tell, runWriter)
+import Control.Monad.Writer.Lazy (WriterT, tell, runWriterT)
+import Control.Monad.State.Strict (State, evalState, get, put)
 import Control.Monad.Trans (lift)
 import qualified Data.DList as DL
 import qualified Data.Map as M
@@ -269,7 +270,7 @@ dareDecode varMap (DARE _ muls adds) =
                    Nothing -> Nothing
                    Just vals -> Just $ (foldl' (+) 0 vals)
 
-type RPGenMonad g el = CRandT g GenError (Writer (RP el))
+type RPGenMonad g el = CRandT g GenError (WriterT (RP el) (State Int))
 
 _CONST_0_ :: Field e => PrimaryExpression e
 _CONST_0_ = Constant 0
@@ -293,13 +294,19 @@ varToBiVar dkps v =
       Just dkp -> BiVar dkp v
       Nothing -> error $ "lookup in initial dkps failed for "++v
 
+freshVar :: (CryptoRandomGen g, Field el)
+         => (RPGenMonad g el) VariableName
+freshVar =
+    do n <- lift $ get
+       lift $ put (n+1)
+       return $ "__tmp" ++ show n
+
 exprToRP' :: (CryptoRandomGen g, Field el)
           => KeyPair el
           -> Map VariableName (KeyPair el)
           -> Expr el
-          -> VariableName
           -> (RPGenMonad g el) (DARE el)
-exprToRP' skp initDkps expr outVar =
+exprToRP' skp initDkps expr =
     case expr of
       Op op exprL exprR ->
           case op of
@@ -309,8 +316,8 @@ exprToRP' skp initDkps expr outVar =
                      ) of
                   (Just peL, Just peR) ->
                       dareEncodeAddRnd skp peL peR
-                  _ -> do l <- exprToRP' skp initDkps exprL ('L':outVar)
-                          r <- exprToRP' skp initDkps exprR ('R':outVar)
+                  _ -> do l <- exprToRP' skp initDkps exprL
+                          r <- exprToRP' skp initDkps exprR
                           dareEncodeDareAddRnd skp l r
             Minus -> error "DARE compiler: minus not implemented"
             Times ->
@@ -319,10 +326,12 @@ exprToRP' skp initDkps expr outVar =
                      ) of
                   (Just peL, Just peR) ->
                       dareEncodeMulRnd skp peL peR
-                  _ -> do l <- exprToRP' skp initDkps exprL ('L':outVar)
-                          r <- exprToRP' skp initDkps exprR ('R':outVar)
-                          encVarL <- putDare l ('l':outVar)
-                          encVarR <- putDare r ('r':outVar)
+                  _ -> do l <- exprToRP' skp initDkps exprL
+                          r <- exprToRP' skp initDkps exprR
+                          varL <- freshVar
+                          varR <- freshVar
+                          encVarL <- putDare l varL
+                          encVarR <- putDare r varR
                           dareEncodeMulRnd skp encVarL encVarR
       Var v -> dareEncodePrimaryExprRnd skp $ varToBiVar initDkps v
       Literal l -> dareEncodePrimaryExprRnd skp $ BiConst l
@@ -398,11 +407,10 @@ exprToRP g expr =
                 zDare <- exprToRP' skp
                                    initialKeys
                                    expr
-                                   _SPECIAL_VAR_ADDED_PRE_OUT_
                 lift $ tell $ DL.singleton (_SPECIAL_VAR_PRE_OUT_, zDare)
                 let (DARE (_, dkp) _ _) = zDare
                 finalDARE skp dkp _SPECIAL_VAR_ADDED_PRE_OUT_
-       (ge, dares) = runWriter (runCRandT act g)
+       (ge, dares) = evalState (runWriterT (runCRandT act g)) 0
        lastDare =
            case ge of
              Left _ -> DL.empty
