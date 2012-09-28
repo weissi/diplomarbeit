@@ -27,6 +27,7 @@ import Data.Conduit ( Conduit, MonadResource
 import qualified Data.Conduit.List as CL
 import qualified Data.Conduit.Network as CN
 import qualified Data.Map as M
+import qualified Data.HashMap.Strict as HM
 
 -- # LOCAL
 import Data.DAREEvaluation ( OAFEEvaluationRequest, OAFEEvaluationResponse
@@ -129,8 +130,8 @@ evaluate varMap reqs rsps cARE vResult die =
                          loop oaeRef
                    Nothing ->
                       do oae <- readIORef oaeRef
-                         case ( M.lookup (leftVar _SPECIAL_VAR_OUT_) oae
-                              , M.lookup (rightVar _SPECIAL_VAR_OUT_) oae
+                         case ( HM.lookup (leftVar _SPECIAL_VAR_OUT_) oae
+                              , HM.lookup (rightVar _SPECIAL_VAR_OUT_) oae
                               ) of
                            (Just [l], Just [r]) ->
                                if l == r
@@ -140,7 +141,7 @@ evaluate varMap reqs rsps cARE vResult die =
           doPreOutAddition oae =
               let svl = leftVar _SPECIAL_VAR_PRE_OUT_
                   svr = rightVar _SPECIAL_VAR_PRE_OUT_
-               in case (M.lookup svl oae, M.lookup svr oae) of
+               in case (HM.lookup svl oae, HM.lookup svr oae) of
                     (Just [valL], Just [valR]) ->
                         do atomically $
                              writeTBMChan reqs
@@ -161,17 +162,17 @@ evaluate varMap reqs rsps cARE vResult die =
                        let force' =
                              case force of
                                Just forceVar ->
-                                   if forceVar == var || forceVar `M.member` oae
+                                   if forceVar==var || forceVar `HM.member` oae
                                       then Nothing
                                       else Just forceVar
                                Nothing -> Nothing
-                        in fetchResponse force' (M.insert var val oae)
+                        in fetchResponse force' (HM.insert var val oae)
                    Just Nothing ->
                        return oae
                    Nothing ->
                        fail "FUCK, channel closed"
           evaluateInitialVars initialVars =
-              evaluateInitialVars' initialVars M.empty
+              evaluateInitialVars' initialVars HM.empty
               where evaluateInitialVars' vars oae =
                         case vars of
                           [] -> return oae
@@ -251,7 +252,7 @@ type DieCommand = String -> IO ()
 main :: IO ()
 main =
     do putStrLn "DAVID START"
-       let varMap = M.fromList [("x", 5)]
+       let varMap = M.fromList [("x", fromInteger 5)]
        cRequests <- atomically $ newTBMChan _CHAN_SIZE_
        cResponses <- atomically $ newTBMChan _CHAN_SIZE_
        vResult <- atomically $ newEmptyTMVar

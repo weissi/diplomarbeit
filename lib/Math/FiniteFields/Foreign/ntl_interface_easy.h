@@ -30,6 +30,7 @@ extern "C" {
     int ff_equals(OpaqueElement l, OpaqueElement r);
 
     OpaqueElement ff_element_from_bytes(const unsigned char *bytes, size_t len);
+    char *ff_element_to_bytes(OpaqueElement opaque_e, size_t *len);
 
     size_t ff_sizeof_element(void);
 

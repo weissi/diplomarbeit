@@ -5,7 +5,7 @@ message ARE {
   required string variable = 1;
   repeated MulTerm muls = 2;
   repeated OAFEReference adds = 3;
-  required string const = 4;
+  required bytes const = 4;
 }
 
 message MulTerm {

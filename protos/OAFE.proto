@@ -5,20 +5,20 @@ message OAFEConfig {
 }
 
 message LinearExpr {
-  required string scale = 1;
-  required string intercept = 2;
+  required bytes scale = 1;
+  required bytes intercept = 2;
 }
 
 
 # OAFE evaluation request
 message OAFEEvaluationRequest {
   required string variable = 1;
-  required string value = 2;
+  required bytes value = 2;
 }
 
 
 # OAFE evaluation response
 message OAFEEvaluationResponse {
   required string variable = 1;
-  repeated string values = 2;
+  repeated bytes values = 2;
 }

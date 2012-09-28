@@ -19,6 +19,7 @@ module Data.DAREEvaluation ( ERP(..)
 
 -- # STANDARD LIBRARY
 import Data.Map (Map)
+import Data.HashMap.Strict (HashMap)
 import Data.List (foldl')
 import Control.Monad (foldM)
 import Control.Monad.Trans (lift)
@@ -27,6 +28,7 @@ import Control.Monad.State.Strict ( State, StateT, get, put
                                   )
 import qualified Data.DList as DL
 import qualified Data.Map as M
+import qualified Data.HashMap.Strict as HM
 
 -- # SITE PACKAGES
 import Control.Failure (Failure, failure)
@@ -45,7 +47,7 @@ import Data.LinearExpression ( LinearExpr(..), VariableName, VarMapping
 import Codec.DARE (dareDecode)
 
 type OAFEConfiguration el = Map VariableName [(el, el)]
-type OAFEEvaluation el    = Map VariableName [el]
+type OAFEEvaluation el    = HashMap VariableName [el]
 type OAFEEvaluationRequest el = (VariableName, el)
 type OAFEEvaluationResponse el = (VariableName, [el])
 
@@ -78,7 +80,7 @@ data ERP el =
                   } deriving Show
 
 _EMPTY_EDARE_ :: Field el => EDARE OAFEReference el
-_EMPTY_EDARE_ = EDARE [] [] 0
+_EMPTY_EDARE_ = EDARE [] [] zero
 
 edModifyConst :: Field el
               => EDARE OAFEReference el
@@ -128,10 +130,10 @@ prepareRPEvaluation rp =
         finalEDares = fst erps
         finalOAC :: OAFEConfiguration el
         finalOAC = (snd erps) `M.union`
-                   M.fromList [ (leftVar _SPECIAL_VAR_OUT_, [(1,0)])
-                              , (rightVar _SPECIAL_VAR_OUT_, [(1,0)])
-                              , (leftVar _SPECIAL_VAR_PRE_OUT_, [(1,0)])
-                              , (rightVar _SPECIAL_VAR_PRE_OUT_, [(1,0)])
+                   M.fromList [ (leftVar _SPECIAL_VAR_OUT_, [(one,zero)])
+                              , (rightVar _SPECIAL_VAR_OUT_, [(one,zero)])
+                              , (leftVar _SPECIAL_VAR_PRE_OUT_, [(one,zero)])
+                              , (rightVar _SPECIAL_VAR_PRE_OUT_, [(one,zero)])
                               ]
      in EvaluatableRP { erpEDares = zip rpVars finalEDares
                       , erpOAFEConfig = finalOAC
@@ -240,7 +242,7 @@ evaluateOAFE oac curEval (var, val) =
                              "evaluateOAFE"
           -}
       Just xs ->
-          return $ M.insert var (map (\(s, i) -> s * val + i) xs) curEval
+          return $ HM.insert var (map (\(s, i) -> s * val + i) xs) curEval
 
 processOAFEEvaluationRequest :: Field el
                              => OAFEConfiguration el
@@ -256,7 +258,7 @@ initiallyEvaluateOAFE :: (Failure DAREEvaluationFailure f, Field el)
                       -> VarMapping el
                       -> f (OAFEEvaluation el)
 initiallyEvaluateOAFE oac vars =
-    foldM (evaluateOAFE oac) M.empty $ M.toList vars
+    foldM (evaluateOAFE oac) HM.empty $ M.toList vars
 
 type RunERPStateMonad m el = StateT (OAFEEvaluation el) m
 
@@ -276,7 +278,7 @@ execERPStmt oac (outVar, edare) =
           let svl = leftVar _SPECIAL_VAR_PRE_OUT_
               svr = rightVar _SPECIAL_VAR_PRE_OUT_
               svalM = if outVar == svl || outVar == svr
-                         then case (M.lookup svl oae, M.lookup svr oae) of
+                         then case (HM.lookup svl oae, HM.lookup svr oae) of
                                 (Just [valL], Just [valR]) ->
                                     Just (valL+valR)
                                 _ -> Nothing
@@ -297,14 +299,14 @@ runERP (EvaluatableRP edares oac) vars =
     where doIt =
               do let oac' = oac `M.union`
                             M.fromList
-                                [ (leftVar _SPECIAL_VAR_OUT_, [(1,0)])
-                                , (rightVar _SPECIAL_VAR_OUT_, [(1,0)])
-                                , (leftVar _SPECIAL_VAR_PRE_OUT_, [(1,0)])
-                                , (rightVar _SPECIAL_VAR_PRE_OUT_, [(1,0)])
+                                [ (leftVar _SPECIAL_VAR_OUT_, [(one,zero)])
+                                , (rightVar _SPECIAL_VAR_OUT_, [(one,zero)])
+                                , (leftVar _SPECIAL_VAR_PRE_OUT_, [(one,zero)])
+                                , (rightVar _SPECIAL_VAR_PRE_OUT_, [(one,zero)])
                                 ]
                  oae <- initiallyEvaluateOAFE oac' vars
                  out <- execStateT (mapM_ (execERPStmt oac') edares) oae
-                 case M.lookup (leftVar _SPECIAL_VAR_OUT_) out of
+                 case HM.lookup (leftVar _SPECIAL_VAR_OUT_) out of
                    Just val -> return val
                    Nothing ->
                        failure $ UnknownFailure "output not calculated" "runERP"
@@ -327,7 +329,7 @@ evaluateDARE' (EDARE muls adds c) oafeVals =
           resolve :: OAFEReference
                   -> f el
           resolve (OAFERef var idx) =
-              do case M.lookup var oafeVals of
+              do case HM.lookup var oafeVals of
                    Nothing -> failure $ UnknownVariable var "evaluateDARE'"
                    Just vals ->
                        if length vals <= idx
@@ -352,9 +354,9 @@ evaluateDARE edare vals =
           muls' :: [el]
           muls' = map (uncurry (*)) muls
           rMuls :: el
-          rMuls = foldl' (+) 0 muls'
+          rMuls = foldl' (+) zero muls'
           rAdds :: el
-          rAdds = foldl' (+) 0 adds
+          rAdds = foldl' (+) zero adds
       return $ rMuls + rAdds + c
 
 evaluateERP :: Field el

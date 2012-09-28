@@ -177,6 +177,20 @@ extern "C" {
         return (OpaqueElement)e;
     }
 
+    char *ff_element_to_bytes(OpaqueElement opaque_e, size_t *len) {
+        check_init();
+        GF2E *e = (GF2E *)opaque_e;
+        GF2X x = rep(*e);
+
+        *len = 32;
+
+        char *buf = (char *)malloc(*len);
+        assert(NULL != buf);
+
+        BytesFromGF2X((unsigned char *)buf, x, *len);
+        return buf;
+    }
+
     size_t ff_sizeof_element(void) {
         return sizeof(GF2E);
     }

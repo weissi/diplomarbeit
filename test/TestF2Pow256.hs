@@ -115,4 +115,12 @@ test_representation2Pow256Minus1 =
 prop_readParsesShow :: Element -> Bool
 prop_readParsesShow e = e == (f2Pow256FromString (show e))
 
+prop_binaryRepresentationReadShow :: Element -> Bool
+prop_binaryRepresentationReadShow e =
+    e == (f2Pow256FromBytes . f2Pow256ToBytes) e
+
+prop_utf8ByteStringReadShow :: Element -> Bool
+prop_utf8ByteStringReadShow e =
+    e == (f2Pow256FromUtf8ByteString . f2Pow256ToUtf8ByteString) e
+
 main = htfMain htf_thisModulesTests

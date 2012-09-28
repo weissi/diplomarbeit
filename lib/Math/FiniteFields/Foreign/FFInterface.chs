@@ -7,16 +7,18 @@
 
 module Math.FiniteFields.Foreign.FFInterface where
 
-import Data.ByteString (ByteString)
+import Data.ByteString (ByteString, useAsCString)
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.C.String
 import Foreign.C.Types
-import Foreign.Marshal.Alloc (free)
+import Foreign.Marshal.Alloc (free, alloca)
 import Foreign.Marshal.Utils (toBool)
 import Foreign.Storable (Storable(..))
 import System.IO.Unsafe
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Unsafe as BS
+import qualified Data.ByteString.Internal as BS
 
 {- REMINDER: Seems not necessary, but there are use-after-free errors
  -           if the bang pattern or the entire usage of toBoolM gets
@@ -26,6 +28,14 @@ toBoolM :: (Eq a, Num a) => a -> IO Bool
 toBoolM a =
     do let !a' = toBool a
        return a'
+
+{- REMINDER: This function is from bytestring-0.10, but many
+-            libraries seem to depend on 0.9, so I copied it
+-}
+unsafePackMallocCStringLen :: CStringLen -> IO ByteString
+unsafePackMallocCStringLen (cstr, len) = do
+        fp <- newForeignPtr BS.c_free_finalizer (castPtr cstr)
+        return $! BS.PS fp 0 len
 
 instance Storable OpaqueElement where
     sizeOf _ = ffSizeofElement
@@ -70,10 +80,22 @@ newNonCollectedPointer p =
        return $ OpaqueElement fp
 
 newString :: CString -> IO String
-newString p = do
-  str <- peekCString p
-  free p
-  return str
+newString p =
+    do str <- peekCString p
+       free p
+       return str
+
+newUtf8ByteString :: CString -> IO ByteString
+newUtf8ByteString p =
+    do str <- BS.packCString p
+       free p
+       return str
+
+newSizedByteString :: CString -> CSize -> IO ByteString
+newSizedByteString p l =
+    do str <- BS.packCStringLen (p, fromIntegral l)
+       free p
+       return str
 
 {#fun pure unsafe ff_zero_element as
     ^ { } -> `OpaqueElement' newNonCollectedPointer* #}
@@ -104,8 +126,16 @@ newString p = do
 {#fun pure unsafe ff_element_to_string as
     ^ { withOpaqueElement* `OpaqueElement' } -> `String' newString* #}
 
+{#fun pure unsafe ff_element_to_string as ffElementToUtf8ByteString
+      { withOpaqueElement* `OpaqueElement' }
+      -> `ByteString' newUtf8ByteString* #}
+
 {#fun pure unsafe ff_element_from_string as
     ^ { `String' } -> `OpaqueElement' newGarbageCollectedPointer* #}
+
+{#fun pure unsafe ff_element_from_string as ffElementFromUtf8ByteString
+      { useAsCString* `ByteString' }
+      -> `OpaqueElement' newGarbageCollectedPointer* #}
 
 {#fun pure unsafe ff_equals as
     ^ { withOpaqueElement* `OpaqueElement', withOpaqueElement* `OpaqueElement' }
@@ -118,6 +148,16 @@ ffElementFromBytes str =
     unsafePerformIO $
     BS.unsafeUseAsCStringLen str $ \(strp, len) ->
         {#call unsafe ff_element_from_bytes #} (castPtr strp) (fromIntegral len)
+
+ffElementToBytes :: OpaqueElement -> ByteString
+ffElementToBytes e =
+    unsafePerformIO $
+    do bswl <- withOpaqueElement e $ \e' ->
+               alloca $ \s ->
+               {#call unsafe ff_element_to_bytes #} e' s >>= \bs ->
+               peek s >>= \ps -> return (bs, ps)
+       let (p, size) = bswl
+       unsafePackMallocCStringLen (p, fromIntegral size)
 
 {#fun pure unsafe ff_sizeof_element as ^ { } -> `Int'  #};
 
