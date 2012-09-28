@@ -28,6 +28,8 @@ instance IntegerAsType n => Field (Fp n) where
         case n of
           0 -> error "0 is not invertible"
           n' -> 1 / n'
+    zero = fromInteger 0
+    one = fromInteger 1
 
 evalDirect :: (Field el, Show el)
            => SystemRandom -> VarMapping el -> Expr el -> el
