@@ -45,6 +45,7 @@ done < <(find . \(     -name '*.h' \
                    -or -name '*.sh' \
                 \) \
                 -and -not \( -path './dist/*' \
+                             -or -path './gen-src/*' \
                              -or -path './diplomarbeit-web/*' \
                              -or -path './syncheck.sh' \
                           \) \

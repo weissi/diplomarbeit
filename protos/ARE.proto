@@ -1,0 +1,21 @@
+import "OAFE.proto";
+
+# ARE containing OAFE references
+message ARE {
+  required string variable = 1;
+  repeated MulTerm muls = 2;
+  repeated OAFEReference adds = 3;
+  required string const = 4;
+}
+
+message MulTerm {
+  required OAFEReference left = 1;
+  required OAFEReference right = 2;
+}
+
+
+# OAFE reference
+message OAFEReference {
+  required string variable = 1;
+  required int64 index = 2;
+}

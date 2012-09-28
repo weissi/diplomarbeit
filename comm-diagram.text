@@ -1,0 +1,18 @@
+                            23201
+   +-------------------------------------------------+
+  /                       [1] ctrl                    \
+ |                                                     |
+ |                                                     |
+ |                         23102                       |
+ |    +-------------------------------------------+    |
+ |   /                    [3] AREs                 \   |
+ |  /                                               \  |
+ v /        23120                       23021        v |
+GOLIATH -----------------> TOKEN <----------------- DAVID
+         [2] OAFE config            [4] OAFE values
+
+[1] D -> G: control information; D -> G: ARE port offer
+                                 G -> D: Token announce
+[2] G -> T: OAFE config
+[3] G -> D: ARE stream
+[4] D -> T: OAFE evaluation

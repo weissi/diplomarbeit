@@ -13,6 +13,16 @@ import Data.DAREEvaluation
 import Data.DARETypes (PrimaryExpression(..), VarMapping)
 import Data.ExpressionTypes (Expr(..))
 import Data.FieldTypes (Field(..))
+import Data.OAFEComm ( oafeConfigAsBytes, oafeConfigFromBytes
+                     , oafeConfigAsProtoBuf
+                     , oafeConfigSerializeConduit
+                     )
+
+import qualified Data.ByteString.Lazy as BSL
+import System.IO (withFile, IOMode(WriteMode))
+import Data.Conduit (runResourceT, yield, ($$), (=$=))
+import Data.Conduit.Binary (sinkFile)
+import Data.Conduit.List (sourceList)
 
 import Math.FiniteFields.F2Pow256
 type Element = F2Pow256
@@ -25,8 +35,9 @@ type Element = F2Pow256
 --        case n of
 --          0 -> error "0 is not invertible"
 --          n' -> 1 / n'
-
-
+--
+--instance IntegerAsType n => Read (Fp n) where
+--    readsPrec _ value = [(fromInteger $ (read value :: Integer), "")]
 
 main :: IO ()
 main =
@@ -40,7 +51,14 @@ main =
        putStrLn $ "DIRECT EVALUATION: " ++ show outM
        putStrLn "ExprToDARE: done :-)"
        let erp = prepareRPEvaluation dares
-       print erp
+           oacWM = oafeConfigAsBytes (erpOAFEConfig erp)
+           erp' = oafeConfigFromBytes oacWM
+       runResourceT $     sourceList [erpOAFEConfig erp]
+                      =$= oafeConfigSerializeConduit
+                       $$ sinkFile "/tmp/bla2.pb"
+       case erp' of
+         Left e -> putStrLn $ "ERROR: " ++ e
+         Right erp'' -> print (erp'' :: OAFEConfiguration Element)
        case runERP erp _TestVarMap_ of
          Left err -> putStrLn $ "ERROR: " ++ err
          Right val -> putStrLn $ "OAFE EVALUATION: SUCCESS: " ++ show val

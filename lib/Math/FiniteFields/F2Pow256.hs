@@ -19,6 +19,9 @@ instance Field F2Pow256 where
 instance Show F2Pow256 where
     show = FFI.ffElementToString . unF2Pow256
 
+instance Read F2Pow256 where
+    readsPrec _ value = [((F2Pow256 . FFI.ffElementFromString) value, "")]
+
 instance Num F2Pow256 where
     (+) = binaryOp FFI.ffAddElements
     (*) = binaryOp FFI.ffMulElements

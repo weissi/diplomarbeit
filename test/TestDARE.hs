@@ -107,7 +107,7 @@ execDare expr =
                       Right val -> Just val
            out = if outDirect == outERP
                     then outDirect
-                    else Nothing
+                    else trace "DIRECT != ERP EVAL" Nothing
        return out
 
 test_simpleDARE =

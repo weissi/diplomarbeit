@@ -25,53 +25,90 @@ Library
                       text >= 0.11,
                       bytestring >= 0.9,
                       blaze-builder >= 0.3,
-                      failure >= 0.2
+                      failure >= 0.2,
+                      protocol-buffers >= 2.0,
+                      protocol-buffers-descriptor >= 2.0,
+                      conduit >= 0.5,
+                      binary >= 0.5,
+                      network-conduit >= 0.5
     Default-Language: Haskell2010
-    Exposed-modules:  Codec.DARE, Codec.LBS, Data.ExpressionTypes,
+    Exposed-Modules:  Codec.DARE, Codec.LBS, Data.ExpressionTypes,
                       Data.FieldTypes, Math.FiniteFields.F2Pow256,
                       Data.LinearExpression,
                       Math.FiniteFields.Foreign.FFInterface,
                       Data.Helpers, Math.MatrixOnLists, Data.DARETypes
-                      Data.DAREEvaluation
+                      Data.DAREEvaluation, Data.OAFEComm,
+                      Data.Conduit.ProtoBufConduit,
+                      Data.SetupPhase
+    Other-Modules:    Data.ProtoBufs.OAFE,
+                      Data.ProtoBufs.OAFE.OAFEConfig,
+                      Data.ProtoBufs.OAFE.LinearExpr,
+                      Data.ProtoBufs.OAFE.OAFEConfigSet
+                      Data.ProtoBufs.OAFE.OAFEEvaluationRequest,
+                      Data.ProtoBufs.OAFE.OAFEEvaluationResponse,
+                      Data.ProtoBufs.ARE.ARE,
+                      Data.ProtoBufs.ARE.MulTerm,
+                      Data.ProtoBufs.ARE.OAFEReference,
+                      Data.ProtoBufs.Setup.SetupDavidToGoliath,
+                      Data.ProtoBufs.Setup.SetupGoliathToDavid
     include-dirs:     lib/Math/FiniteFields/Foreign
-    hs-source-dirs:   lib
+    hs-source-dirs:   lib, gen-src
     GHC-Options:      -Wall
-    GHC-Options:      -Werror
+    --GHC-Options:      -Werror
     GHC-Options:      -rtsopts -auto-all -caf-all
     Build-tools:      c2hs -any
     Extra-libraries:  ntl, stdc++
     C-Sources:        lib/Math/FiniteFields/Foreign/ntl_interface_easy.cpp
     CC-Options:       -Wall -pedantic -ggdb
 
-Executable ExprToMRM
-    main-is:          ExprToMRM.hs
+Executable David
+    main-is:          David.hs
     Default-Language: Haskell2010
-    build-depends:    base, text >= 0.11, containers >= 0.4, dlist >= 0.5,
-                      mtl >= 2.0, diplomarbeit
-    hs-source-dirs:   programs
-    GHC-Options:      -Wall
-    GHC-Options:      -Werror
-    GHC-Prof-Options: -rtsopts -auto-all -caf-all
-
-Executable ExprToDARE
-    main-is:          ExprToDARE.hs
-    Default-Language: Haskell2010
-    build-depends:    base, monadcryptorandom >= 0.4, crypto-api >= 0.10,
-                      containers >= 0.4, HaskellForMaths >= 0.4, dlist >= 0.5,
-                      diplomarbeit
-    hs-source-dirs:   programs
-    GHC-Options:      -Wall
-    GHC-Options:      -Werror
-    GHC-Prof-Options: -rtsopts -auto-all -caf-all
-
-Executable FiniteFieldMatrixTests
-    main-is:          FiniteFieldMatrixTests.hs
-    Default-Language: Haskell2010
-    hs-source-dirs:   programs
     build-depends:    base,
                       diplomarbeit,
-                      hmatrix >= 0.14
+                      bytestring >= 0.9,
+                      conduit >= 0.5,
+                      network-conduit >= 0.5,
+                      transformers >= 0.3,
+                      stm >= 2.4,
+                      stm-conduit >= 0.4,
+                      stm-chans >= 1.3,
+                      containers >= 0.4
+    hs-source-dirs:   programs
     GHC-Options:      -Wall
+    GHC-Options:      -Werror
+    GHC-Prof-Options: -rtsopts -auto-all -caf-all
+
+Executable Goliath
+    main-is:          Goliath.hs
+    Default-Language: Haskell2010
+    build-depends:    base,
+                      diplomarbeit,
+                      bytestring >= 0.9,
+                      conduit >= 0.5,
+                      network-conduit >= 0.5,
+                      transformers >= 0.3,
+                      stm >= 2.4,
+                      crypto-api >= 0.10
+    hs-source-dirs:   programs
+    GHC-Options:      -Wall
+    GHC-Options:      -Werror
+    GHC-Prof-Options: -rtsopts -auto-all -caf-all
+
+Executable Token
+    main-is:          Token.hs
+    Default-Language: Haskell2010
+    build-depends:    base,
+                      diplomarbeit,
+                      bytestring >= 0.9,
+                      conduit >= 0.5,
+                      network-conduit >= 0.5,
+                      transformers >= 0.3,
+                      stm >= 2.4,
+                      containers >= 0.4
+    hs-source-dirs:   programs
+    GHC-Options:      -Wall
+    GHC-Options:      -Werror
     GHC-Prof-Options: -rtsopts -auto-all -caf-all
 
 Test-Suite TestDARE
@@ -113,3 +150,24 @@ Benchmark BenchDARE
                       crypto-api >= 0.10,
                       monadcryptorandom >= 0.4,
                       containers >= 0.4
+
+--Executable ExprToMRM
+--    main-is:          ExprToMRM.hs
+--    Default-Language: Haskell2010
+--    build-depends:    base, text >= 0.11, containers >= 0.4, dlist >= 0.5,
+--                      mtl >= 2.0, diplomarbeit
+--    hs-source-dirs:   programs
+--    GHC-Options:      -Wall
+--    GHC-Options:      -Werror
+--    GHC-Prof-Options: -rtsopts -auto-all -caf-all
+
+--Executable ExprToDARE
+--    main-is:          ExprToDARE.hs
+--    Default-Language: Haskell2010
+--    build-depends:    base, monadcryptorandom >= 0.4, crypto-api >= 0.10,
+--                      containers >= 0.4, HaskellForMaths >= 0.4, dlist >= 0.5,
+--                      diplomarbeit, bytestring >= 0.9, conduit >= 0.5
+--    hs-source-dirs:   programs
+--    GHC-Options:      -Wall
+--    GHC-Options:      -Werror
+--    GHC-Prof-Options: -rtsopts -auto-all -caf-all

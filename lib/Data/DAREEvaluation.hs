@@ -1,13 +1,19 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE FlexibleContexts #-}
-module Data.DAREEvaluation ( ERP
+module Data.DAREEvaluation ( ERP(..)
                            , EDARE (..)
+                           , OAFEConfiguration
                            , OAFEReference(..)
+                           , OAFEEvaluation
+                           , OAFEEvaluationRequest
+                           , OAFEEvaluationResponse
+                           , processOAFEEvaluationRequest
                            , prepareRPEvaluation
                            , evaluateERP
                            , runERP
                            , runRP
+                           , evalDARE
                            ) where
 
 -- # STANDARD LIBRARY
@@ -39,6 +45,8 @@ import Codec.DARE (dareDecode)
 
 type OAFEConfiguration el = Map VariableName [(el, el)]
 type OAFEEvaluation el    = Map VariableName [el]
+type OAFEEvaluationRequest el = (VariableName, el)
+type OAFEEvaluationResponse el = (VariableName, [el])
 
 data OAFEReference = OAFERef VariableName Int deriving Show
 
@@ -118,7 +126,12 @@ prepareRPEvaluation rp =
         finalEDares :: [EDARE OAFEReference el]
         finalEDares = fst erps
         finalOAC :: OAFEConfiguration el
-        finalOAC = snd erps
+        finalOAC = (snd erps) `M.union`
+                   M.fromList [ (leftVar _SPECIAL_VAR_OUT_, [(1,0)])
+                              , (rightVar _SPECIAL_VAR_OUT_, [(1,0)])
+                              , (leftVar _SPECIAL_VAR_PRE_OUT_, [(1,0)])
+                              , (rightVar _SPECIAL_VAR_PRE_OUT_, [(1,0)])
+                              ]
      in EvaluatableRP { erpEDares = zip rpVars finalEDares
                       , erpOAFEConfig = finalOAC
                       }
@@ -143,10 +156,8 @@ prepareDAREEvaluation (DARE _ dareMuls dareAdds) oafeCfg =
                                           var
                                           [(slope, intercept)]
                                           oac
-                   in ( OAFERef var
-                                ((length $ M.findWithDefault [] var oac')-1)
-                      , oac'
-                      )
+                      varIdx = (length $ M.findWithDefault [] var oac')-1
+                   in (OAFERef var varIdx, oac')
               ConstLinearExpr _ ->
                   error $ "prepareDAREEvaluation: constant expressions "
                           ++ "don't need OAFEs"
@@ -229,6 +240,15 @@ evaluateOAFE oac curEval (var, val) =
           -}
       Just xs ->
           return $ M.insert var (map (\(s, i) -> s * val + i) xs) curEval
+
+processOAFEEvaluationRequest :: Field el
+                             => OAFEConfiguration el
+                             -> OAFEEvaluationRequest el
+                             -> OAFEEvaluationResponse el
+processOAFEEvaluationRequest oac (var, val) =
+    case M.lookup var oac of
+      Nothing -> (var, [])
+      Just xs -> (var, map (\(s, i) -> s * val + i) xs)
 
 initiallyEvaluateOAFE :: (Failure DAREEvaluationFailure f, Field el)
                       => OAFEConfiguration el
@@ -313,6 +333,12 @@ evaluateDARE' (EDARE muls adds c) oafeVals =
                           then failure $
                                    IndexOutOfBounds var idx "evaluateDARE'"
                           else return $ vals!!idx
+
+evalDARE :: Field el
+         => EDARE OAFEReference el
+         -> OAFEEvaluation el
+         -> Either DAREEvaluationFailure el
+evalDARE = evaluateDARE
 
 evaluateDARE :: forall f. forall el.
                 (Failure DAREEvaluationFailure f, Field el)

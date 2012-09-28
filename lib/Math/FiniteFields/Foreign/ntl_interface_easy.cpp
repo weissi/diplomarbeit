@@ -7,6 +7,8 @@
 #include <NTL/GF2X.h>
 #include <NTL/GF2XFactoring.h>
 
+#include <pthread.h>
+
 #include "ntl_interface_easy.h"
 
 NTL_CLIENT
@@ -17,6 +19,7 @@ NTL_CLIENT
  */
 
 static bool initialized = false;
+volatile pthread_t my_tid = 0;
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,6 +33,12 @@ extern "C" {
         if (!initialized) {
             ff_init();
             initialized = true;
+        }
+
+        if (my_tid == 0) {
+            my_tid = pthread_self();
+        } else {
+            assert(my_tid == pthread_self());
         }
     }
 

@@ -1,0 +1,9 @@
+message SetupGoliathToDavid {
+    required string tokenHost = 1;
+    required int32 tokenPort = 2;
+}
+
+message SetupDavidToGoliath {
+    required string host = 1;
+    required int32 port = 2;
+}

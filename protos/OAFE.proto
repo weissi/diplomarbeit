@@ -1,0 +1,28 @@
+# OAFE configuration
+message OAFEConfigSet {
+  repeated OAFEConfig configs = 1;
+}
+
+message OAFEConfig {
+  required string variable = 1;
+  repeated LinearExpr expressions = 2;
+}
+
+message LinearExpr {
+  required string scale = 1;
+  required string intercept = 2;
+}
+
+
+# OAFE evaluation request
+message OAFEEvaluationRequest {
+  required string variable = 1;
+  required string value = 2;
+}
+
+
+# OAFE evaluation response
+message OAFEEvaluationResponse {
+  required string variable = 1;
+  repeated string values = 2;
+}
