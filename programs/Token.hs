@@ -13,7 +13,7 @@ import qualified Data.ByteString as BS
 
 -- # SITE PACKAGES
 import Data.Conduit ( Conduit, MonadResource, runResourceT
-                    , ($=), (=$=), ($$), yield
+                    , ($=), ($$), yield
                     )
 import Data.Conduit.Network (Application)
 import qualified Data.Conduit.List as CL
@@ -25,6 +25,7 @@ import Data.DAREEvaluation ( OAFEConfiguration, OAFEEvaluationRequest
                            , OAFEEvaluationResponse
                            , processOAFEEvaluationRequest
                            )
+import Data.Helpers (runTCPServerNoWait)
 import Data.OAFEComm ( oafeConfigParseConduit, oafeConfigSerializeConduit
                      , oafeEvaluationRequestParseConduit
                      , oafeEvaluationResponseSerializeConduit)
@@ -51,16 +52,16 @@ serializeConduit = oafeConfigSerializeConduit
 tokenEvaluatorStartThread :: TMVar (OAFEConfiguration Element) -> IO ()
 tokenEvaluatorStartThread vOAC =
     do putStrLn "TOKEN EVALUATOR RUNNING"
-       runResourceT ( CN.runTCPServer _SRV_CONF_TOKEN_FROM_DAVID_
-                                      (tokenEval vOAC) )
+       runResourceT (runTCPServerNoWait _SRV_CONF_TOKEN_FROM_DAVID_
+                                        (tokenEval vOAC) )
 
 tokenEval :: (MonadResource m, MonadIO m)
           => TMVar (OAFEConfiguration Element) -> Application m
 tokenEval vOAC src sink =
     src
     $= evalRequestParseConduit
-    =$= CL.mapM doOAFEEvaluation
-    =$= evalResponseSerializeConduit
+    $= CL.mapM doOAFEEvaluation
+    $= evalResponseSerializeConduit
     $$ sink
     where
         doOAFEEvaluation :: MonadResource m
