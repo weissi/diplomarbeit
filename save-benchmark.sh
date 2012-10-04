@@ -1,0 +1,23 @@
+#!/bin/bash
+
+HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd)
+
+set -e
+
+cd "$HERE"
+FILE="$(date +%Y-%M-%d_%H-%M-%S).text"
+(
+echo "Last patch"
+echo "----------"
+git log HEAD^..HEAD
+echo
+echo "Modifications"
+echo "-------------"
+git status
+echo
+echo "Benchmark"
+echo "---------"
+cabal bench
+) > benchmark-results/$FILE
+
+echo OK
