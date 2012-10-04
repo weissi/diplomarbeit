@@ -18,6 +18,6 @@ echo
 echo "Benchmark"
 echo "---------"
 cabal bench
-) > benchmark-results/$FILE
+) | tee benchmark-results/$FILE
 
 echo OK
