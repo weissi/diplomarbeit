@@ -21,7 +21,7 @@ module Data.DAREEvaluation ( ERP(..)
 import Data.Map (Map)
 import Data.HashMap.Strict (HashMap)
 import Data.List (foldl')
-import Control.Monad (foldM)
+import Control.Monad (foldM, liftM)
 import Control.Monad.Trans (lift)
 import Control.Monad.State.Strict ( State, StateT, get, put
                                   , execStateT, execState
@@ -29,9 +29,12 @@ import Control.Monad.State.Strict ( State, StateT, get, put
 import qualified Data.DList as DL
 import qualified Data.Map as M
 import qualified Data.HashMap.Strict as HM
+import qualified Data.Vector as V
 
 -- # SITE PACKAGES
 import Control.Failure (Failure, failure)
+import Data.DList (DList)
+import Data.Vector (Vector)
 
 -- # LOCAL
 import Data.DARETypes ( DARE(..), RP, RPStmt
@@ -46,10 +49,14 @@ import Data.LinearExpression ( LinearExpr(..), VariableName, VarMapping
                              )
 import Codec.DARE (dareDecode)
 
-type OAFEConfiguration el = Map VariableName [(el, el)]
-type OAFEEvaluation el    = HashMap VariableName [el]
+instance Show a => Show (DList a) where
+    show dl = (show . DL.toList) dl
+
+type OAFEConfiguration el = Map VariableName (Vector (el, el))
+type OAFEConfigGen el = Map VariableName (Int, DList (el, el))
+type OAFEEvaluation el    = HashMap VariableName (Vector el)
 type OAFEEvaluationRequest el = (VariableName, el)
-type OAFEEvaluationResponse el = (VariableName, [el])
+type OAFEEvaluationResponse el = (VariableName, (Vector el))
 
 data OAFEReference = OAFERef VariableName Int deriving Show
 
@@ -115,59 +122,63 @@ prepareRPEvaluation rp =
         rpDares :: [DARE el]
         rpDares = map snd rpList
         toEdares :: [DARE el]
-                 -> [EDARE OAFEReference el]
-                 -> (OAFEConfiguration el)
-                 -> ([EDARE OAFEReference el], OAFEConfiguration el)
+                 -> DList (EDARE OAFEReference el)
+                 -> (OAFEConfigGen el)
+                 -> (DList (EDARE OAFEReference el), OAFEConfigGen el)
         toEdares dares edares oac =
             case dares of
               [] -> (edares, oac)
               (dare:dares') ->
                   let (edareL, edareR, oac') = prepareDAREEvaluation dare oac
-                   in toEdares dares' (edares ++ [edareL, edareR]) oac'
-        erps :: ([EDARE OAFEReference el], OAFEConfiguration el)
-        erps = toEdares rpDares [] M.empty
-        finalEDares :: [EDARE OAFEReference el]
+                   in toEdares dares'
+                               (edares `DL.snoc` edareL `DL.snoc` edareR)
+                               oac'
+        erps :: (DList (EDARE OAFEReference el), OAFEConfigGen el)
+        erps = toEdares rpDares DL.empty M.empty
+        finalEDares :: DList (EDARE OAFEReference el)
         finalEDares = fst erps
-        finalOAC :: OAFEConfiguration el
+        finalOAC :: OAFEConfigGen el
         finalOAC = (snd erps) `M.union`
-                   M.fromList [ (leftVar _SPECIAL_VAR_OUT_, [(one,zero)])
-                              , (rightVar _SPECIAL_VAR_OUT_, [(one,zero)])
-                              , (leftVar _SPECIAL_VAR_PRE_OUT_, [(one,zero)])
-                              , (rightVar _SPECIAL_VAR_PRE_OUT_, [(one,zero)])
+                   M.fromList [ (leftVar _SPECIAL_VAR_OUT_, (0, oneZeroDL))
+                              , (rightVar _SPECIAL_VAR_OUT_, (0, oneZeroDL))
+                              , (leftVar _SPECIAL_VAR_PRE_OUT_, (0, oneZeroDL))
+                              , (rightVar _SPECIAL_VAR_PRE_OUT_, (0, oneZeroDL))
                               ]
-     in EvaluatableRP { erpEDares = zip rpVars finalEDares
-                      , erpOAFEConfig = finalOAC
+     in EvaluatableRP { erpEDares = zip rpVars $ DL.toList finalEDares
+                      , erpOAFEConfig = M.map (V.fromList . DL.toList . snd)
+                                              finalOAC
                       }
 
 prepareDAREEvaluation :: forall el. Field el
                       => DARE el
-                      -> OAFEConfiguration el
+                      -> OAFEConfigGen el
                       -> ( EDARE OAFEReference el
                          , EDARE OAFEReference el
-                         , OAFEConfiguration el
+                         , OAFEConfigGen el
                          )
 prepareDAREEvaluation (DARE _ dareMuls dareAdds) oafeCfg =
     let oafeReference :: Field el
-                      => OAFEConfiguration el
+                      => OAFEConfigGen el
                       -> LinearExpr el
-                      -> (OAFEReference, OAFEConfiguration el)
+                      -> (OAFEReference, OAFEConfigGen el)
         oafeReference oac le =
             case le of
               LinearExpr !slope !var !intercept ->
-                  let oac' :: OAFEConfiguration el
-                      oac' = M.insertWith (flip (++))
-                                          var
-                                          [(slope, intercept)]
-                                          oac
-                      varIdx = (length $ M.findWithDefault [] var oac')-1
-                   in (OAFERef var varIdx, oac')
+                  let (varIdx, les) = M.findWithDefault (-1, DL.empty) var oac
+                      les' :: DList (el, el)
+                      les' = les `DL.snoc` (slope, intercept)
+                      varIdx' :: Int
+                      varIdx' = varIdx + 1
+                      oac' :: OAFEConfigGen el
+                      oac' = M.insert var (varIdx', les') oac
+                   in (OAFERef var varIdx', oac')
               ConstLinearExpr _ ->
                   error $ "prepareDAREEvaluation: constant expressions "
                           ++ "don't need OAFEs"
         processAdds :: Field el
-                    => (EDARE OAFEReference el, OAFEConfiguration el)
+                    => (EDARE OAFEReference el, OAFEConfigGen el)
                     -> LinearExpr el
-                    -> (EDARE OAFEReference el, OAFEConfiguration el)
+                    -> (EDARE OAFEReference el, OAFEConfigGen el)
         processAdds (edare, oac) le =
             case le of
               LinearExpr _ _ _ ->
@@ -176,9 +187,9 @@ prepareDAREEvaluation (DARE _ dareMuls dareAdds) oafeCfg =
               ConstLinearExpr cle ->
                   (edModifyConst edare (+) cle, oac)
         processMuls :: Field el
-                    => (EDARE OAFEReference el, OAFEConfiguration el)
+                    => (EDARE OAFEReference el, OAFEConfigGen el)
                     -> (LinearExpr el, LinearExpr el)
-                    -> (EDARE OAFEReference el, OAFEConfiguration el)
+                    -> (EDARE OAFEReference el, OAFEConfigGen el)
         processMuls (edare, oac) les =
             case les of
               (ConstLinearExpr clel, ConstLinearExpr cler) ->
@@ -242,7 +253,7 @@ evaluateOAFE oac curEval (var, val) =
                              "evaluateOAFE"
           -}
       Just xs ->
-          return $ HM.insert var (map (\(s, i) -> s * val + i) xs) curEval
+          return $ HM.insert var (V.map (\(s, i) -> s * val + i) xs) curEval
 
 processOAFEEvaluationRequest :: Field el
                              => OAFEConfiguration el
@@ -250,8 +261,8 @@ processOAFEEvaluationRequest :: Field el
                              -> OAFEEvaluationResponse el
 processOAFEEvaluationRequest oac (var, val) =
     case M.lookup var oac of
-      Nothing -> (var, [])
-      Just xs -> (var, map (\(s, i) -> s * val + i) xs)
+      Nothing -> (var, V.empty)
+      Just xs -> (var, V.map (\(s, i) -> s * val + i) xs)
 
 initiallyEvaluateOAFE :: (Failure DAREEvaluationFailure f, Field el)
                       => OAFEConfiguration el
@@ -278,9 +289,11 @@ execERPStmt oac (outVar, edare) =
           let svl = leftVar _SPECIAL_VAR_PRE_OUT_
               svr = rightVar _SPECIAL_VAR_PRE_OUT_
               svalM = if outVar == svl || outVar == svr
-                         then case (HM.lookup svl oae, HM.lookup svr oae) of
+                         then case ( liftM V.toList $ HM.lookup svl oae
+                                   , liftM V.toList $ HM.lookup svr oae
+                                   ) of
                                 (Just [valL], Just [valR]) ->
-                                    Just (valL+valR)
+                                    return $! valL + valR
                                 _ -> Nothing
                          else Nothing
            in case svalM of
@@ -295,14 +308,14 @@ runERP :: forall el. (Field el)
 runERP (EvaluatableRP edares oac) vars =
     case doIt of
       Left err -> Left $ show (err :: DAREEvaluationFailure)
-      Right val -> Right $ head val
+      Right val -> Right $ V.head val
     where doIt =
               do let oac' = oac `M.union`
                             M.fromList
-                                [ (leftVar _SPECIAL_VAR_OUT_, [(one,zero)])
-                                , (rightVar _SPECIAL_VAR_OUT_, [(one,zero)])
-                                , (leftVar _SPECIAL_VAR_PRE_OUT_, [(one,zero)])
-                                , (rightVar _SPECIAL_VAR_PRE_OUT_, [(one,zero)])
+                                [ (leftVar _SPECIAL_VAR_OUT_, oneZeroV)
+                                , (rightVar _SPECIAL_VAR_OUT_, oneZeroV)
+                                , (leftVar _SPECIAL_VAR_PRE_OUT_, oneZeroV)
+                                , (rightVar _SPECIAL_VAR_PRE_OUT_, oneZeroV)
                                 ]
                  oae <- initiallyEvaluateOAFE oac' vars
                  out <- execStateT (mapM_ (execERPStmt oac') edares) oae
@@ -332,10 +345,10 @@ evaluateDARE' (EDARE muls adds c) oafeVals =
               do case HM.lookup var oafeVals of
                    Nothing -> failure $ UnknownVariable var "evaluateDARE'"
                    Just vals ->
-                       if length vals <= idx
+                       if V.length vals <= idx
                           then failure $
                                    IndexOutOfBounds var idx "evaluateDARE'"
-                          else return $ vals!!idx
+                          else return $ vals V.! idx
 
 evalDARE :: Field el
          => EDARE OAFEReference el
@@ -405,3 +418,9 @@ runRP initialVarMap rp =
                if l == r then Just l else error "the impossible happened"
             _ -> Nothing
    in (out, outVarMap)
+
+oneZeroDL :: Field el => DList (el, el)
+oneZeroDL = DL.singleton (one, zero)
+
+oneZeroV :: Field el => Vector (el, el)
+oneZeroV = V.singleton (one, zero)

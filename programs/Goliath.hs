@@ -16,6 +16,7 @@ import Data.Conduit ( Conduit, MonadResource
                     , ($$), ($=), (=$=)
                     , runResourceT
                     )
+import Data.Vector (Vector)
 import qualified Data.Conduit.List as CL
 import qualified Data.Conduit.Network as CN
 import qualified Data.Map as M
@@ -46,7 +47,7 @@ die err =
        exitWith $ ExitFailure 1
 
 oacSerializeConduit :: MonadResource m
-                    => Conduit (VariableName, [(Element, Element)])
+                    => Conduit (VariableName, Vector (Element, Element))
                                m BS.ByteString
 oacSerializeConduit = oafeConfigSerializeConduit
 
@@ -77,15 +78,17 @@ configureDavid sd2g edares =
 runGoliath :: CN.ClientSettings -> SetupDavidToGoliath -> IO ()
 runGoliath tokenConf setupD2G =
     do g <- (newGenIO :: IO SystemRandom)
-       putStr "Generating DARES... "
+       putStrLn "Generating DARES..."
        let (errM, dares) = exprToRP g _TEST_EXPR_
        let erp = prepareRPEvaluation dares
            oac = erpOAFEConfig erp
            edares = erpEDares erp
-       putStrLn "Setting up Token ..."
+       putStrLn "Setting up Token..."
        configureToken tokenConf oac
-       putStrLn "Setting up David ..."
+       putStrLn "Setting up Token: OK"
+       putStrLn "Setting up David..."
        configureDavid setupD2G edares
+       putStrLn "Setting up David: OK"
        case errM of
          Left err -> putStrLn "ERROR" >> die ("ERROR: " ++ show err)
          Right _ -> putStrLn "OK"

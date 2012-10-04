@@ -11,8 +11,8 @@ _X_ :: Expr Element
 _X_ = Var "x"
 
 _TEST_EXPR_ :: Expr Element
-_TEST_EXPR_ = 1 + _X_ * _X_ * _X_ * _X_ * _X_ * _X_ *
-              (foldl (*) 1 $ replicate 100 _X_)
+_TEST_EXPR_ = _X_ ^ (10000::Integer) {-1 + _X_ * _X_ * _X_ * _X_ * _X_ * _X_ *
+              (foldl (*) 1 $ replicate 1000 _X_)-}
 
 -- Goliath --> Token
 _CLIENT_CONF_GOLIATH_TO_TOKEN_ :: CN.ClientSettings

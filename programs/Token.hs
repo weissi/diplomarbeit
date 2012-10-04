@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 module Main where
 
 -- # STDLIB
@@ -16,6 +17,7 @@ import Data.Conduit ( Conduit, MonadResource, runResourceT
                     , ($=), ($$), yield
                     )
 import Data.Conduit.Network (Application)
+import Data.Vector (Vector)
 import qualified Data.Conduit.List as CL
 import qualified Data.Conduit.Network as CN
 import qualified Data.Map as M
@@ -26,7 +28,7 @@ import Data.DAREEvaluation ( OAFEConfiguration, OAFEEvaluationRequest
                            , processOAFEEvaluationRequest
                            )
 import Data.Helpers (runTCPServerNoWait)
-import Data.OAFEComm ( oafeConfigParseConduit, oafeConfigSerializeConduit
+import Data.OAFEComm ( oafeConfigParseConduit
                      , oafeEvaluationRequestParseConduit
                      , oafeEvaluationResponseSerializeConduit)
 import Data.LinearExpression (VariableName)
@@ -34,7 +36,8 @@ import Data.LinearExpression (VariableName)
 import StaticConfiguration
 
 configParseConduit :: MonadResource m
-                   => Conduit ByteString m (VariableName, [(Element, Element)])
+                   => Conduit ByteString m
+                              (VariableName, Vector (Element, Element))
 configParseConduit = oafeConfigParseConduit
 
 evalRequestParseConduit :: MonadResource m
@@ -42,12 +45,9 @@ evalRequestParseConduit :: MonadResource m
 evalRequestParseConduit = oafeEvaluationRequestParseConduit
 
 evalResponseSerializeConduit :: MonadResource m
-                             => Conduit (VariableName, [Element]) m ByteString
+                             => Conduit (OAFEEvaluationResponse Element)
+                                        m ByteString
 evalResponseSerializeConduit = oafeEvaluationResponseSerializeConduit
-
-serializeConduit :: MonadResource m
-                 => Conduit (VariableName, [(Element, Element)]) m ByteString
-serializeConduit = oafeConfigSerializeConduit
 
 tokenEvaluatorStartThread :: TMVar (OAFEConfiguration Element) -> IO ()
 tokenEvaluatorStartThread vOAC =
@@ -75,7 +75,7 @@ tokenEval vOAC src sink =
               liftIO $ atomically $ putTMVar vOAC oac'
               return rsp
 
-tokenClient :: (MonadResource m, MonadIO m)
+tokenClient :: forall m. (MonadResource m, MonadIO m)
             => TMVar () -> TMVar (OAFEConfiguration Element) -> Application m
 tokenClient vAcceptConfig vOAC src sink =
     do accept <- liftIO $ atomically $
@@ -90,9 +90,11 @@ tokenClient vAcceptConfig vOAC src sink =
     where launchTokenEvaluation oac =
               do atomically $ putTMVar vOAC oac
                  return ()
+          receiver :: m (OAFEConfiguration Element)
           receiver =
               do l <- src $= configParseConduit $$ CL.consume
                  return $ M.fromList l
+          sender :: OAFEConfiguration Element -> m ()
           sender m =
               do do liftIO $ launchTokenEvaluation m
                     yield (BS.pack [79, 75, 10]) $$ sink

@@ -28,6 +28,7 @@ import qualified Data.Conduit.List as CL
 import qualified Data.Conduit.Network as CN
 import qualified Data.Map as M
 import qualified Data.HashMap.Strict as HM
+import qualified Data.Vector as V
 
 -- # LOCAL
 import Data.DAREEvaluation ( OAFEEvaluationRequest, OAFEEvaluationResponse
@@ -52,8 +53,11 @@ import Data.SetupPhase ( SetupGoliathToDavid, sd2gSerializeConduit
 
 import StaticConfiguration
 
-_CHAN_SIZE_ :: Int
-_CHAN_SIZE_ = 16
+_ARE_EVAL_CHAN_SIZE_ :: Int
+_ARE_EVAL_CHAN_SIZE_ = 16
+
+_INCOMING_ARE_CHAN_SIZE_ :: Int
+_INCOMING_ARE_CHAN_SIZE_ = 1000
 
 evalRspParseConduit :: MonadResource m
                     => Conduit ByteString m (OAFEEvaluationResponse Element)
@@ -130,18 +134,24 @@ evaluate varMap reqs rsps cARE vResult die =
                          loop oaeRef
                    Nothing ->
                       do oae <- readIORef oaeRef
-                         case ( HM.lookup (leftVar _SPECIAL_VAR_OUT_) oae
-                              , HM.lookup (rightVar _SPECIAL_VAR_OUT_) oae
+                         case ( liftM V.toList $
+                                HM.lookup (leftVar _SPECIAL_VAR_OUT_) oae
+                              , liftM V.toList $
+                                HM.lookup (rightVar _SPECIAL_VAR_OUT_) oae
                               ) of
                            (Just [l], Just [r]) ->
                                if l == r
                                   then atomically $ putTMVar vResult (Just l)
                                   else die "The impossible happened! outL!=outR"
                            _ -> atomically $ putTMVar vResult Nothing
+          doPreOutAddition :: OAFEEvaluation Element
+                           -> IO (OAFEEvaluation Element)
           doPreOutAddition oae =
               let svl = leftVar _SPECIAL_VAR_PRE_OUT_
                   svr = rightVar _SPECIAL_VAR_PRE_OUT_
-               in case (HM.lookup svl oae, HM.lookup svr oae) of
+               in case ( liftM V.toList $ HM.lookup svl oae
+                       , liftM V.toList $ HM.lookup svr oae
+                       ) of
                     (Just [valL], Just [valR]) ->
                         do atomically $
                              writeTBMChan reqs
@@ -193,7 +203,7 @@ runEvaluator :: VarMapping Element
              -> IO ()
 runEvaluator varMap reqs rsps vResult die =
     do vStop <- atomically $ newEmptyTMVar
-       cARE <- atomically $ newTBMChan _CHAN_SIZE_
+       cARE <- atomically $ newTBMChan _INCOMING_ARE_CHAN_SIZE_
        _ <- forkIO $ evaluate varMap reqs rsps cARE vResult die
        (runResourceT $
            CN.runTCPServer _SRV_CONF_DAVID_FROM_GOLIATH_ (conn vStop cARE))
@@ -252,9 +262,9 @@ type DieCommand = String -> IO ()
 main :: IO ()
 main =
     do putStrLn "DAVID START"
-       let varMap = M.fromList [("x", fromInteger 5)]
-       cRequests <- atomically $ newTBMChan _CHAN_SIZE_
-       cResponses <- atomically $ newTBMChan _CHAN_SIZE_
+       let varMap = M.fromList [("x", 1)]
+       cRequests <- atomically $ newTBMChan _ARE_EVAL_CHAN_SIZE_
+       cResponses <- atomically $ newTBMChan _ARE_EVAL_CHAN_SIZE_
        vResult <- atomically $ newEmptyTMVar
 
        mainTid <- myThreadId

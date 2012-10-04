@@ -13,9 +13,9 @@ import Data.FieldTypes (Field(..))
 type VarMapping el = Map VariableName el
 type VariableName = String
 
-data LinearExpr el = LinearExpr { leSlope     :: el
-                                , leVariable  :: VariableName
-                                , leIntercept :: el
+data LinearExpr el = LinearExpr { leSlope     :: !el
+                                , leVariable  :: !VariableName
+                                , leIntercept :: !el
                                 }
                    | ConstLinearExpr el
 

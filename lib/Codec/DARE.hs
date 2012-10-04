@@ -43,7 +43,7 @@ getRandomElement :: forall m g el. (Monad m, CryptoRandomGen g, Field el)
                  => CRandT g GenError m el
 getRandomElement =
     do rint <- getCRandom :: CRandT g GenError m Int
-       return $ fromIntegral rint
+       return $! fromIntegral rint
 
 getRandomInvertibleElement :: forall m g el.
                               (Monad m, CryptoRandomGen g, Field el)
@@ -51,10 +51,9 @@ getRandomInvertibleElement :: forall m g el.
 getRandomInvertibleElement =
     loop
     where loop =
-              do rint <- getCRandom :: CRandT g GenError m Int
-                 let rel = fromIntegral rint
-                 if rel /= 0
-                   then return rel
+              do rel <- getRandomElement
+                 if rel /= zero
+                   then return $! rel
                    else loop
 
 -- |DARE for a multiplication getting randoms from generator
@@ -299,7 +298,7 @@ freshVar :: (CryptoRandomGen g, Field el)
 freshVar =
     do n <- lift $ get
        lift $ put (n+1)
-       return $ "__tmp" ++ show n
+       return $ "t" ++ show n
 
 exprToRP' :: (CryptoRandomGen g, Field el)
           => KeyPair el
