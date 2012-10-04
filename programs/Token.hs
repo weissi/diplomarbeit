@@ -20,7 +20,7 @@ import Data.Conduit.Network (Application)
 import Data.Vector (Vector)
 import qualified Data.Conduit.List as CL
 import qualified Data.Conduit.Network as CN
-import qualified Data.Map as M
+import qualified Data.HashMap.Strict as HM
 
 -- # LOCAL
 import Data.DAREEvaluation ( OAFEConfiguration, OAFEEvaluationRequest
@@ -71,7 +71,7 @@ tokenEval vOAC src sink =
            do oac <- liftIO $ atomically $ takeTMVar vOAC
               let rsp = processOAFEEvaluationRequest oac req
                   var = fst rsp
-                  oac' = M.delete var oac
+                  oac' = HM.delete var oac
               liftIO $ atomically $ putTMVar vOAC oac'
               return rsp
 
@@ -93,7 +93,7 @@ tokenClient vAcceptConfig vOAC src sink =
           receiver :: m (OAFEConfiguration Element)
           receiver =
               do l <- src $= configParseConduit $$ CL.consume
-                 return $ M.fromList l
+                 return $ HM.fromList l
           sender :: OAFEConfiguration Element -> m ()
           sender m =
               do do liftIO $ launchTokenEvaluation m

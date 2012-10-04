@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 module Math.FiniteFields.F2Pow256 ( F2Pow256, f2Pow256FromString
                                   , f2Pow256FromUtf8ByteString
                                   , f2Pow256ToUtf8ByteString
@@ -10,6 +11,8 @@ import Data.Helpers (integralBytes)
 import Data.FieldTypes
 import Foreign.Storable (Storable(..))
 import Foreign.Ptr (Ptr, castPtr)
+import Control.Monad.CryptoRandom (CRandom(..))
+import Crypto.Random (CryptoRandomGen(..))
 
 import qualified Math.FiniteFields.Foreign.FFInterface as FFI
 
@@ -17,7 +20,9 @@ newtype F2Pow256 = F2Pow256 { unF2Pow256 :: FFI.OpaqueElement }
 
 binaryOp :: (FFI.OpaqueElement -> FFI.OpaqueElement -> FFI.OpaqueElement)
          -> F2Pow256 -> F2Pow256 -> F2Pow256
-binaryOp op (F2Pow256 l) (F2Pow256 r) = F2Pow256 $ l `op` r
+binaryOp op (F2Pow256 !l) (F2Pow256 !r) =
+   let result = l `op` r
+    in result `seq` F2Pow256 result
 
 instance Field F2Pow256 where
     invert = F2Pow256 . FFI.ffInvertElement . unF2Pow256
@@ -47,6 +52,12 @@ instance Storable F2Pow256 where
     alignment = sizeOf . unF2Pow256
     peek p = fmap F2Pow256 (peek (castPtr p :: Ptr FFI.OpaqueElement))
     poke p a = poke (castPtr p) (unF2Pow256 a)
+
+instance CRandom F2Pow256 where
+    crandom g =
+        case genBytes 32 g of
+          Right (bs, g') -> Right (f2Pow256FromBytes bs, g')
+          Left err -> Left err
 
 fromIntegerF2Pow256 :: Integer -> F2Pow256
 fromIntegerF2Pow256  = F2Pow256 . FFI.ffElementFromBytes . integralBytes . abs

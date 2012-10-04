@@ -19,7 +19,7 @@ import Data.Conduit ( Conduit, MonadResource
 import Data.Vector (Vector)
 import qualified Data.Conduit.List as CL
 import qualified Data.Conduit.Network as CN
-import qualified Data.Map as M
+import qualified Data.HashMap.Strict as HM
 
 -- # LOCAL
 import Codec.DARE (exprToRP)
@@ -58,7 +58,7 @@ configureToken tokenSettings oac =
        putStrLn "OK"
     where confTokenApp :: MonadResource m => CN.Application m
           confTokenApp _ sink =
-              CL.sourceList (M.toList oac)
+              CL.sourceList (HM.toList oac)
               $= oacSerializeConduit
               $$ sink
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -F -pgmF htfpp #-}
 
 -- # Standard Library
@@ -6,7 +7,7 @@ import Data.Map (Map)
 import qualified Data.Map as M
 
 -- # Site Packages
-import Control.Monad.CryptoRandom (CRandT, getCRandom, runCRandT)
+import Control.Monad.CryptoRandom (CRandT, getCRandom, runCRandT, CRandom)
 import Crypto.Random (SystemRandom, GenError, CryptoRandomGen, newGenIO)
 import Math.Algebra.Field.Base
 import Math.Common.IntegerAsType (IntegerAsType)
@@ -96,7 +97,7 @@ instance IntegerAsType n => Random (Fp n) where
             rfp = fromIntegral rint'
             in (rfp, g')
 
-execDare :: Field el => Expr el -> IO (Maybe el)
+execDare :: (CRandom el, Field el) => Expr el -> IO (Maybe el)
 execDare expr =
     do g <- (newGenIO :: IO SystemRandom)
        let (_, dares) = exprToRP g expr

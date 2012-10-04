@@ -7,11 +7,12 @@ module Data.LinearExpression ( LinearExpr(..), VarMapping, VariableName
                              where
 
 import Data.Map (Map)
+import Data.Text (Text)
 import qualified Data.Map as M
 import Data.FieldTypes (Field(..))
 
 type VarMapping el = Map VariableName el
-type VariableName = String
+type VariableName = Text
 
 data LinearExpr el = LinearExpr { leSlope     :: !el
                                 , leVariable  :: !VariableName
@@ -68,5 +69,5 @@ changeVar le vnew =
 instance (Show el, Field el) => Show (LinearExpr el) where
     show le =
         case le of
-          LinearExpr s v i -> show s ++ " * " ++ v ++ " + " ++ show i
+          LinearExpr s v i -> show s ++ " * " ++ show v ++ " + " ++ show i
           ConstLinearExpr cle -> show cle

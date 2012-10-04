@@ -24,13 +24,15 @@ import qualified Data.Sequence as S
 
 -- # SITE PACKAGES
 import Data.Conduit (Conduit, MonadResource, (=$=))
+import Data.Text (Text)
 import Data.Vector (Vector)
-import Text.ProtocolBuffers.Basic (Utf8(Utf8), uFromString, uToString)
+import Text.ProtocolBuffers.Basic (Utf8(Utf8))
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ByteString.Internal      as BSI
 import qualified Data.ByteString.Lazy.Internal as BSLI
 import qualified Data.Conduit.List as CL
+import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
 
 -- # LOCAL
@@ -40,11 +42,7 @@ import Data.DAREEvaluation ( EDARE(..), OAFEReference(..)
                            )
 import Data.FieldTypes (Field(..))
 import Data.LinearExpression (VariableName)
-import Math.FiniteFields.F2Pow256 ( F2Pow256, f2Pow256ToUtf8ByteString
-                                  , f2Pow256FromUtf8ByteString
-                                  , f2Pow256FromBytes
-                                  , f2Pow256ToBytes
-                                  )
+import Math.FiniteFields.F2Pow256 (F2Pow256, f2Pow256FromBytes, f2Pow256ToBytes)
 
 -- # PROTOBUF
 import qualified Data.ProtoBufs.OAFE.LinearExpr as Pb
@@ -55,20 +53,9 @@ import qualified Data.ProtoBufs.ARE.ARE as PbARE
 import qualified Data.ProtoBufs.ARE.MulTerm as PbARE
 import qualified Data.ProtoBufs.ARE.OAFEReference as PbARE
 
-class (Show el, Read el) => Utf8Serializable el where
-    serializeUtf8 :: el -> Utf8
-    parseUtf8 :: Utf8 -> el
-    serializeUtf8 = uFromString . show
-    parseUtf8 = read . uToString
-
 class ByteSerializable el where
     serializeBytes :: el -> BSL.ByteString
     parseBytes :: BSL.ByteString -> el
-
-instance Utf8Serializable F2Pow256 where
-    serializeUtf8 = Utf8 . BSL.fromChunks . (:[]) . f2Pow256ToUtf8ByteString
-    parseUtf8 (Utf8 bsl) =
-        (f2Pow256FromUtf8ByteString . toStrictBS) bsl
 
 instance ByteSerializable F2Pow256 where
     serializeBytes = BSL.fromChunks . (:[]) . f2Pow256ToBytes
@@ -86,6 +73,12 @@ toStrictBS lb = BSI.unsafeCreate len $ go lb
         withForeignPtr fp $ \p -> do
             BSI.memcpy ptr (p `plusPtr` s) (fromIntegral l)
             go r (ptr `plusPtr` l)
+
+uToText :: Utf8 -> Text
+uToText (Utf8 bs) = TE.decodeUtf8 $ toStrictBS bs
+
+uFromText :: Text -> Utf8
+uFromText = Utf8 . BSL.fromChunks . (:[]) . TE.encodeUtf8
 
 -- # CONDUITS
 oafeConfigParseConduit :: (MonadResource m, Field el, ByteSerializable el)
@@ -153,38 +146,38 @@ oafeEvaluationResponseAsProtoBuf :: (Field el, ByteSerializable el)
                                  => (VariableName, Vector el)
                                  -> Pb.OAFEEvaluationResponse
 oafeEvaluationResponseAsProtoBuf (var, vals) =
-    Pb.OAFEEvaluationResponse (uFromString var)
+    Pb.OAFEEvaluationResponse (uFromText var)
                               (S.fromList $ map serializeBytes $ V.toList vals)
 
 oafeEvaluationRequestFromProtoBuf :: (Field el, ByteSerializable el)
                                   => Pb.OAFEEvaluationRequest
                                   -> (VariableName, el)
 oafeEvaluationRequestFromProtoBuf (Pb.OAFEEvaluationRequest var val) =
-    (uToString var, parseBytes val)
+    (uToText var, parseBytes val)
 
 oafeEvaluationRequestAsProtoBuf :: (Field el, ByteSerializable el)
                                 => OAFEEvaluationRequest el
                                 -> Pb.OAFEEvaluationRequest
 oafeEvaluationRequestAsProtoBuf (var, el) =
-    Pb.OAFEEvaluationRequest (uFromString var) (serializeBytes el)
+    Pb.OAFEEvaluationRequest (uFromText var) (serializeBytes el)
 
 oafeEvaluationResponseFromProtoBuf :: (Field el, ByteSerializable el)
                                    => Pb.OAFEEvaluationResponse
                                    -> OAFEEvaluationResponse el
 oafeEvaluationResponseFromProtoBuf (Pb.OAFEEvaluationResponse var vals) =
-    (uToString var, V.fromList $ map parseBytes $ F.toList vals)
+    (uToText var, V.fromList $ map parseBytes $ F.toList vals)
 
 decodeOAFEConfiguration :: (Field el, ByteSerializable el)
                         => Pb.OAFEConfig
                         -> (VariableName, Vector (el, el))
 decodeOAFEConfiguration (Pb.OAFEConfig var exprs) =
-    (uToString var, V.map decodeLinearExpr $ (V.fromList . F.toList) exprs)
+    (uToText var, V.map decodeLinearExpr $ (V.fromList . F.toList) exprs)
 
 oafeConfigAsProtoBuf :: (Field el, ByteSerializable el)
                      => (VariableName, Vector (el, el))
                      -> Pb.OAFEConfig
 oafeConfigAsProtoBuf (v, les) =
-    Pb.OAFEConfig (uFromString v) (S.fromList $ V.toList $
+    Pb.OAFEConfig (uFromText v) (S.fromList $ V.toList $
                                    V.map encodeLinearExpr les)
 
 encodeLinearExpr :: (Field el, ByteSerializable el) => (el, el) -> Pb.LinearExpr
@@ -199,11 +192,11 @@ decodeLinearExpr lePb =
 
 encodeOAFERef :: OAFEReference -> PbARE.OAFEReference
 encodeOAFERef (OAFERef var idx) =
-   PbARE.OAFEReference (uFromString var) (fromIntegral idx)
+   PbARE.OAFEReference (uFromText var) (fromIntegral idx)
 
 decodeOAFERef :: PbARE.OAFEReference -> OAFEReference
 decodeOAFERef (PbARE.OAFEReference var idx) =
-    OAFERef (uToString var) (fromIntegral idx)
+    OAFERef (uToText var) (fromIntegral idx)
 
 encodeMulTerm :: (OAFEReference, OAFEReference) -> PbARE.MulTerm
 encodeMulTerm (l, r) = PbARE.MulTerm (encodeOAFERef l) (encodeOAFERef r)
@@ -218,13 +211,13 @@ encodeARE (var, EDARE muls adds cnst) =
     let encConst = serializeBytes cnst
         encAdds = S.fromList $ map encodeOAFERef adds
         encMuls = S.fromList $ map encodeMulTerm muls
-     in PbARE.ARE (uFromString var) encMuls encAdds encConst
+     in PbARE.ARE (uFromText var) encMuls encAdds encConst
 
 decodeARE :: (Field el, ByteSerializable el)
           => PbARE.ARE
           -> (VariableName, EDARE OAFEReference el)
 decodeARE (PbARE.ARE encVar encMuls encAdds encConst) =
-    let var = uToString encVar
+    let var = uToText encVar
         muls = map decodeMulTerm $ F.toList encMuls
         adds = map decodeOAFERef $ F.toList encAdds
         cnst = parseBytes encConst

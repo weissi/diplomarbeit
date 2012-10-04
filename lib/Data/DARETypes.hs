@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Data.DARETypes ( VariableName
                       , VarMapping
                       , PrimaryExpression(..)
@@ -11,11 +12,10 @@ module Data.DARETypes ( VariableName
 
 import Data.DList (DList)
 import qualified Data.DList as DL
+import qualified Data.Text as T
 
 import Data.FieldTypes (Field(..))
-import Data.LinearExpression (LinearExpr(..), VarMapping)
-
-type VariableName = String
+import Data.LinearExpression (LinearExpr(..), VarMapping, VariableName)
 
 data PrimaryExpression el = Variable VariableName
                           | Constant el
@@ -29,9 +29,9 @@ data BiEncPrimExpr el = BiConst el
 
 type BiKeyPair el = (KeyPair el, KeyPair el)
 
-data DARE el = DARE (BiKeyPair el)
-                    (DList (BiLinearExpr el, BiLinearExpr el))
-                    (DList (BiLinearExpr el))
+data DARE el = DARE !(BiKeyPair el)
+                    !(DList (BiLinearExpr el, BiLinearExpr el))
+                    !(DList (BiLinearExpr el))
 
 type RPStmt el = (VariableName, DARE el)
 type RP el = DList (RPStmt el)
@@ -40,10 +40,10 @@ instance (Field el, Show el) => Show (DARE el) where
     show = prettyPrintDARE
 
 leftVar :: VariableName -> VariableName
-leftVar v = "__enc_" ++ v ++ "~_1"
+leftVar v = "__enc_" `T.append` v `T.append` "~_1"
 
 rightVar :: VariableName -> VariableName
-rightVar v = "__enc_" ++ v ++ "~_2"
+rightVar v = "__enc_" `T.append` v `T.append` "~_2"
 
 _SPECIAL_VAR_OUT_ :: VariableName
 _SPECIAL_VAR_OUT_ = "out"

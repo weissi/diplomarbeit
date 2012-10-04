@@ -28,6 +28,7 @@ import qualified Data.Conduit.List as CL
 import qualified Data.Conduit.Network as CN
 import qualified Data.Map as M
 import qualified Data.HashMap.Strict as HM
+import qualified Data.Text as T
 import qualified Data.Vector as V
 
 -- # LOCAL
@@ -118,7 +119,8 @@ evaluate varMap reqs rsps cARE vResult die =
               do areStmt <- atomically $ readTBMChan cARE
                  case areStmt of
                    Just (var, are) ->
-                      do putStrLn $ "Next ARE evaluates variable " ++ var ++ ":"
+                      do putStrLn ("Next ARE evaluates variable " ++
+                                   T.unpack var ++ ":")
                          oae <- if var == leftVar _SPECIAL_VAR_OUT_
                                    then readIORef oaeRef >>= doPreOutAddition
                                    else readIORef oaeRef
@@ -262,7 +264,7 @@ type DieCommand = String -> IO ()
 main :: IO ()
 main =
     do putStrLn "DAVID START"
-       let varMap = M.fromList [("x", 1)]
+       let varMap = M.fromList [(T.pack "x", 1)]
        cRequests <- atomically $ newTBMChan _ARE_EVAL_CHAN_SIZE_
        cResponses <- atomically $ newTBMChan _ARE_EVAL_CHAN_SIZE_
        vResult <- atomically $ newEmptyTMVar

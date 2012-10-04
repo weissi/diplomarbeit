@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Main where
 
 -- STDLIB
@@ -7,6 +8,7 @@ import Data.List (foldl')
 import qualified Data.Map as M
 
 -- SITE PACKAGES
+import Control.Monad.CryptoRandom (CRandom(..))
 import Crypto.Random (SystemRandom, newGenIO)
 import Math.Algebra.Field.Base (Fp, F97)
 import Math.Common.IntegerAsType (IntegerAsType)
@@ -31,7 +33,13 @@ instance IntegerAsType n => Field (Fp n) where
     zero = fromInteger 0
     one = fromInteger 1
 
-evalDirect :: (Field el, Show el)
+instance IntegerAsType n => CRandom (Fp n) where
+    crandom g =
+        case crandom g of
+          Left err -> Left err
+          Right (a, g') -> Right (fromIntegral (a :: Int), g')
+
+evalDirect :: (CRandom el, Field el, Show el)
            => SystemRandom -> VarMapping el -> Expr el -> el
 evalDirect g varMap expr =
     let (_, dares) = exprToRP g expr
