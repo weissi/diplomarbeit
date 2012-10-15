@@ -39,7 +39,7 @@ import Data.DARETypes ( _SPECIAL_VAR_OUT_, _SPECIAL_VAR_PRE_OUT_
                       , _SPECIAL_VAR_ADDED_PRE_OUT_
                       , leftVar, rightVar
                       )
-import Data.Helpers (takeOneConduit)
+import Data.Helpers (takeOneConduit, runTCPClientNoWait)
 import Data.LinearExpression (VarMapping, VariableName)
 import Data.OAFEComm ( oafeEvaluationResponseParseConduit
                      , oafeEvaluationRequestSerializeConduit
@@ -79,7 +79,7 @@ spawnCommThreads :: CN.ClientSettings RMonad
                  -> IO ()
 spawnCommThreads tokenSettings reqs rsps =
     do _ <- forkIO $
-              (runResourceT $ CN.runTCPClient tokenSettings commApp)
+              (runResourceT $ runTCPClientNoWait tokenSettings commApp)
               `finally` do atomically $ closeTBMChan reqs
                            atomically $ closeTBMChan rsps
        return ()
