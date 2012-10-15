@@ -5,7 +5,7 @@ HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd)
 set -e
 
 cd "$HERE"
-FILE="$(date +%Y-%M-%d_%H-%M-%S).text"
+FILE="$(date +%Y-%m-%d_%H-%M-%S).text"
 (
 echo "Versions"
 ghc --version
