@@ -8,6 +8,7 @@ cd "$HERE"
 FILE="$(date +%Y-%m-%d_%H-%M-%S).text"
 (
 echo "Versions"
+uname -a
 ghc --version
 echo
 echo "Last patch"
