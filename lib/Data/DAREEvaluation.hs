@@ -25,6 +25,7 @@ import Control.Monad.Trans (lift)
 import Control.Monad.State.Strict ( State, StateT, get, put
                                   , execStateT, execState
                                   )
+import Control.Monad.Writer.Lazy (Writer, tell, runWriter)
 import qualified Data.DList as DL
 import qualified Data.Map as M
 import qualified Data.HashMap.Strict as HM
@@ -120,23 +121,22 @@ prepareRPEvaluation rp =
         rpVarNames :: [VariableName]
         (rpVarNames, rpDares) = unzip $ DL.toList rp
         toEdares :: [DARE el]
-                 -> DList (EDARE OAFEReference el)
                  -> (OAFEConfigGen el)
-                 -> (DList (EDARE OAFEReference el), OAFEConfigGen el)
-        toEdares dares edares oac =
+                 -> Writer (DList (EDARE OAFEReference el)) (OAFEConfigGen el)
+        toEdares dares oac =
             case dares of
-              [] -> (edares, oac)
+              [] -> return $! oac
               (dare:dares') ->
-                  let (edareL, edareR, oac') = prepareDAREEvaluation dare oac
-                   in toEdares dares'
-                               (edares `DL.snoc` edareL `DL.snoc` edareR)
-                               oac'
-        erps :: (DList (EDARE OAFEReference el), OAFEConfigGen el)
-        erps = toEdares rpDares DL.empty HM.empty
+                  do let (edareL, edareR, oac') = prepareDAREEvaluation dare oac
+                     tell $! DL.singleton edareL
+                     tell $! DL.singleton edareR
+                     toEdares dares' oac'
+        erps :: (OAFEConfigGen el, DList (EDARE OAFEReference el))
+        erps = runWriter $ toEdares rpDares HM.empty
         finalEDares :: DList (EDARE OAFEReference el)
-        finalEDares = fst erps
+        finalEDares = snd erps
         finalOAC :: OAFEConfigGen el
-        finalOAC = (snd erps) `HM.union`
+        finalOAC = (fst erps) `HM.union`
                    HM.fromList [ (leftVar _SPECIAL_VAR_OUT_, (0,oneZeroDL))
                                , (rightVar _SPECIAL_VAR_OUT_, (0,oneZeroDL))
                                , (leftVar _SPECIAL_VAR_PRE_OUT_, (0,oneZeroDL))

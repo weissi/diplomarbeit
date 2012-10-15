@@ -17,8 +17,8 @@ module Codec.DARE ( dareEncodeMulRnd
 import Data.List (foldl', nub)
 import Data.Map (Map)
 import Control.Monad (liftM2)
-import Control.Monad.Writer.Lazy (WriterT, tell, runWriterT)
-import Control.Monad.State.Strict (State, evalState, get, put)
+import Control.Monad.Writer.Lazy (Writer, tell, runWriter)
+import Control.Monad.State.Strict (StateT, evalStateT, get, put)
 import Control.Monad.Trans (lift)
 import qualified Data.DList as DL
 import qualified Data.Map as M
@@ -275,7 +275,7 @@ dareDecode varMap (DARE _ muls adds) =
                    Nothing -> Nothing
                    Just vals -> Just $ (foldl' (+) 0 vals)
 
-type RPGenMonad g el = CRandT g GenError (WriterT (RP el) (State Int))
+type RPGenMonad g el = CRandT g GenError (StateT Int (Writer (RP el)))
 
 _CONST_0_ :: Field e => PrimaryExpression e
 _CONST_0_ = Constant 0
@@ -416,7 +416,7 @@ exprToRP g expr =
                 lift $ tell $ DL.singleton (_SPECIAL_VAR_PRE_OUT_, zDare)
                 let (DARE (_, dkp) _ _) = zDare
                 finalDARE skp dkp _SPECIAL_VAR_ADDED_PRE_OUT_
-       (ge, dares) = evalState (runWriterT (runCRandT act g)) 0
+       (ge, dares) = runWriter (evalStateT (runCRandT act g) 0)
        lastDare =
            case ge of
              Left _ -> DL.empty
