@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wwarn #-}
 module Main where
 
@@ -13,10 +14,7 @@ import Data.DAREEvaluation
 import Data.DARETypes (PrimaryExpression(..), VarMapping)
 import Data.ExpressionTypes (Expr(..))
 import Data.FieldTypes (Field(..))
-import Data.OAFEComm ( oafeConfigAsBytes, oafeConfigFromBytes
-                     , oafeConfigAsProtoBuf
-                     , oafeConfigSerializeConduit
-                     )
+import Data.OAFEComm (oafeConfigSerializeConduit)
 
 import qualified Data.ByteString.Lazy as BSL
 import System.IO (withFile, IOMode(WriteMode))
@@ -46,30 +44,12 @@ main =
        putStrLn "EXERCISE 2"
        g <- (newGenIO :: IO SystemRandom)
        let (_, dares) = exprToRP g testExpr1
-       print $ DL.toList dares
-       let (outM, _) = runRP _TestVarMap_ dares
-       putStrLn $ "DIRECT EVALUATION: " ++ show outM
-       putStrLn "ExprToDARE: done :-)"
+       let (dareOne:_) = DL.toList dares
+       print $ dareOne
        let erp = prepareRPEvaluation dares
-           oacWM = oafeConfigAsBytes (erpOAFEConfig erp)
-           erp' = oafeConfigFromBytes oacWM
-       runResourceT $     sourceList [erpOAFEConfig erp]
-                      =$= oafeConfigSerializeConduit
-                       $$ sinkFile "/tmp/bla2.pb"
-       case erp' of
-         Left e -> putStrLn $ "ERROR: " ++ e
-         Right erp'' -> print (erp'' :: OAFEConfiguration Element)
-       case runERP erp _TestVarMap_ of
-         Left err -> putStrLn $ "ERROR: " ++ err
-         Right val -> putStrLn $ "OAFE EVALUATION: SUCCESS: " ++ show val
-       print $ (map fromInteger [1..10] :: [Element])
-       let a :: Element
-           a = 345234985
-           b = a+a
-           c = b + ((-1) * a)
-       putStrLn $ "a = " ++ show a
-       putStrLn $ "b = a + a = " ++ show b
-       putStrLn $ "c = b + ((-1)*a) = a = " ++ show c
+           edares = erpEDares erp
+           (edOne:_) = edares
+       putStrLn $ show edOne
        return ()
 
 testExpr1 :: Expr Element
@@ -78,7 +58,7 @@ testExpr1 :: Expr Element
 --testExpr1 = _X_ * _Y_
 --testExpr1 = _X_ ^ 1000
 --testExpr1 = foldl' (+) 0 $ take 10000 $ repeat _X_
-testExpr1 = 1 + 17 + _X_ + (_X_ + 23)
+testExpr1 = _X_ ^ (100000 :: Integer)
 
 _X_ :: Field e => Expr e
 _X_ = Var "x"
