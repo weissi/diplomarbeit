@@ -85,7 +85,7 @@ Executable David
                       resourcet >= 0.4
     hs-source-dirs:   programs
     GHC-Options:      -Wall
-    GHC-Options:      -Werror
+    --GHC-Options:      -Werror
     GHC-Options:      -rtsopts
     GHC-Prof-Options: -rtsopts -auto-all -caf-all
 
@@ -106,7 +106,7 @@ Executable Goliath
                       resourcet >= 0.4
     hs-source-dirs:   programs
     GHC-Options:      -Wall
-    GHC-Options:      -Werror
+    --GHC-Options:      -Werror
     GHC-Options:      -rtsopts
     GHC-Prof-Options: -rtsopts -auto-all -caf-all
 
@@ -128,7 +128,7 @@ Executable Token
                       resourcet >= 0.4
     hs-source-dirs:   programs
     GHC-Options:      -Wall
-    GHC-Options:      -Werror
+    --GHC-Options:      -Werror
     GHC-Options:      -rtsopts
     GHC-Prof-Options: -rtsopts -auto-all -caf-all
 
@@ -190,5 +190,5 @@ Executable ExprToDARE
                       diplomarbeit, bytestring >= 0.10, conduit >= 0.5
     hs-source-dirs:   programs
     GHC-Options:      -Wall
-    GHC-Options:      -Werror
+    --GHC-Options:      -Werror
     GHC-Prof-Options: -rtsopts -auto-all -caf-all
