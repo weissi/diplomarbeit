@@ -1,0 +1,183 @@
+Versions
+The Glorious Glasgow Haskell Compilation System, version 7.6.1
+
+Last patch
+----------
+commit 90a4583be269e6d0550dc8bc147d7f6b059b9224
+Author: Johannes Weiß <weiss@tux4u.de>
+Date:   Mon Oct 15 21:16:22 2012 +0200
+
+    BUGFIX: save_bench: correct month
+
+Modifications
+-------------
+# On branch master
+# Your branch is ahead of 'origin/master' by 1 commit.
+#
+# Untracked files:
+#   (use "git add <file>..." to include in what will be committed)
+#
+#	benchmark-results/2012-10-15_21-16-27.text
+nothing added to commit but untracked files present (use "git add" to track)
+
+Benchmark
+---------
+Running 1 benchmarks...
+Benchmark BenchDARE: RUNNING...
+warming up
+estimating clock resolution...
+mean is 4.773693 us (160001 iterations)
+found 1586 outliers among 159999 samples (1.0%)
+  1419 (0.9%) high severe
+estimating cost of a clock call...
+mean is 1.234809 us (39 iterations)
+found 2 outliers among 39 samples (5.1%)
+  2 (5.1%) high mild
+
+benchmarking dare direct F97/x ^ 1
+mean: 151.9920 us, lb 150.3279 us, ub 154.0544 us, ci 0.950
+std dev: 9.458811 us, lb 7.952631 us, ub 11.07447 us, ci 0.950
+found 5 outliers among 100 samples (5.0%)
+  5 (5.0%) high mild
+variance introduced by outliers: 59.499%
+variance is severely inflated by outliers
+
+benchmarking dare direct F97/x ^ 10
+mean: 1.785990 ms, lb 1.780911 ms, ub 1.794574 ms, ci 0.950
+std dev: 33.05091 us, lb 20.92821 us, ub 51.86304 us, ci 0.950
+found 3 outliers among 100 samples (3.0%)
+  2 (2.0%) high severe
+variance introduced by outliers: 11.343%
+variance is moderately inflated by outliers
+
+benchmarking dare direct F97/x ^ 100
+mean: 20.40709 ms, lb 20.28677 ms, ub 20.54667 ms, ci 0.950
+std dev: 662.7545 us, lb 584.9053 us, ub 802.0094 us, ci 0.950
+variance introduced by outliers: 27.754%
+variance is moderately inflated by outliers
+
+benchmarking dare direct F97/x ^ 1000
+collecting 100 samples, 1 iterations each, in estimated 22.32580 s
+mean: 227.6867 ms, lb 223.6987 ms, ub 234.8444 ms, ci 0.950
+std dev: 26.54140 ms, lb 17.56085 ms, ub 43.74337 ms, ci 0.950
+found 13 outliers among 100 samples (13.0%)
+  9 (9.0%) high mild
+  4 (4.0%) high severe
+variance introduced by outliers: 84.169%
+variance is severely inflated by outliers
+
+benchmarking dare direct F97/x * 1
+mean: 194.4827 us, lb 192.6067 us, ub 198.6455 us, ci 0.950
+std dev: 13.63711 us, lb 7.553556 us, ub 25.95666 us, ci 0.950
+found 16 outliers among 100 samples (16.0%)
+  8 (8.0%) high mild
+  8 (8.0%) high severe
+variance introduced by outliers: 64.616%
+variance is severely inflated by outliers
+
+benchmarking dare direct F97/x * 10
+mean: 563.4666 us, lb 562.3653 us, ub 564.5765 us, ci 0.950
+std dev: 5.672886 us, lb 5.121900 us, ub 6.310918 us, ci 0.950
+
+benchmarking dare direct F97/x * 100
+mean: 5.176804 ms, lb 5.103939 ms, ub 5.275500 ms, ci 0.950
+std dev: 432.4376 us, lb 344.3254 us, ub 617.4784 us, ci 0.950
+found 11 outliers among 100 samples (11.0%)
+  8 (8.0%) high mild
+  3 (3.0%) high severe
+variance introduced by outliers: 72.774%
+variance is severely inflated by outliers
+
+benchmarking dare direct F97/x * 1000
+mean: 49.57068 ms, lb 49.37166 ms, ub 49.77608 ms, ci 0.950
+std dev: 1.038495 ms, lb 960.3069 us, ub 1.122464 ms, ci 0.950
+variance introduced by outliers: 14.199%
+variance is moderately inflated by outliers
+
+benchmarking dare direct F97/x * 10000
+collecting 100 samples, 1 iterations each, in estimated 72.20061 s
+mean: 570.1173 ms, lb 561.6064 ms, ub 584.3329 ms, ci 0.950
+std dev: 54.92819 ms, lb 36.96022 ms, ub 86.06885 ms, ci 0.950
+found 8 outliers among 100 samples (8.0%)
+  3 (3.0%) high mild
+  5 (5.0%) high severe
+variance introduced by outliers: 77.949%
+variance is severely inflated by outliers
+
+benchmarking dare direct F2Pow256/x ^ 1
+mean: 121.1383 us, lb 113.7092 us, ub 135.1597 us, ci 0.950
+std dev: 51.16428 us, lb 32.29721 us, ub 73.31021 us, ci 0.950
+found 8 outliers among 100 samples (8.0%)
+  7 (7.0%) high severe
+variance introduced by outliers: 98.914%
+variance is severely inflated by outliers
+
+benchmarking dare direct F2Pow256/x ^ 10
+mean: 3.216996 ms, lb 3.185029 ms, ub 3.256255 ms, ci 0.950
+std dev: 180.8584 us, lb 152.8565 us, ub 220.2077 us, ci 0.950
+found 4 outliers among 100 samples (4.0%)
+  4 (4.0%) high mild
+variance introduced by outliers: 54.450%
+variance is severely inflated by outliers
+
+benchmarking dare direct F2Pow256/x ^ 100
+mean: 40.81311 ms, lb 40.38796 ms, ub 41.43225 ms, ci 0.950
+std dev: 2.591300 ms, lb 1.966145 ms, ub 4.056346 ms, ci 0.950
+found 6 outliers among 100 samples (6.0%)
+  5 (5.0%) high mild
+  1 (1.0%) high severe
+variance introduced by outliers: 60.510%
+variance is severely inflated by outliers
+
+benchmarking dare direct F2Pow256/x ^ 1000
+collecting 100 samples, 1 iterations each, in estimated 45.83340 s
+mean: 502.5107 ms, lb 499.9340 ms, ub 505.9250 ms, ci 0.950
+std dev: 15.00336 ms, lb 11.08289 ms, ub 20.83598 ms, ci 0.950
+found 13 outliers among 100 samples (13.0%)
+  2 (2.0%) low severe
+  2 (2.0%) low mild
+  5 (5.0%) high mild
+  4 (4.0%) high severe
+variance introduced by outliers: 24.815%
+variance is moderately inflated by outliers
+
+benchmarking dare direct F2Pow256/x * 1
+mean: 186.1729 us, lb 184.9469 us, ub 187.4341 us, ci 0.950
+std dev: 6.396689 us, lb 5.706291 us, ub 7.422047 us, ci 0.950
+variance introduced by outliers: 30.645%
+variance is moderately inflated by outliers
+
+benchmarking dare direct F2Pow256/x * 10
+mean: 427.5175 us, lb 425.1987 us, ub 430.1061 us, ci 0.950
+std dev: 12.51539 us, lb 10.28164 us, ub 17.96821 us, ci 0.950
+found 29 outliers among 100 samples (29.0%)
+  17 (17.0%) low severe
+  6 (6.0%) low mild
+  5 (5.0%) high mild
+  1 (1.0%) high severe
+variance introduced by outliers: 23.860%
+variance is moderately inflated by outliers
+
+benchmarking dare direct F2Pow256/x * 100
+mean: 3.754585 ms, lb 3.659700 ms, ub 3.857195 ms, ci 0.950
+std dev: 508.5993 us, lb 453.4557 us, ub 581.9497 us, ci 0.950
+variance introduced by outliers: 87.341%
+variance is severely inflated by outliers
+
+benchmarking dare direct F2Pow256/x * 1000
+mean: 53.37625 ms, lb 52.96743 ms, ub 53.79636 ms, ci 0.950
+std dev: 2.124604 ms, lb 1.886178 ms, ub 2.453835 ms, ci 0.950
+variance introduced by outliers: 36.576%
+variance is moderately inflated by outliers
+
+benchmarking dare direct F2Pow256/x * 10000
+collecting 100 samples, 1 iterations each, in estimated 101.0378 s
+mean: 1.038517 s, lb 1.030764 s, ub 1.049369 s, ci 0.950
+std dev: 46.61035 ms, lb 35.67980 ms, ub 59.67567 ms, ci 0.950
+found 15 outliers among 100 samples (15.0%)
+  2 (2.0%) low mild
+  3 (3.0%) high mild
+  10 (10.0%) high severe
+variance introduced by outliers: 42.498%
+variance is moderately inflated by outliers
+Benchmark BenchDARE: FINISH
