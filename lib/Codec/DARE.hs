@@ -161,8 +161,8 @@ decodeAndApply :: Field el
                -> BiEncPrimExpr el
                -> el
                -> LinearExpr el
-decodeAndApply prjVar prjKey skp slope x intercept =
-    LE.apply slope (decodeBiEncPrimExpr skp prjVar prjKey x) intercept
+decodeAndApply prjVar prjKey skp slope x =
+    LE.apply slope (decodeBiEncPrimExpr skp prjVar prjKey x)
 
 decodeAndApplyL :: Field el
                 => KeyPair el
@@ -216,7 +216,7 @@ dareEncodeDareAddRnd :: (Monad m, CryptoRandomGen g, Field el)
                      -> DARE el
                      -> CRandT g GenError m (DARE el)
 dareEncodeDareAddRnd skp dl dr =
-    do return $! dareEncodeDareAdd skp dl dr
+    return $! dareEncodeDareAdd skp dl dr
 
 dareEncodePrimaryExprRnd :: (Monad m, CryptoRandomGen g, Field el, CRandom el)
                          => KeyPair el
@@ -262,7 +262,7 @@ dareDecode varMap (DARE _ muls adds) =
        return (l, r)
     where addValsM :: ((LinearExpr el, LinearExpr el) -> LinearExpr el)
                    -> [Maybe el]
-          addValsM prj = map (LE.evaluate varMap) (map prj $ DL.toList adds)
+          addValsM prj = map (LE.evaluate varMap . prj) (DL.toList adds)
           mulValsM :: ((LinearExpr el, LinearExpr el) -> LinearExpr el)
                    -> [Maybe el]
           mulValsM prj = map (doMul prj) $ DL.toList muls
@@ -270,10 +270,10 @@ dareDecode varMap (DARE _ muls adds) =
                                         (LE.evaluate varMap (prj ler))
           outL = case sequence (addValsM fst ++ mulValsM fst) of
                    Nothing -> Nothing
-                   Just vals -> Just $ (foldl' (+) 0 vals)
+                   Just vals -> Just $ foldl' (+) 0 vals
           outR = case sequence (addValsM snd ++ mulValsM snd) of
                    Nothing -> Nothing
-                   Just vals -> Just $ (foldl' (+) 0 vals)
+                   Just vals -> Just $ foldl' (+) 0 vals
 
 type RPGenMonad g el = CRandT g GenError (StateT Int (Writer (RP el)))
 
@@ -297,14 +297,14 @@ varToBiVar :: Field el
 varToBiVar dkps v =
     case M.lookup v dkps of
       Just dkp -> BiVar dkp v
-      Nothing -> error $ "lookup in initial dkps failed for "++(T.unpack v)
+      Nothing -> error $ "lookup in initial dkps failed for " ++ T.unpack v
 
 freshVar :: (CryptoRandomGen g, Field el)
          => (RPGenMonad g el) VariableName
 freshVar =
-    do n <- lift $ get
+    do n <- lift get
        lift $ put (n+1)
-       return $ "t" `T.append` (T.pack $ show n)
+       return $ "t" `T.append` T.pack (show n)
 
 exprToRP' :: (CryptoRandomGen g, Field el, CRandom el)
           => KeyPair el

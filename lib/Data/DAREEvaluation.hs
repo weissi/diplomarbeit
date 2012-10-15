@@ -50,13 +50,13 @@ import Data.LinearExpression ( LinearExpr(..), VariableName, VarMapping
 import Codec.DARE (dareDecode)
 
 instance Show a => Show (DList a) where
-    show dl = (show . DL.toList) dl
+    show = show . DL.toList
 
 type OAFEConfiguration el = HashMap VariableName (Vector (el, el))
 type OAFEConfigGen el = HashMap VariableName (Int, DList (el, el))
 type OAFEEvaluation el    = HashMap VariableName (Vector el)
 type OAFEEvaluationRequest el = (VariableName, el)
-type OAFEEvaluationResponse el = (VariableName, (Vector el))
+type OAFEEvaluationResponse el = (VariableName, Vector el)
 
 data OAFEReference = OAFERef !VariableName !Int deriving Show
 
@@ -95,7 +95,7 @@ edModifyConst :: Field el
               -> el
               -> EDARE OAFEReference el
 edModifyConst edare op el =
-    edare { edConst = el `seq` (edConst edare) `op` el }
+    edare { edConst = el `seq` edConst edare `op` el }
 
 edAddAddTerm :: Field el
              => EDARE OAFEReference el
@@ -121,7 +121,7 @@ prepareRPEvaluation rp =
         rpVarNames :: [VariableName]
         (rpVarNames, rpDares) = unzip $ DL.toList rp
         toEdares :: [DARE el]
-                 -> (OAFEConfigGen el)
+                 -> OAFEConfigGen el
                  -> Writer (DList (EDARE OAFEReference el)) (OAFEConfigGen el)
         toEdares dares !oac =
             case dares of
@@ -136,7 +136,7 @@ prepareRPEvaluation rp =
         finalEDares :: DList (EDARE OAFEReference el)
         finalEDares = snd erps
         finalOAC :: OAFEConfigGen el
-        finalOAC = (fst erps) `HM.union`
+        finalOAC = fst erps `HM.union`
                    HM.fromList [ (leftVar _SPECIAL_VAR_OUT_, (0,oneZeroDL))
                                , (rightVar _SPECIAL_VAR_OUT_, (0,oneZeroDL))
                                , (leftVar _SPECIAL_VAR_PRE_OUT_, (0,oneZeroDL))
@@ -179,7 +179,7 @@ prepareDAREEvaluation (DARE _ dareMuls dareAdds) !oafeCfg =
                     -> (EDARE OAFEReference el, OAFEConfigGen el)
         processAdds (edare, oac) !le =
             case le of
-              LinearExpr _ _ _ ->
+              LinearExpr {} ->
                   let (oaref, !oac') = oafeReference oac le
                    in (edAddAddTerm edare oaref, oac')
               ConstLinearExpr cle ->
@@ -192,11 +192,11 @@ prepareDAREEvaluation (DARE _ dareMuls dareAdds) !oafeCfg =
             case les of
               (ConstLinearExpr clel, ConstLinearExpr cler) ->
                   processAdds (edare, oac) (ConstLinearExpr (clel * cler))
-              (ConstLinearExpr clel, ler@(LinearExpr _ _ _)) ->
+              (ConstLinearExpr clel, ler@(LinearExpr {})) ->
                   let ler' = scalarMul ler clel
                       (oaref, oac') = oafeReference oac ler'
                    in (edAddAddTerm edare oaref, oac')
-              (lel@(LinearExpr _ _ _), ConstLinearExpr cler) ->
+              (lel@(LinearExpr {}), ConstLinearExpr cler) ->
                   let lel' = scalarMul lel cler
                       (oaref, oac') = oafeReference oac lel'
                    in (edAddAddTerm edare oaref, oac')
@@ -244,7 +244,7 @@ evaluateOAFE :: (Failure DAREEvaluationFailure f, Field el)
              -> f (OAFEEvaluation el)
 evaluateOAFE oac curEval (var, val) =
     case HM.lookup var oac of
-      Nothing -> return $ curEval
+      Nothing -> return curEval
           {-
           failure $
               UnknownFailure ("Variable `"++var++"' not found in OAFE config")
@@ -329,7 +329,7 @@ evaluateDARE' :: forall f. forall el.
               -> f (EDARE el el)
 evaluateDARE' (EDARE muls adds c) oafeVals =
     do adds' <- mapM resolve adds
-       muls' <- sequence $ map resolveTuple muls
+       muls' <- mapM resolveTuple muls
        return $ EDARE muls' adds' c
     where resolveTuple :: (OAFEReference, OAFEReference)
                        -> f (el, el)
@@ -340,13 +340,13 @@ evaluateDARE' (EDARE muls adds c) oafeVals =
           resolve :: OAFEReference
                   -> f el
           resolve (OAFERef var idx) =
-              do case HM.lookup var oafeVals of
-                   Nothing -> failure $ UnknownVariable var "evaluateDARE'"
-                   Just vals ->
-                       if V.length vals <= idx
-                          then failure $
-                                   IndexOutOfBounds var idx "evaluateDARE'"
-                          else return $ vals V.! idx
+              case HM.lookup var oafeVals of
+                Nothing -> failure $ UnknownVariable var "evaluateDARE'"
+                Just vals ->
+                    if V.length vals <= idx
+                       then failure $
+                                IndexOutOfBounds var idx "evaluateDARE'"
+                       else return $ vals V.! idx
 
 evalDARE :: Field el
          => EDARE OAFEReference el
@@ -377,7 +377,7 @@ evaluateERP :: Field el
 evaluateERP _ vals =
    case evaluateDARE undefined vals of
      Left err -> Left $ show (err :: DAREEvaluationFailure)
-     Right e -> Right $ e
+     Right e -> Right e
 
 type RunRPStateMonad el = State (VarMapping el)
 

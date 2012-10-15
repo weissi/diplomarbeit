@@ -55,7 +55,7 @@ class ByteSerializable el where
 
 instance ByteSerializable F2Pow256 where
     serializeBytes = BSL.fromStrict . f2Pow256ToBytes
-    parseBytes bsl = (f2Pow256FromBytes . BSL.toStrict) bsl
+    parseBytes = f2Pow256FromBytes . BSL.toStrict
 
 uToText :: Utf8 -> Text
 uToText (Utf8 bs) = TE.decodeUtf8 $ BSL.toStrict bs

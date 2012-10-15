@@ -6,6 +6,7 @@ module Codec.LBS ( InputValues
                  , OffsetDirection(..), ScaleFactor(..)
                  ) where
 
+import Control.Monad (liftM)
 import Control.Monad.State.Strict (State, get, put, runState)
 import Data.DList (DList())
 import Data.ExpressionTypes (Expr(..), Operator(..))
@@ -73,7 +74,7 @@ renderLBSProgram :: LBSProgram -> Text
 renderLBSProgram lbs = toLazyText $ DL.foldr joinStmts (fromString "") lbs
     where
     joinStmts :: LBSStmt -> Builder -> Builder
-    joinStmts l s = (renderLBSStmt l) `mappend` (fromString "\n") `mappend` s
+    joinStmts l s = renderLBSStmt l `mappend` fromString "\n" `mappend` s
 
 freeRegister :: [Register] -> Register
 freeRegister dirtyRegs = Reg (1 + maximum (map getReg dirtyRegs))
@@ -140,19 +141,19 @@ lbsFromExpr' dirtyRegs regOut direction regScale e =
           DL.singleton $Offset regOut direction regScale (ScaleFactorConstant i)
 
 lbsFromExpr :: Expr Integer -> LBSProgram
-lbsFromExpr e = lbsFromExpr' alwaysDirtyRegs (Reg 1) OffsetPlus _REG_CONST_1_ e
+lbsFromExpr = lbsFromExpr' alwaysDirtyRegs (Reg 1) OffsetPlus _REG_CONST_1_
     where alwaysDirtyRegs = [_REG_CONST_1_, Reg 1]
 
 registerValue :: Register -> RegisterState -> Integer
-registerValue (Reg r) regs = M.findWithDefault 0 r regs
+registerValue (Reg r) = M.findWithDefault 0 r
 
 registerValueM :: Register -> RegisterStateMonad Integer
-registerValueM r = get >>= return . (registerValue r)
+registerValueM r = liftM (registerValue r) get
 
 updateRegisterM :: Register -> Integer -> RegisterStateMonad ()
-updateRegisterM (Reg !r) !v = get >>= return . (M.insert r v) >>= put
+updateRegisterM (Reg !r) !v = liftM (M.insert r v) get >>= put
 
-dirOp :: Num a => OffsetDirection -> (a -> a -> a)
+dirOp :: Num a => OffsetDirection -> a -> a -> a
 dirOp dir = case dir of
               OffsetPlus -> (+)
               OffsetMinus -> (-)
@@ -160,7 +161,7 @@ dirOp dir = case dir of
 execLBSStatement :: InputValues
                  -> LBSStmt
                  -> ErrorList
-                 -> RegisterStateMonad (ErrorList)
+                 -> RegisterStateMonad ErrorList
 execLBSStatement inputs (Offset regOut dir regScale sf) accumErrors =
     do outVal <- registerValueM regOut
        scaleVal <- registerValueM regScale
@@ -182,7 +183,7 @@ execLBSProgram :: InputValues -> LBSProgram -> RegisterStateMonad ErrorList
 execLBSProgram inputs p =
     combine (DL.toList stmts) DL.empty
     where stmts :: DList (ErrorList -> RegisterStateMonad ErrorList)
-          stmts = (DL.map (execLBSStatement inputs) p)
+          stmts = DL.map (execLBSStatement inputs) p
           combine :: [ErrorList -> RegisterStateMonad ErrorList]
                   -> ErrorList
                   -> RegisterStateMonad ErrorList
@@ -194,7 +195,7 @@ execLBSProgram inputs p =
 runLBS :: InputValues -> LBSProgram -> Maybe (Integer, RegisterState)
 runLBS inputs lbs =
     if null $ DL.toList errs
-      then Just $ (registerValue (Reg 1) state, state)
+      then Just (registerValue (Reg 1) state, state)
       else Nothing
     where (errs, state) =
               runState (execLBSProgram inputs lbs) _INITIAL_REGISTER_STATE_

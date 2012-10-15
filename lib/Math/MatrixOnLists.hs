@@ -5,6 +5,7 @@ module Math.MatrixOnLists ( safeCols, safeRows, safeShape
                           ) where
 
 import Data.List (transpose)
+import Data.Maybe (fromMaybe)
 
 safeTranspose :: [[a]] -> Maybe [[a]]
 safeTranspose m =
@@ -19,9 +20,8 @@ safeRows = return . rows
 
 cols :: [[a]] -> Int
 cols m =
-    case safeCols m of
-      Just a -> a
-      Nothing -> error $ "cols: matrix shape error differnt number of columns"
+    fromMaybe (error "cols: matrix shape error differnt number of columns")
+              (safeCols m)
 
 safeCols :: [[a]] -> Maybe Int
 safeCols m =
@@ -41,10 +41,7 @@ safeShape m =
        return (r, c)
 
 add :: Num a => [[a]] -> [[a]] -> [[a]]
-add l r =
-    case safeAdd l r of
-      Just o -> o
-      Nothing -> error $ "add: matrices of differnt shapes"
+add l r = fromMaybe (error "add: matrices of differnt shapes") (safeAdd l r)
 
 safeAdd :: Num a => [[a]] -> [[a]] -> Maybe [[a]]
 safeAdd l r =
@@ -58,9 +55,7 @@ unsafeAdd :: Num a => [[a]] -> [[a]] -> [[a]]
 unsafeAdd = zipWith $ zipWith (+)
 
 scale :: Num a => a -> [[a]] -> [[a]]
-scale s m = case safeScale s m of
-              Just o -> o
-              Nothing -> error "error: The impossible happened"
+scale s m = fromMaybe (error "error: The impossible happened") (safeScale s m)
 
 safeScale :: Num a => a -> [[a]] -> Maybe [[a]]
 safeScale s m =
@@ -71,10 +66,7 @@ unsafeScale :: Num a => a -> [[a]] -> [[a]]
 unsafeScale = map . map . (*)
 
 mult :: Num a => [[a]] -> [[a]] -> [[a]]
-mult l r =
-    case safeMult l r of
-        Nothing -> error $ "mult: matrix shape error"
-        Just o -> o
+mult l r = fromMaybe (error "mult: matrix shape error") (safeMult l r)
 
 safeMult :: Num a => [[a]] -> [[a]] -> Maybe [[a]]
 safeMult l r =
