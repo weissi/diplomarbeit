@@ -123,11 +123,11 @@ prepareRPEvaluation rp =
         toEdares :: [DARE el]
                  -> (OAFEConfigGen el)
                  -> Writer (DList (EDARE OAFEReference el)) (OAFEConfigGen el)
-        toEdares dares oac =
+        toEdares dares !oac =
             case dares of
               [] -> return $! oac
               (dare:dares') ->
-                  do let (edareL, edareR, oac') = prepareDAREEvaluation dare oac
+                  do let (edareL, edareR, !oac')=prepareDAREEvaluation dare oac
                      tell $! DL.singleton edareL
                      tell $! DL.singleton edareR
                      toEdares dares' oac'
@@ -154,12 +154,12 @@ prepareDAREEvaluation :: forall el. Field el
                          , EDARE OAFEReference el
                          , OAFEConfigGen el
                          )
-prepareDAREEvaluation (DARE _ dareMuls dareAdds) oafeCfg =
+prepareDAREEvaluation (DARE _ dareMuls dareAdds) !oafeCfg =
     let oafeReference :: Field el
                       => OAFEConfigGen el
                       -> LinearExpr el
                       -> (OAFEReference, OAFEConfigGen el)
-        oafeReference oac le =
+        oafeReference !oac le =
             case le of
               LinearExpr !slope !var !intercept ->
                   let (varIdx, les) = HM.lookupDefault (-1, DL.empty) var oac
@@ -180,7 +180,7 @@ prepareDAREEvaluation (DARE _ dareMuls dareAdds) oafeCfg =
         processAdds (edare, oac) !le =
             case le of
               LinearExpr _ _ _ ->
-                  let (oaref, oac') = oafeReference oac le
+                  let (oaref, !oac') = oafeReference oac le
                    in (edAddAddTerm edare oaref, oac')
               ConstLinearExpr cle ->
                   (edModifyConst edare (+) cle, oac)
@@ -211,22 +211,22 @@ prepareDAREEvaluation (DARE _ dareMuls dareAdds) oafeCfg =
         sndMul :: ((a, b), (c, d)) -> (b, d)
         sndMul (l, r) = (snd l, snd r)
         edareAfterMulsL :: EDARE OAFEReference el
-        (edareAfterMulsL, oafeCfg') =
+        (edareAfterMulsL, !oafeCfg') =
             foldl' processMuls
                    (_EMPTY_EDARE_, oafeCfg)
                    (map fstMul dareMulsList)
         edareAfterAddsL :: EDARE OAFEReference el
-        (edareAfterAddsL, oafeCfg'') =
+        (edareAfterAddsL, !oafeCfg'') =
             foldl' processAdds
                    (edareAfterMulsL, oafeCfg')
                    (map fst dareAddsList)
         edareAfterMulsR :: EDARE OAFEReference el
-        (edareAfterMulsR, oafeCfg''') =
+        (edareAfterMulsR, !oafeCfg''') =
             foldl' processMuls
                    (_EMPTY_EDARE_, oafeCfg'')
                    (map sndMul dareMulsList)
         edareAfterAddsR :: EDARE OAFEReference el
-        (edareAfterAddsR, oafeCfg'''') =
+        (edareAfterAddsR, !oafeCfg'''') =
             foldl' processAdds
                    (edareAfterMulsR, oafeCfg''')
                    (map snd dareAddsList)
