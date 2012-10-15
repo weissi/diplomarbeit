@@ -1,7 +1,6 @@
 module Main where
 
 -- # STDLIB
-import Prelude hiding (catch)
 import Control.Concurrent (forkIO)
 import Control.Concurrent.STM.TChan (TChan, newTChan, readTChan, writeTChan)
 import Control.Exception.Base (IOException, catch)
@@ -39,7 +38,7 @@ import Data.SetupPhase ( SetupDavidToGoliath(..), SetupGoliathToDavid(..)
 import StaticConfiguration
 
 -- | Token Configuration Port (G -> T) and Token Evaluation Port (D -> T)
-type TokenConfInfo = (CN.ClientSettings, SetupGoliathToDavid)
+type TokenConfInfo m = (CN.ClientSettings m, SetupGoliathToDavid)
 
 die :: String -> IO ()
 die err =
@@ -51,16 +50,19 @@ oacSerializeConduit :: MonadResource m
                                m BS.ByteString
 oacSerializeConduit = oafeConfigSerializeConduit
 
-configureToken :: CN.ClientSettings -> OAFEConfiguration Element -> IO ()
+configureToken :: CN.ClientSettings RMonad
+               -> OAFEConfiguration Element
+               -> IO ()
 configureToken tokenSettings oac =
     do putStr "Sending OAC to Token... "
        runResourceT$ CN.runTCPClient tokenSettings confTokenApp
        putStrLn "OK"
     where confTokenApp :: MonadResource m => CN.Application m
-          confTokenApp _ sink =
-              CL.sourceList (HM.toList oac)
-              $= oacSerializeConduit
-              $$ sink
+          confTokenApp appData =
+              let sink = CN.appSink appData
+               in CL.sourceList (HM.toList oac)
+                  $= oacSerializeConduit
+                  $$ sink
 
 configureDavid :: SetupDavidToGoliath
                -> [(VariableName, EDARE OAFEReference Element)]
@@ -70,12 +72,13 @@ configureDavid sd2g edares =
    in (runResourceT $ CN.runTCPClient davidNetConf connected)
       `catch` (\e -> putStrLn $ "Connect to David failed: " ++
                                 show (e :: IOException))
-   where connected _ sink =
-             CL.sourceList edares
-             $= areSerializeConduit
-             $$ sink
+   where connected appData =
+             let sink = CN.appSink appData
+              in CL.sourceList edares
+                 $= areSerializeConduit
+                 $$ sink
 
-runGoliath :: CN.ClientSettings -> SetupDavidToGoliath -> IO ()
+runGoliath :: CN.ClientSettings RMonad -> SetupDavidToGoliath -> IO ()
 runGoliath tokenConf setupD2G =
     do g <- (newGenIO :: IO SystemRandom)
        putStrLn "Generating DARES..."
@@ -84,7 +87,7 @@ runGoliath tokenConf setupD2G =
            oac = erpOAFEConfig erp
            edares = erpEDares erp
        putStrLn "Setting up Token..."
-       configureToken tokenConf oac
+       _ <- forkIO $ configureToken tokenConf oac
        putStrLn "Setting up Token: OK"
        putStrLn "Setting up David..."
        configureDavid setupD2G edares
@@ -93,21 +96,24 @@ runGoliath tokenConf setupD2G =
          Left err -> putStrLn "ERROR" >> die ("ERROR: " ++ show err)
          Right _ -> putStrLn "OK"
 
-evalClient :: MonadResource m => TChan TokenConfInfo -> CN.Application m
-evalClient cTokens src sink =
-    src
-    $= sd2gParseConduit
-    =$= takeOneConduit
-    =$= CL.mapM newEvalClient
-    =$= sg2dSerializeConduit
-    $$ sink
+evalClient :: MonadResource m
+           => TChan (TokenConfInfo RMonad) -> CN.Application m
+evalClient cTokens appData =
+    let src = CN.appSource appData
+        sink = CN.appSink appData
+     in src
+        $= sd2gParseConduit
+        =$= takeOneConduit
+        =$= CL.mapM newEvalClient
+        =$= sg2dSerializeConduit
+        $$ sink
     where newEvalClient setupD2G =
               do liftIO $ putStrLn "David connected"
                  myToken <- liftIO $ atomically $ readTChan cTokens
                  _ <- liftIO $ forkIO $ runGoliath (fst myToken) setupD2G
                  return (snd myToken)
 
-spawnTokenGenerator :: TChan TokenConfInfo -> IO ()
+spawnTokenGenerator :: TChan (TokenConfInfo RMonad) -> IO ()
 spawnTokenGenerator cTokens =
     do _ <- forkIO $
             do atomically $ writeTChan cTokens $

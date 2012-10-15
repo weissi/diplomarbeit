@@ -1,7 +1,6 @@
 module Main where
 
 -- # STDLIB
-import Prelude hiding (catch)
 import Control.Concurrent (forkIO, myThreadId, killThread)
 import Control.Concurrent.STM.TMVar ( TMVar, newEmptyTMVar, putTMVar
                                     , takeTMVar, tryPutTMVar
@@ -40,7 +39,7 @@ import Data.DARETypes ( _SPECIAL_VAR_OUT_, _SPECIAL_VAR_PRE_OUT_
                       , _SPECIAL_VAR_ADDED_PRE_OUT_
                       , leftVar, rightVar
                       )
-import Data.Helpers (takeOneConduit, runTCPClientNoWait)
+import Data.Helpers (takeOneConduit)
 import Data.LinearExpression (VarMapping, VariableName)
 import Data.OAFEComm ( oafeEvaluationResponseParseConduit
                      , oafeEvaluationRequestSerializeConduit
@@ -74,18 +73,20 @@ evalReqSerializeConduit = oafeEvaluationRequestSerializeConduit
 -- One serializes and sends OAFE evaluation requests to the Token, the other
 -- receives and parses OAFE evaluation responses. Both are connected via the
 -- 'reqs' and 'rsps' channels to the evaluation thread (see 'evaluate').
-spawnCommThreads :: CN.ClientSettings
+spawnCommThreads :: CN.ClientSettings RMonad
                  -> TBMChan (OAFEEvaluationRequest Element)
                  -> TBMChan (OAFEEvaluationResponse Element)
                  -> IO ()
 spawnCommThreads tokenSettings reqs rsps =
     do _ <- forkIO $
-              (runResourceT $ runTCPClientNoWait tokenSettings commApp)
+              (runResourceT $ CN.runTCPClient {- NoWait -} tokenSettings commApp)
               `finally` do atomically $ closeTBMChan reqs
                            atomically $ closeTBMChan rsps
        return ()
-    where commApp netSrc netSink =
-              do _ <- liftIO $ forkIO $ runResourceT $ sender netSink
+    where commApp appData =
+              do let netSrc = CN.appSource appData
+                     netSink = CN.appSink appData
+                 _ <- liftIO $ forkIO $ runResourceT $ sender netSink
                  receiver netSrc
                  return ()
           sender netSink =
@@ -211,8 +212,9 @@ runEvaluator varMap reqs rsps vResult die =
            CN.runTCPServer _SRV_CONF_DAVID_FROM_GOLIATH_ (conn vStop cARE))
          `catch` (\e -> die $ show (e :: IOException))
        return ()
-    where conn vStop cARE src _ =
-              do success <- liftIO $ atomically $ tryPutTMVar vStop ()
+    where conn vStop cARE appData =
+              do let src = CN.appSource appData
+                 success <- liftIO $ atomically $ tryPutTMVar vStop ()
                  if success
                     then conn' cARE src
                     else return ()
@@ -238,14 +240,16 @@ exchangeConfWithGoliath =
          Right () ->
              do settings <- atomically $ takeTMVar vSettings
                 return $ Right settings
-    where tryConnect :: CN.ClientSettings
+    where tryConnect :: CN.ClientSettings RMonad
                      -> TMVar (SetupGoliathToDavid)
                      -> IO (Either String ())
           tryConnect conf vSettings =
               do runResourceT $ CN.runTCPClient conf (connected vSettings)
                  return $ Right ()
-          connected vSettings src sink =
-              do () <- sender sink
+          connected vSettings appData =
+              do let src = CN.appSource appData
+                     sink = CN.appSink appData
+                 () <- sender sink
                  receiver vSettings src
           sender sink =
               yield (setupD2GFromClientSettings _CLIENT_CONF_GOLIATH_TO_DAVID_)
@@ -286,7 +290,7 @@ main =
          Left err ->
              putStrLn $ "Failed: Could not connect to Goliath: " ++ err
          Right tokenSettings ->
-             do putStrLn $ "OK: " ++ show tokenSettings
+             do putStrLn $ "OK"
                 spawnCommThreads tokenSettings cRequests cResponses
                 out <- atomically $ takeTMVar vResult
                 putStrLn $ "DAVID DONE, final result = " ++ show out

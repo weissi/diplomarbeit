@@ -48,7 +48,6 @@ Library
     Other-Modules:    Data.ProtoBufs.OAFE,
                       Data.ProtoBufs.OAFE.OAFEConfig,
                       Data.ProtoBufs.OAFE.LinearExpr,
-                      Data.ProtoBufs.OAFE.OAFEConfigSet
                       Data.ProtoBufs.OAFE.OAFEEvaluationRequest,
                       Data.ProtoBufs.OAFE.OAFEEvaluationResponse,
                       Data.ProtoBufs.ARE.ARE,
@@ -82,10 +81,12 @@ Executable David
                       unordered-containers >= 0.2,
                       time >= 1.4,
                       vector >= 0.9,
-                      text >= 0.11
+                      text >= 0.11,
+                      resourcet >= 0.4
     hs-source-dirs:   programs
     GHC-Options:      -Wall
     GHC-Options:      -Werror
+    GHC-Options:      -rtsopts
     GHC-Prof-Options: -rtsopts -auto-all -caf-all
 
 Executable Goliath
@@ -101,10 +102,12 @@ Executable Goliath
                       crypto-api >= 0.10,
                       containers >= 0.4,
                       vector >= 0.9,
-                      unordered-containers >= 0.2
+                      unordered-containers >= 0.2,
+                      resourcet >= 0.4
     hs-source-dirs:   programs
     GHC-Options:      -Wall
     GHC-Options:      -Werror
+    GHC-Options:      -rtsopts
     GHC-Prof-Options: -rtsopts -auto-all -caf-all
 
 Executable Token
@@ -120,10 +123,13 @@ Executable Token
                       containers >= 0.4,
                       time >= 1.4,
                       vector >= 0.9,
-                      unordered-containers >= 0.2
+                      unordered-containers >= 0.2,
+                      network >= 2.4,
+                      resourcet >= 0.4
     hs-source-dirs:   programs
     GHC-Options:      -Wall
     GHC-Options:      -Werror
+    GHC-Options:      -rtsopts
     GHC-Prof-Options: -rtsopts -auto-all -caf-all
 
 Test-Suite TestDARE
