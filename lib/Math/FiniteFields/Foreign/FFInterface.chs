@@ -29,8 +29,8 @@ toBoolM a =
     do let !a' = toBool a
        return a'
 
-{- REMINDER: This function is from bytestring-0.10, but many
--            libraries seem to depend on 0.9, so I copied it
+{- REMINDER: This function is from bytestring-0.10.2.0, but many
+-            libraries seem to depend on 0.10.0.0, so I copied it
 -}
 unsafePackMallocCStringLen :: CStringLen -> IO ByteString
 unsafePackMallocCStringLen (cstr, len) = do
@@ -144,10 +144,11 @@ newSizedByteString p l =
 ffElementFromBytes :: ByteString -> OpaqueElement
 ffElementFromBytes str =
     unsafePerformIO $
-    newGarbageCollectedPointer $
-    unsafePerformIO $
-    BS.unsafeUseAsCStringLen str $ \(strp, len) ->
-        {#call unsafe ff_element_from_bytes #} (castPtr strp) (fromIntegral len)
+    do p <- BS.unsafeUseAsCStringLen str $ \(strp, len) ->
+                {#call unsafe ff_element_from_bytes #} (castPtr strp)
+                                                       (fromIntegral len)
+       gbp <- newGarbageCollectedPointer p
+       return $! gbp
 
 ffElementToBytes :: OpaqueElement -> ByteString
 ffElementToBytes e =

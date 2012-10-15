@@ -17,8 +17,6 @@ module Data.OAFEComm ( ByteSerializable
                      where
 
 -- # STDLIB
-import Foreign.ForeignPtr (withForeignPtr)
-import Foreign.Ptr (plusPtr)
 import qualified Data.Foldable as F
 import qualified Data.Sequence as S
 
@@ -29,8 +27,6 @@ import Data.Vector (Vector)
 import Text.ProtocolBuffers.Basic (Utf8(Utf8))
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
-import qualified Data.ByteString.Internal      as BSI
-import qualified Data.ByteString.Lazy.Internal as BSLI
 import qualified Data.Conduit.List as CL
 import qualified Data.Text.Encoding as TE
 import qualified Data.Vector as V
@@ -58,27 +54,14 @@ class ByteSerializable el where
     parseBytes :: BSL.ByteString -> el
 
 instance ByteSerializable F2Pow256 where
-    serializeBytes = BSL.fromChunks . (:[]) . f2Pow256ToBytes
-    parseBytes bsl = (f2Pow256FromBytes . toStrictBS) bsl
-
-toStrictBS :: BSL.ByteString -> BS.ByteString
-toStrictBS BSLI.Empty = BS.empty
-toStrictBS (BSLI.Chunk c BSLI.Empty) = c
-toStrictBS lb = BSI.unsafeCreate len $ go lb
-  where
-    len = BSLI.foldlChunks (\l sb -> l + BS.length sb) 0 lb
-
-    go  BSLI.Empty                   _   = return ()
-    go (BSLI.Chunk (BSI.PS fp s l) r) ptr =
-        withForeignPtr fp $ \p -> do
-            BSI.memcpy ptr (p `plusPtr` s) (fromIntegral l)
-            go r (ptr `plusPtr` l)
+    serializeBytes = BSL.fromStrict . f2Pow256ToBytes
+    parseBytes bsl = (f2Pow256FromBytes . BSL.toStrict) bsl
 
 uToText :: Utf8 -> Text
-uToText (Utf8 bs) = TE.decodeUtf8 $ toStrictBS bs
+uToText (Utf8 bs) = TE.decodeUtf8 $ BSL.toStrict bs
 
 uFromText :: Text -> Utf8
-uFromText = Utf8 . BSL.fromChunks . (:[]) . TE.encodeUtf8
+uFromText = Utf8 . BSL.fromStrict . TE.encodeUtf8
 
 -- # CONDUITS
 oafeConfigParseConduit :: (MonadResource m, Field el, ByteSerializable el)

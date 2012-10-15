@@ -7,6 +7,9 @@ set -e
 cd "$HERE"
 FILE="$(date +%Y-%M-%d_%H-%M-%S).text"
 (
+echo "Versions"
+ghc --version
+echo
 echo "Last patch"
 echo "----------"
 git log HEAD^..HEAD

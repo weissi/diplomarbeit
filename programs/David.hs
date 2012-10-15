@@ -79,7 +79,7 @@ spawnCommThreads :: CN.ClientSettings RMonad
                  -> IO ()
 spawnCommThreads tokenSettings reqs rsps =
     do _ <- forkIO $
-              (runResourceT $ CN.runTCPClient {- NoWait -} tokenSettings commApp)
+              (runResourceT $ CN.runTCPClient tokenSettings commApp)
               `finally` do atomically $ closeTBMChan reqs
                            atomically $ closeTBMChan rsps
        return ()
