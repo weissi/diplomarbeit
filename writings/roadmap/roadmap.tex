@@ -21,8 +21,9 @@
 }
 \usepackage{listings}
 \usepackage{color}
+\usepackage{tikz}
 
-\newcommand{\JWtodo}[1]{\fbox{TODO: #1}}
+\input{commands}
 
 \title{Diplomarbeit -- Roadmap}
 
@@ -163,12 +164,6 @@ value $\hat{v}$
 \noindent{}with secret keys---known only by the first party---$\alpha$ and
 $\beta$ would get transmitted.
 
-\subsubsection{Security Proof}
-\label{sec:rv-proof}
-
-This section will contain a security proof (UC secure \cite{canetti05}) of the
-RV concept.
-
 
 \subsection{Checked Bi--Randomized Variables}
 \label{sec:cbrv}
@@ -195,13 +190,14 @@ value $v$ are: ($\alpha_l, \alpha_r \in K \setminus \{0\}; \beta, \beta' \in K$)
   (\alpha_l \cdot v + \beta, \alpha_r \cdot v + \beta')
 \end{align*}
 
-$\alpha_l$ and $\alpha_r$ are the \emph{static keys}, $\beta$ and $\beta'$ the
-\emph{dynamic keys} of the CBRV. The static keys are (non--zero) numbers
-uniformly at random but constant for the entire procedure. $\beta$ and $\beta'$
-are fresh, independent and uniformly distributed random numbers for every CBRV
-component generated while processing a circuit. Only the first party knows these
-secret keys. The initial CBRVs used to feed the second party's regular inputs
-party are generated using an OAFE that evaluates for every input $x$:
+\noindent{} $\alpha_l$ and $\alpha_r$ are the \emph{static keys}, $\beta$ and
+$\beta'$ the \emph{dynamic keys} of the CBRV. The static keys are (non--zero)
+numbers uniformly at random but constant for the entire procedure. $\beta$ and
+$\beta'$ are fresh, independent and uniformly distributed random numbers for
+every CBRV component generated while processing a circuit. Only the first party
+knows these secret keys. The initial CBRVs used to feed the second party's
+regular inputs party are generated using an OAFE that evaluates for every input
+$x$:
 
 \begin{align*}
   \widetilde{x} = (\alpha_l \cdot x + \beta_1, \alpha_r \cdot x + \beta_2)
@@ -373,6 +369,132 @@ $\widetilde{x'_1} = \widetilde{x_1} + \Delta_1$ and $\widetilde{x'_2} =
   %
   \Leftrightarrow x' = & x + \frac{\Delta_1 + \Delta_2}{\alpha_l + \alpha_r}
 \end{align*}
+
+
+%
+% PREPARING CBRAE EVALUATION USING OAFEs
+%
+\subsection{Preparing CBRAE Evaluation Using OAFEs}
+\label{sec:prep-eval}
+
+After transforming an arithmetic expressing to CBRAEs (section \ref{sec:cbrae})
+assigned to CBRVs (section \ref{sec:cbrv}) the OAFEs (\cite{davidgoliath}) need
+to be set up. First of all, two separate OAFEs have to be set up for each CBRV
+that can be evaluated later on as soon the value is known. The OAFEs are
+configured with the linear expressions inside the CBRAEs. Each CBRAE is then
+transformed to two \emph{Encoding Descriptors} (EDs) that have the same
+structure as the CBRAEs but contain OAFE references instead of linear
+expressions. Therefore, each CBRAE assigned to a CBRV gets transformed to two
+EDs, because of the tuple form of the CBRVs and CBRAEs.
+
+
+%
+% OBLIVIOUS POLYNOMIAL EVALUATION
+%
+\subsection{Oblivious Polynomial Evaluation}
+\label{sec:ope}
+
+This section describes the whole process of obliviously evaluating a univariate
+polynomial $f(x) = \sum_{i=1}^k a_ix^i$. The first party (\JWpOne{}) fixes the
+polynomial and configures the OAFEs, the second party (\JWpTwo{}) chooses input
+$x$. Eventually, \JWpTwo{} will learn $f(x)$ but not the polynomial's
+coefficients $a_i$. \JWpOne{} will not learn anything at all.
+
+The first step is to transform $f$ to OAFEs and EDs (section
+\ref{sec:prep-eval}). The OAFEs are then sent to the second party (\JWpTwo{})
+using the David \& Goliath protocol \cite{davidgoliath}, the EDs are sent to the
+second party using an encrypted channel aswell.
+
+After having received the OAFEs and EDs, the first party (\JWpOne{}) is not
+needed anymore and the second party (\JWpTwo{}) can evaluate the polynomial by
+itself. To run the evaluation, the second party just evaluated the EDs one by
+one. After each evaluation, it queries the respective OAFE (should be the next)
+with the value if did just calculate. After having calculated the last to ED
+values, it queries a special OAFE (see section \ref{sec:eval-final-value}) using
+the addition of the values of the last two EDs. The evaluation of the special
+OAFE is the result of the whole computation.
+%
+% PROTOCOL DESCRIPTION
+%
+\subsection{Protocol Description} \label{sec:protocol-description}
+
+\begin{JWfunc}%
+  {\JWfuncSymOPE}%
+  {The ideal $\JWfieldGeneral{}$-OPE functionality \JWfuncSymOPE{}}%
+  {fig:func-ope}
+
+  Parametrized by a finite field size $q$ and maximal polynomial degree $k$.
+
+  \begin{JWfuncSteps}
+
+  \item Upon receiving input $a \in \mathbb{F}_q^k$ from \JWpOne{}, verify that
+    there is no stored input from \JWpOne{}, yet; else ignore that input. Next
+    record $a$ and send \JWmsgTwo{processing}{\JWpOne{}} to the adversary.
+
+  \item Upon receiving input $x \in \mathbb{F}_q$ from \JWpTwo{}, verify that
+    there is no stored input from \JWpTwo{}, yet; else ignore that input. Next
+    record $x$ and send \JWmsgTwo{processing}{\JWpTwo{}} to the adversary.
+
+  \item Upon receiving a message \JWmsgTwo{delivery}{\JWpTwo{}} from the
+    adversary, verify that \JWpTwo{} and \JWpOne{} have both already provided
+    some input; else ignore that message. Next, compute $y \leftarrow
+    \sum_{i=1}^k a_ix^i$ and send $y$ to \JWpTwo{}.
+
+  \end{JWfuncSteps}
+\end{JWfunc}
+
+\begin{JWboxed}%
+  {Graphical Representation of \JWfuncSymOPE}%
+  {fig:graph-ope}
+
+  \begin{tikzpicture}[>=stealth]
+
+    \node (OPE) at (8.5,0) {OPE};
+    \draw (OPE) +(-1.5,-1.15) rectangle +(1.5,0.65);
+
+    \draw [<-] (OPE) ++(-1.5,0.25) node [anchor=west] {} -- +(-0.75,0) node
+    [anchor=east] {$\JWfieldGeneral \ni a$};
+
+    \draw [<-] (OPE) ++(1.5,0.25) node [anchor=east] {} -- +(0.75,0) node
+    [anchor=west] {$x$};
+
+    \draw [->] (OPE) ++(1.5,-0.75) node [anchor=east] {$\sum_{i=1}^k a_ix^i$}
+    -- +(0.75,0)
+    node [anchor=west] {$y$};
+
+  \end{tikzpicture}
+\end{JWboxed}
+
+\begin{JWprotocol}%
+  {\JWprotoSymOPE}%
+  {Protocol: Oblivious Polynomial Evaluation}%
+  {fig:proto-ope}
+
+  \JWprotoPhase{Setup:}
+
+  \begin{JWprotoSteps}
+
+  \item \JWpOne{} generates OAFEs and EDs (see section \ref{sec:prep-eval})
+
+  \item \JWpOne{} sends the OAFEs and EDs to \JWpTwo{}
+
+  \end{JWprotoSteps}
+
+
+  \JWprotoPhase{Evaluation:}
+
+  \begin{JWprotoSteps}
+
+  \item Upon receiving the OAFEs and EDs, \JWpTwo{} evaluates the EDs one by one
+    and saved the values needed for further computations
+
+  \item After the Evaluation, \JWpTwo{} adds the values of the last two EDs and
+    queries a special last OAFE with that value. The then received new value is
+    the result of the computation $y = \sum_{i=1}^k a_ix^i$.
+
+  \end{JWprotoSteps}
+
+\end{JWprotocol}
 
 
 \section{Using Linear Bijection Straight--Line Programs}

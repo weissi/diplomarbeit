@@ -1,0 +1,62 @@
+%
+% SPECIAL IMPORTS
+%
+\usepackage{xparse}
+\usepackage{boxedminipage}
+
+
+%
+% GENERAL
+%
+
+% environments
+\NewDocumentEnvironment{JWboxed}{mm}%
+  {\begin{figure}[ht]%
+   \small%
+   \begin{boxedminipage}{\linewidth}%
+  }%
+  {\end{boxedminipage}%
+   \caption{#1}%
+   \label{#2}%
+   \end{figure}%
+  }
+
+% functionality
+\newenvironment{JWfunc}[3]%
+{\begin{JWboxed}{#2}{#3}%
+ \begin{center}\textbf{{Functionality #1}}\end{center}%
+}%
+{\end{JWboxed}}
+
+\newenvironment{JWfuncSteps}[0]%
+{\begin{itemize}}{\end{itemize}}
+
+\newcommand{\JWfuncSym}[2]{$\mathcal{F}^\mathrm{#1}_\mathrm{#2}$}
+
+%protocol
+\newenvironment{JWprotocol}[3]%
+{\begin{JWboxed}{#2}{#3}%
+ \begin{center}\textbf{{Protocol #1}}\end{center}%
+}%
+{\end{JWboxed}}
+
+\newenvironment{JWprotoSteps}[0]%
+{\begin{enumerate}}{\end{enumerate}}
+
+\newcommand{\JWprotoPhase}[1]{\paragraph{#1}}
+
+\newcommand{\JWprotoSym}[2]{$\Pi^\mathrm{#1}_\mathrm{#2}$}
+
+%misc
+\newcommand{\JWtodo}[1]{\fbox{TODO: #1}}
+\newcommand{\JWmsgTwo}[2]{(\texttt{#1}, \texttt{#2})}
+
+
+%
+% SPECIALIZED SHORTCUTS
+%
+\newcommand{\JWprotoSymOPE}[0]{\JWprotoSym{}{OPE}}
+\newcommand{\JWfuncSymOPE}[0]{\JWfuncSym{(q, k)}{OPE}}
+\newcommand{\JWfieldGeneral}[0]{\mathbb{F}_q^k}
+\newcommand{\JWpOne}[0]{Goliath}
+\newcommand{\JWpTwo}[0]{David}
