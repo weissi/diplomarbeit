@@ -25,13 +25,14 @@ import qualified Data.HashMap.Strict as HM
 import qualified Network.Socket as NS
 
 -- # LOCAL
-import Data.DAREEvaluation ( OAFEConfiguration, OAFEEvaluationRequest
-                           , OAFEEvaluationResponse
-                           , processOAFEEvaluationRequest
-                           )
-import Data.OAFEComm ( oafeConfigParseConduit
-                     , oafeEvaluationRequestParseConduit
-                     , oafeEvaluationResponseSerializeConduit)
+import Data.OAFE ( OAFEConfiguration, OAFEEvaluationRequest
+                 , OAFEEvaluationResponse
+                 , processOAFEEvaluationRequest
+                 )
+import Data.RAE.Conduit ( oafeConfigParseConduit
+                        , oafeEvaluationRequestParseConduit
+                        , oafeEvaluationResponseSerializeConduit
+                        )
 import Data.LinearExpression (VariableName)
 
 import StaticConfiguration
@@ -110,8 +111,8 @@ tokenClient vAcceptConfig vOAC appData =
 main :: IO ()
 main =
     do putStrLn "TOKEN: START"
-       vAcceptConfig <- atomically $ newEmptyTMVar
-       vOAC <- atomically $ newEmptyTMVar
+       vAcceptConfig <- atomically newEmptyTMVar
+       vOAC <- atomically newEmptyTMVar
        _ <- forkIO $ tokenEvaluatorStartThread vOAC
        runResourceT $ CN.runTCPServer _SRV_CONF_TOKEN_FROM_GOLIATH_
                                       (tokenClient vAcceptConfig vOAC)

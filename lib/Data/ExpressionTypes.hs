@@ -1,5 +1,6 @@
 module Data.ExpressionTypes (Expr(..), Operator(..)) where
 
+-- | Arithmetic expressions.
 data Expr a = Op Operator (Expr a) (Expr a)
             | Var String
             | Literal a

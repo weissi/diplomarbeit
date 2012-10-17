@@ -1,20 +1,15 @@
 {-# LANGUAGE FlexibleContexts #-}
-module Data.OAFEComm ( ByteSerializable
-                     , oafeConfigAsProtoBuf
-                     , oafeConfigFromProtoBuf
-                     , oafeConfigParseConduit
-                     , oafeConfigSerializeConduit
-                     , oafeEvaluationRequestAsProtoBuf
-                     , oafeEvaluationRequestParseConduit
-                     , oafeEvaluationResponseAsProtoBuf
-                     , oafeEvaluationResponseFromProtoBuf
-                     , oafeEvaluationResponseSerializeConduit
-                     , oafeEvaluationResponseParseConduit
-                     , oafeEvaluationRequestSerializeConduit
-                     , areSerializeConduit
-                     , areParseConduit
-                     )
-                     where
+-- | Send all kinds of OAFE and RAE related data types over the network.
+module Data.RAE.Conduit
+    ( oafeConfigParseConduit
+    , oafeConfigSerializeConduit
+    , oafeEvaluationRequestParseConduit
+    , oafeEvaluationResponseSerializeConduit
+    , oafeEvaluationResponseParseConduit
+    , oafeEvaluationRequestSerializeConduit
+    , racFragmentSerializeConduit
+    , racFragmentParseConduit
+    ) where
 
 -- # STDLIB
 import qualified Data.Foldable as F
@@ -33,9 +28,10 @@ import qualified Data.Vector as V
 
 -- # LOCAL
 import Data.Conduit.ProtoBufConduit (pbufParse, pbufSerialize)
-import Data.DAREEvaluation ( EDARE(..), OAFEReference(..)
-                           , OAFEEvaluationRequest, OAFEEvaluationResponse
-                           )
+import Data.OAFE ( OAFEEvaluationRequest, OAFEEvaluationResponse
+                 , OAFEReference(..)
+                 )
+import Data.RAE.Types (RAE(..), RACFragment)
 import Data.FieldTypes (Field(..))
 import Data.LinearExpression (VariableName)
 import Math.FiniteFields.F2Pow256 (F2Pow256, f2Pow256FromBytes, f2Pow256ToBytes)
@@ -45,9 +41,9 @@ import qualified Data.ProtoBufs.OAFE.LinearExpr as Pb
 import qualified Data.ProtoBufs.OAFE.OAFEConfig as Pb
 import qualified Data.ProtoBufs.OAFE.OAFEEvaluationRequest as Pb
 import qualified Data.ProtoBufs.OAFE.OAFEEvaluationResponse as Pb
-import qualified Data.ProtoBufs.ARE.ARE as PbARE
-import qualified Data.ProtoBufs.ARE.MulTerm as PbARE
-import qualified Data.ProtoBufs.ARE.OAFEReference as PbARE
+import qualified Data.ProtoBufs.RAE.RAE as PbRAE
+import qualified Data.ProtoBufs.RAE.MulTerm as PbRAE
+import qualified Data.ProtoBufs.RAE.OAFEReference as PbRAE
 
 class ByteSerializable el where
     serializeBytes :: el -> BSL.ByteString
@@ -105,19 +101,13 @@ oafeEvaluationRequestSerializeConduit :: ( MonadResource m, Field el
 oafeEvaluationRequestSerializeConduit =
     CL.map oafeEvaluationRequestAsProtoBuf =$= pbufSerialize
 
-areSerializeConduit :: (MonadResource m, Field el, ByteSerializable el)
-                    => Conduit (VariableName, EDARE OAFEReference el)
-                               m
-                               BS.ByteString
-areSerializeConduit =
-    CL.map encodeARE =$= pbufSerialize
+racFragmentSerializeConduit :: (MonadResource m, Field el, ByteSerializable el)
+                            => Conduit (RACFragment el) m BS.ByteString
+racFragmentSerializeConduit = CL.map encodeRAE =$= pbufSerialize
 
-areParseConduit :: (MonadResource m, Field el, ByteSerializable el)
-                => Conduit BS.ByteString
-                           m
-                           (VariableName, EDARE OAFEReference el)
-areParseConduit =
-    pbufParse =$= CL.map decodeARE
+racFragmentParseConduit :: (MonadResource m, Field el, ByteSerializable el)
+                        => Conduit BS.ByteString m (RACFragment el)
+racFragmentParseConduit = pbufParse =$= CL.map decodeRACFragment
 
 -- # DE/ENCODING
 oafeConfigFromProtoBuf :: (Field el, ByteSerializable el)
@@ -173,35 +163,32 @@ decodeLinearExpr lePb =
     let dec = parseBytes
      in (dec $ Pb.scale lePb, dec $ Pb.intercept lePb)
 
-encodeOAFERef :: OAFEReference -> PbARE.OAFEReference
+encodeOAFERef :: OAFEReference -> PbRAE.OAFEReference
 encodeOAFERef (OAFERef var idx) =
-   PbARE.OAFEReference (uFromText var) (fromIntegral idx)
+   PbRAE.OAFEReference (uFromText var) (fromIntegral idx)
 
-decodeOAFERef :: PbARE.OAFEReference -> OAFEReference
-decodeOAFERef (PbARE.OAFEReference var idx) =
+decodeOAFERef :: PbRAE.OAFEReference -> OAFEReference
+decodeOAFERef (PbRAE.OAFEReference var idx) =
     OAFERef (uToText var) (fromIntegral idx)
 
-encodeMulTerm :: (OAFEReference, OAFEReference) -> PbARE.MulTerm
-encodeMulTerm (l, r) = PbARE.MulTerm (encodeOAFERef l) (encodeOAFERef r)
+encodeMulTerm :: (OAFEReference, OAFEReference) -> PbRAE.MulTerm
+encodeMulTerm (l, r) = PbRAE.MulTerm (encodeOAFERef l) (encodeOAFERef r)
 
-decodeMulTerm :: PbARE.MulTerm -> (OAFEReference, OAFEReference)
-decodeMulTerm (PbARE.MulTerm l r) = (decodeOAFERef l, decodeOAFERef r)
+decodeMulTerm :: PbRAE.MulTerm -> (OAFEReference, OAFEReference)
+decodeMulTerm (PbRAE.MulTerm l r) = (decodeOAFERef l, decodeOAFERef r)
 
-encodeARE :: ByteSerializable el
-          => (VariableName, EDARE OAFEReference el)
-          -> PbARE.ARE
-encodeARE (var, EDARE muls adds cnst) =
+encodeRAE :: ByteSerializable el => RACFragment el -> PbRAE.RAE
+encodeRAE (var, RAE muls adds cnst) =
     let encConst = serializeBytes cnst
         encAdds = S.fromList $ map encodeOAFERef adds
         encMuls = S.fromList $ map encodeMulTerm muls
-     in PbARE.ARE (uFromText var) encMuls encAdds encConst
+     in PbRAE.RAE (uFromText var) encMuls encAdds encConst
 
-decodeARE :: (Field el, ByteSerializable el)
-          => PbARE.ARE
-          -> (VariableName, EDARE OAFEReference el)
-decodeARE (PbARE.ARE encVar encMuls encAdds encConst) =
+decodeRACFragment :: (Field el, ByteSerializable el)
+                  => PbRAE.RAE -> RACFragment el
+decodeRACFragment (PbRAE.RAE encVar encMuls encAdds encConst) =
     let var = uToText encVar
         muls = map decodeMulTerm $ F.toList encMuls
         adds = map decodeOAFERef $ F.toList encAdds
         cnst = parseBytes encConst
-     in (var, EDARE muls adds cnst)
+     in (var, RAE muls adds cnst)

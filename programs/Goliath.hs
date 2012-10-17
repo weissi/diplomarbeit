@@ -21,13 +21,12 @@ import qualified Data.Conduit.Network as CN
 import qualified Data.HashMap.Strict as HM
 
 -- # LOCAL
-import Codec.DARE (exprToRP)
-import Data.DAREEvaluation ( OAFEConfiguration, ERP(..), EDARE(..)
-                           , VariableName
-                           , prepareRPEvaluation
-                           , OAFEReference
-                           )
-import Data.OAFEComm (oafeConfigSerializeConduit, areSerializeConduit)
+import Data.RAE.Encoder (exprToRAC)
+import Data.RAE.Types (RAC, VariableName)
+import Data.OAFE (OAFEConfiguration)
+import Data.RAE.Conduit ( oafeConfigSerializeConduit
+                        , racFragmentSerializeConduit
+                        )
 import Data.Helpers (takeOneConduit)
 import Data.SetupPhase ( SetupDavidToGoliath(..), SetupGoliathToDavid(..)
                        , sg2dSerializeConduit, sd2gParseConduit
@@ -65,32 +64,29 @@ configureToken tokenSettings oac =
                   $$ sink
 
 configureDavid :: SetupDavidToGoliath
-               -> [(VariableName, EDARE OAFEReference Element)]
+               -> RAC Element
                -> IO ()
-configureDavid sd2g edares =
+configureDavid sd2g rac =
    let davidNetConf = clientSettingsFromSetupD2G sd2g
-   in (runResourceT $ CN.runTCPClient davidNetConf connected)
-      `catch` (\e -> putStrLn $ "Connect to David failed: " ++
+   in runResourceT (CN.runTCPClient davidNetConf connected)
+        `catch` (\e -> putStrLn $ "Connect to David failed: " ++
                                 show (e :: IOException))
    where connected appData =
              let sink = CN.appSink appData
-              in CL.sourceList edares
-                 $= areSerializeConduit
+              in CL.sourceList rac
+                 $= racFragmentSerializeConduit
                  $$ sink
 
 runGoliath :: CN.ClientSettings RMonad -> SetupDavidToGoliath -> IO ()
 runGoliath tokenConf setupD2G =
-    do g <- (newGenIO :: IO SystemRandom)
-       putStrLn "Generating DARES..."
-       let (errM, dares) = exprToRP g _TEST_EXPR_
-       let erp = prepareRPEvaluation dares
-           oac = erpOAFEConfig erp
-           edares = erpEDares erp
+    do g <- newGenIO :: IO SystemRandom
+       putStrLn "Generating RAC fragments..."
+       let (errM, rac, oac) = exprToRAC g _TEST_EXPR_
        putStrLn "Setting up Token..."
        _ <- forkIO $ configureToken tokenConf oac
        putStrLn "Setting up Token: OK"
        putStrLn "Setting up David..."
-       configureDavid setupD2G edares
+       configureDavid setupD2G rac
        putStrLn "Setting up David: OK"
        case errM of
          Left err -> putStrLn "ERROR" >> die ("ERROR: " ++ show err)
@@ -116,7 +112,7 @@ evalClient cTokens appData =
 spawnTokenGenerator :: TChan (TokenConfInfo RMonad) -> IO ()
 spawnTokenGenerator cTokens =
     do _ <- forkIO $
-            do atomically $ writeTChan cTokens $
+            do atomically $ writeTChan cTokens
                    ( _CLIENT_CONF_GOLIATH_TO_TOKEN_
                    , setupG2DFromClientSettings _CLIENT_CONF_DAVID_TO_TOKEN_
                    )
@@ -126,7 +122,7 @@ spawnTokenGenerator cTokens =
 main :: IO ()
 main =
     do putStrLn "GOLIATH START"
-       cTokens <- atomically $ newTChan
+       cTokens <- atomically newTChan
        spawnTokenGenerator cTokens
        runResourceT $ CN.runTCPServer _SRV_CONF_GOLIATH_FROM_DAVID_
                                       (evalClient cTokens)

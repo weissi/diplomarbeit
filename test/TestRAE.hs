@@ -15,9 +15,11 @@ import Math.FiniteFields.F2Pow256
 import System.Random (Random(..), RandomGen(..))
 
 -- # Local
-import Codec.DARE
-import Data.DAREEvaluation
-import Data.DARETypes
+import Data.RAE.Encoder
+import Data.RAE.Encoder.Internal.DRAC
+import Data.RAE.Evaluation
+import Data.RAE.Decoder
+import Data.RAE.Types
 import Data.ExpressionTypes
 import Data.FieldTypes
 
@@ -67,10 +69,10 @@ _TEST_VAR_MAP_ = M.fromList [ ("x", _VAL_X_)
 deriveSkp :: Field el => el -> el -> (el, el)
 deriveSkp l r = (if l == 0 then 23 else l, if r == 0 then 42 else r)
 
-dareDecodeFull :: VarMapping Element -> DARE Element -> Maybe Element
-dareDecodeFull varMap dare =
-    let out = dareDecode varMap dare
-        (DARE ((skL, skR), (dkL, dkR)) _ _) = dare
+draeDecodeFull :: VarMapping Element -> DRAE Element -> Maybe Element
+draeDecodeFull varMap drae =
+    let out = decodeDRAE varMap drae
+        (DRAE ((skL, skR), (dkL, dkR)) _ _) = drae
      in case out of
           Nothing -> trace "DECODE FAILED" Nothing
           Just (l, r) ->
@@ -97,38 +99,38 @@ instance IntegerAsType n => Random (Fp n) where
             rfp = fromIntegral rint'
             in (rfp, g')
 
-execDare :: (CRandom el, Field el) => Expr el -> IO (Maybe el)
-execDare expr =
+execExpr :: (CRandom el, Field el) => Expr el -> IO (Maybe el)
+execExpr expr =
     do g <- (newGenIO :: IO SystemRandom)
-       let (_, dares) = exprToRP g expr
-           erp = prepareRPEvaluation dares
-           (outDirect, _) = runRP _TEST_VAR_MAP_ dares
-           outERP = case runERP erp _TEST_VAR_MAP_ of
+       let (_, drac) = exprToDRAC g expr
+           (rac, oac) = singularizeDRAC drac
+           (outDirect, _) = runDRAC _TEST_VAR_MAP_ drac
+           outRAC = case runRAC rac oac _TEST_VAR_MAP_ of
                       Left err -> trace err Nothing
                       Right val -> Just val
-           out = if outDirect == outERP
+           out = if outDirect == outRAC
                     then outDirect
-                    else trace "DIRECT != ERP EVAL" Nothing
+                    else trace "DIRECT != RAC EVAL" Nothing
        return out
 
-test_simpleDARE =
-    do act <- execDare $ sum (replicate 96 1)
+test_simpleDRAE =
+    do act <- execExpr $ sum (replicate 96 1)
        assertEqual (Just (sum (replicate 96 1)) :: Maybe Element) act
 
-test_complexAddDARE =
-    do actual <- execDare $ 1 + 17 + _VAR_X_ + (_VAR_X_ + 23)
+test_complexAddDRAE =
+    do actual <- execExpr $ 1 + 17 + _VAR_X_ + (_VAR_X_ + 23)
        let expected :: Maybe Element
            expected = Just $ 1 + 17 + _VAL_X_ + (_VAL_X_ + 23)
        assertEqual expected actual
 
-test_complexDARE1 =
-    do actual <- execDare  $ 4 * _VAR_X_ + _VAR_Y_ + _VAR_X_ * _VAR_X_ * _VAR_X_
+test_complexDRAE1 =
+    do actual <- execExpr  $ 4 * _VAR_X_ + _VAR_Y_ + _VAR_X_ * _VAR_X_ * _VAR_X_
        let expected :: Maybe Element
            expected = Just $ 4 * _VAL_X_ + _VAL_Y_ + _VAL_X_ * _VAL_X_ * _VAL_X_
        assertEqual expected actual
 
-test_complexDARE2 =
-    do actual <- execDare  $ ( (  (4 * _VAR_X_ * _VAR_X_ + 2)
+test_complexDRAE2 =
+    do actual <- execExpr  $ ( (  (4 * _VAR_X_ * _VAR_X_ + 2)
                                 * (_VAR_X_ + _VAR_Y_ * (_VAR_X_ + _VAR_Y_))
                                 * _VAR_X_ * _VAR_Y_ + 7)
                               * _VAR_X_
@@ -141,7 +143,7 @@ test_complexDARE2 =
                              )
        assertEqual expected actual
 
-prop_dareAddDAREConstants :: Element
+prop_draeAddDRAEConstants :: Element
                           -> Element
                           -> Element
                           -> Element
@@ -150,15 +152,15 @@ prop_dareAddDAREConstants :: Element
                           -> Element
                           -> Element
                           -> Bool
-prop_dareAddDAREConstants el1 el2 r1 r2 r3 r4 skpL skpR =
+prop_draeAddDRAEConstants el1 el2 r1 r2 r3 r4 skpL skpR =
     let skp = deriveSkp skpL skpR
-        el1DARE = dareEncodePrimaryExpr skp (BiConst el1) r1 r2
-        el2DARE = dareEncodePrimaryExpr skp (BiConst el2) r3 r4
-        el1el2DARE = dareEncodeDareAdd skp el1DARE el2DARE
-        act = dareDecodeFull M.empty el1el2DARE
+        el1DRAE = draeEncodePrimaryExpr skp (DualConst el1) r1 r2
+        el2DRAE = draeEncodePrimaryExpr skp (DualConst el2) r3 r4
+        el1el2DRAE = draeEncodeDRAEAdd skp el1DRAE el2DRAE
+        act = draeDecodeFull M.empty el1el2DRAE
     in Just (el1 + el2) == act
 
-prop_dareAddConstants :: Element
+prop_draeAddConstants :: Element
                       -> Element
                       -> Element
                       -> Element
@@ -167,15 +169,15 @@ prop_dareAddConstants :: Element
                       -> Element
                       -> Element
                       -> Bool
-prop_dareAddConstants el1 el2 r1 r2 r3 r4 skpL skpR =
+prop_draeAddConstants el1 el2 r1 r2 r3 r4 skpL skpR =
     let skp = deriveSkp skpL skpR
-        el1pe = BiConst el1
-        el2pe = BiConst el2
-        outDARE = dareEncodeAdd skp el1pe el2pe r1 r2 r3 r4
-        act = dareDecodeFull M.empty outDARE
+        el1pe = DualConst el1
+        el2pe = DualConst el2
+        outDRAE = draeEncodeAdd skp el1pe el2pe r1 r2 r3 r4
+        act = draeDecodeFull M.empty outDRAE
     in Just (el1 + el2) == act
 
-prop_dareAddAndMulVars :: Element
+prop_draeAddAndMulVars :: Element
                        -> Element
                        -> Element
                        -> Element
@@ -192,27 +194,27 @@ prop_dareAddAndMulVars :: Element
                        -> Element
                        -> Element
                        -> Bool
-prop_dareAddAndMulVars r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15 r16 =
-    let v1pe = BiVar (0,0) "x"
-        v2pe = BiVar (0,0) "y"
+prop_draeAddAndMulVars r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15 r16 =
+    let v1pe = DualVar (0,0) "x"
+        v2pe = DualVar (0,0) "y"
         skp = (1,1)
-        dare1 = dareEncodeMul skp v1pe v1pe r1 r2 r3 r4 r5 r6 r7 r8
-        dare2 = dareEncodeMul skp v2pe v2pe r9 r10 r11 r12 r13 r14 r15 r16
-        outDARE = dareEncodeDareAdd skp dare1 dare2
-        act = dareDecodeFull _TEST_VAR_MAP_ outDARE
+        drae1 = draeEncodeMul skp v1pe v1pe r1 r2 r3 r4 r5 r6 r7 r8
+        drae2 = draeEncodeMul skp v2pe v2pe r9 r10 r11 r12 r13 r14 r15 r16
+        outDRAE = draeEncodeDRAEAdd skp drae1 drae2
+        act = draeDecodeFull _TEST_VAR_MAP_ outDRAE
     in Just ((_VAL_X_ * _VAL_X_)+(_VAL_Y_ * _VAL_Y_)) == act
 
-prop_dareAddConstants2 :: Element
+prop_draeAddConstants2 :: Element
                        -> Element
                        -> Property
-prop_dareAddConstants2 el1 el2 =
-    let el1pe = BiConst el1
-        el2pe = BiConst el2
-        outDARE r = dareEncodeAdd (deriveSkp r r) el1pe el2pe r r r r
-        act r = dareDecodeFull M.empty (outDARE r)
+prop_draeAddConstants2 el1 el2 =
+    let el1pe = DualConst el1
+        el2pe = DualConst el2
+        outDRAE r = draeEncodeAdd (deriveSkp r r) el1pe el2pe r r r r
+        act r = draeDecodeFull M.empty (outDRAE r)
     in forAll arbitrarySizedIntegral $ \r -> Just (el1 + el2) == act r
 
-prop_dareMulConstants :: Element
+prop_draeMulConstants :: Element
                       -> Element
                       -> Element
                       -> Element
@@ -226,12 +228,12 @@ prop_dareMulConstants :: Element
                       -> Element
                       -> Element
                       -> Bool
-prop_dareMulConstants skil skir el1 el2 el3 r1 r2 r3 r4 r5 r6 r7 r8 =
-    let el1pe = BiConst el1
-        el2pe = BiConst el2
+prop_draeMulConstants skil skir el1 el2 el3 r1 r2 r3 r4 r5 r6 r7 r8 =
+    let el1pe = DualConst el1
+        el2pe = DualConst el2
         skp = deriveSkp skil skir
-        outDARE = dareEncodeMul skp el1pe el2pe r1 r2 r3 r4 r5 r6 r7 r8
-        act = dareDecodeFull M.empty outDARE
+        outDRAE = draeEncodeMul skp el1pe el2pe r1 r2 r3 r4 r5 r6 r7 r8
+        act = draeDecodeFull M.empty outDRAE
     in Just (el1 * el2) == act
 
 threePositiveElements =

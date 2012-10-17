@@ -7,6 +7,14 @@ set -e
 cd "$HERE"
 FILE="$(date +%Y-%m-%d_%H-%M-%S).text"
 (
+function unbuffer() {
+    if [ -x /usr/bin/stdbuf ]; then
+        stdbuf -i0 -o0 -e0 "$@"
+    else
+        "$@"
+    fi
+}
+
 echo "Versions"
 uname -a
 ghc --version
@@ -21,7 +29,7 @@ git status
 echo
 echo "Benchmark"
 echo "---------"
-cabal bench
+unbuffer cabal bench
 ) | tee benchmark-results/$FILE
 
 echo OK

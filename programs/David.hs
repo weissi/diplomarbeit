@@ -6,9 +6,9 @@ import Control.Concurrent.STM.TMVar ( TMVar, newEmptyTMVar, putTMVar
                                     , takeTMVar, tryPutTMVar
                                     )
 import Control.Exception.Base (finally, catch, IOException)
+import Control.Monad (liftM, when, void)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.STM (atomically)
-import Control.Monad (liftM)
 import Data.IORef (newIORef, readIORef, writeIORef)
 import Data.Maybe (isJust)
 
@@ -31,20 +31,19 @@ import qualified Data.Text as T
 import qualified Data.Vector as V
 
 -- # LOCAL
-import Data.DAREEvaluation ( OAFEEvaluationRequest, OAFEEvaluationResponse
-                           , EDARE(..), OAFEReference, evalDARE
-                           , OAFEEvaluation
+import Data.OAFE ( OAFEEvaluationRequest, OAFEEvaluationResponse
+                 , OAFEReference, OAFEEvaluation
+                 )
+import Data.RAE.Evaluation ( evalRAE, _SPECIAL_VAR_OUT_, _SPECIAL_VAR_PRE_OUT_
+                           , _SPECIAL_VAR_ADDED_PRE_OUT_
                            )
-import Data.DARETypes ( _SPECIAL_VAR_OUT_, _SPECIAL_VAR_PRE_OUT_
-                      , _SPECIAL_VAR_ADDED_PRE_OUT_
-                      , leftVar, rightVar
-                      )
+import Data.RAE.Types (RAE, leftVar, rightVar)
 import Data.Helpers (takeOneConduit, runTCPClientNoWait)
 import Data.LinearExpression (VarMapping, VariableName)
-import Data.OAFEComm ( oafeEvaluationResponseParseConduit
-                     , oafeEvaluationRequestSerializeConduit
-                     , areParseConduit
-                     )
+import Data.RAE.Conduit ( oafeEvaluationResponseParseConduit
+                        , oafeEvaluationRequestSerializeConduit
+                        , racFragmentParseConduit
+                        )
 import Data.SetupPhase ( SetupGoliathToDavid, sd2gSerializeConduit
                        , sg2dParseConduit, setupD2GFromClientSettings
                        , clientSettingsFromSetupG2D
@@ -79,7 +78,7 @@ spawnCommThreads :: CN.ClientSettings RMonad
                  -> IO ()
 spawnCommThreads tokenSettings reqs rsps =
     do _ <- forkIO $
-              (runResourceT $ runTCPClientNoWait tokenSettings commApp)
+              runResourceT (runTCPClientNoWait tokenSettings commApp)
               `finally` do atomically $ closeTBMChan reqs
                            atomically $ closeTBMChan rsps
        return ()
@@ -100,7 +99,7 @@ spawnCommThreads tokenSettings reqs rsps =
 
 -- | This is the main functionality of David: Evaluating AREs.
 --
--- It pulls the next ARE from the channel 'cARE'. After having evaluated the
+-- It pulls the next ARE from the channel 'cRACFrag'. After having evaluated the
 -- ARE, its output gets sent to the Token. The communication threads (see
 -- 'spawnCommThreads') do the real work. This function communication with the
 -- communication threads via the channels 'reqs' and 'rsps'. The OAFE evaluation
@@ -109,30 +108,30 @@ spawnCommThreads tokenSettings reqs rsps =
 evaluate :: VarMapping Element
          -> TBMChan (OAFEEvaluationRequest Element)
          -> TBMChan (OAFEEvaluationResponse Element)
-         -> TBMChan (VariableName, EDARE OAFEReference Element)
+         -> TBMChan (VariableName, RAE OAFEReference Element)
          -> TMVar (Maybe Element)
          -> DieCommand
          -> IO ()
-evaluate varMap reqs rsps cARE vResult die =
+evaluate varMap reqs rsps cRACFrag vResult die =
     do oaeRef <- newIORef =<< evaluateInitialVars (M.toList varMap)
        loop oaeRef
     where loop oaeRef =
-              do areStmt <- atomically $ readTBMChan cARE
+              do areStmt <- atomically $ readTBMChan cRACFrag
                  case areStmt of
-                   Just (var, are) ->
+                   Just (var, rae) ->
                       do putStrLn ("Next ARE evaluates variable " ++
                                    T.unpack var ++ ":")
                          oae <- if var == leftVar _SPECIAL_VAR_OUT_
                                    then readIORef oaeRef >>= doPreOutAddition
                                    else readIORef oaeRef
-                         case evalDARE are oae of
+                         case evalRAE rae oae of
                            Left err -> die $ "ARE eval failure: " ++ show err
                            Right val ->
-                               do putStrLn $ " --> ARE evaluation done"
+                               do putStrLn " --> ARE evaluation done"
                                   atomically $ writeTBMChan reqs (var, val)
-                                  putStrLn $ " --> OAFE eval request sent"
-                                  oae' <- (fetchResponse (Just var) oae)
-                                  putStrLn $ " --> OAFE eval response received"
+                                  putStrLn " --> OAFE eval request sent"
+                                  oae' <- fetchResponse (Just var) oae
+                                  putStrLn " --> OAFE eval response received"
                                   writeIORef oaeRef oae'
                          loop oaeRef
                    Nothing ->
@@ -197,7 +196,7 @@ evaluate varMap reqs rsps cARE vResult die =
 -- | Start the evaluation server and the evaluation thread.
 --
 -- The evaluation server accepts an ARE stream from Goliath and transmits the
--- parsed AREs into the channel 'cARE'
+-- parsed AREs into the channel 'cRACFrag'
 runEvaluator :: VarMapping Element
              -> TBMChan (OAFEEvaluationRequest Element)
              -> TBMChan (OAFEEvaluationResponse Element)
@@ -205,23 +204,21 @@ runEvaluator :: VarMapping Element
              -> DieCommand
              -> IO ()
 runEvaluator varMap reqs rsps vResult die =
-    do vStop <- atomically $ newEmptyTMVar
-       cARE <- atomically $ newTBMChan _INCOMING_ARE_CHAN_SIZE_
-       _ <- forkIO $ evaluate varMap reqs rsps cARE vResult die
-       (runResourceT $
-           CN.runTCPServer _SRV_CONF_DAVID_FROM_GOLIATH_ (conn vStop cARE))
+    do vStop <- atomically newEmptyTMVar
+       cRACFrag <- atomically $ newTBMChan _INCOMING_ARE_CHAN_SIZE_
+       _ <- forkIO $ evaluate varMap reqs rsps cRACFrag vResult die
+       runResourceT
+           (CN.runTCPServer _SRV_CONF_DAVID_FROM_GOLIATH_ (conn vStop cRACFrag))
          `catch` (\e -> die $ show (e :: IOException))
        return ()
-    where conn vStop cARE appData =
+    where conn vStop cRACFrag appData =
               do let src = CN.appSource appData
                  success <- liftIO $ atomically $ tryPutTMVar vStop ()
-                 if success
-                    then conn' cARE src
-                    else return ()
-          conn' cARE src =
+                 when success $ conn' cRACFrag src
+          conn' cRACFrag src =
               src
-              $= areParseConduit
-              $$ sinkTBMChan cARE
+              $= racFragmentParseConduit
+              $$ sinkTBMChan cRACFrag
 
 -- | This function exchanges the initial settings with Goliath.
 --
@@ -232,16 +229,16 @@ runEvaluator varMap reqs rsps vResult die =
 -- or fails.
 exchangeConfWithGoliath :: IO (Either String SetupGoliathToDavid)
 exchangeConfWithGoliath =
-    do vSettings <- atomically $ newEmptyTMVar
-       res <- (tryConnect _CLIENT_CONF_DAVID_TO_GOLIATH_ vSettings
-                `catch` (\e -> return $ Left $ show (e :: IOException)))
+    do vSettings <- atomically newEmptyTMVar
+       res <- tryConnect _CLIENT_CONF_DAVID_TO_GOLIATH_ vSettings
+              `catch` (\e -> return $ Left $ show (e :: IOException))
        case res of
          Left err -> return $ Left err
          Right () ->
              do settings <- atomically $ takeTMVar vSettings
                 return $ Right settings
     where tryConnect :: CN.ClientSettings RMonad
-                     -> TMVar (SetupGoliathToDavid)
+                     -> TMVar SetupGoliathToDavid
                      -> IO (Either String ())
           tryConnect conf vSettings =
               do runResourceT $ CN.runTCPClient conf (connected vSettings)
@@ -261,7 +258,7 @@ exchangeConfWithGoliath =
               =$= takeOneConduit
               $$ CL.mapM_ (putVar vSettings)
           putVar var val =
-              liftIO $ (atomically $ tryPutTMVar var val >> return ())
+              liftIO $ atomically $ void (tryPutTMVar var val)
 
 type DieCommand = String -> IO ()
 
@@ -271,13 +268,13 @@ main =
        let varMap = M.fromList [(T.pack "x", 1)]
        cRequests <- atomically $ newTBMChan _ARE_EVAL_CHAN_SIZE_
        cResponses <- atomically $ newTBMChan _ARE_EVAL_CHAN_SIZE_
-       vResult <- atomically $ newEmptyTMVar
+       vResult <- atomically newEmptyTMVar
 
        mainTid <- myThreadId
        let die :: DieCommand
            die e =
                do putStrLn $ "FATAL ERROR: " ++ e
-                  putStrLn $ "Exiting..."
+                  putStrLn   "Exiting..."
                   atomically $ closeTBMChan cRequests
                   atomically $ closeTBMChan cResponses
                   killThread mainTid
@@ -290,7 +287,7 @@ main =
          Left err ->
              putStrLn $ "Failed: Could not connect to Goliath: " ++ err
          Right tokenSettings ->
-             do putStrLn $ "OK"
+             do putStrLn "OK"
                 spawnCommThreads tokenSettings cRequests cResponses
                 out <- atomically $ takeTMVar vResult
                 putStrLn $ "DAVID DONE, final result = " ++ show out

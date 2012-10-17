@@ -2,30 +2,21 @@
 {-# OPTIONS_GHC -Wwarn #-}
 module Main where
 
-import Control.Monad.CryptoRandom (runCRand)
 import Crypto.Random (SystemRandom, newGenIO)
-import Data.List (foldl')
-import Math.Algebra.Field.Base (F97)
 import qualified Data.DList as DL
 import qualified Data.Map as M
 
-import Codec.DARE
-import Data.DAREEvaluation
-import Data.DARETypes (PrimaryExpression(..), VarMapping)
-import Data.ExpressionTypes (Expr(..))
+import Data.ExpressionTypes
+import Data.LinearExpression
 import Data.FieldTypes (Field(..))
-import Data.OAFEComm (oafeConfigSerializeConduit)
+import Data.RAE.Encoder
+import Data.RAE.Types
 
-import qualified Data.ByteString.Lazy as BSL
-import System.IO (withFile, IOMode(WriteMode))
-import Data.Conduit (runResourceT, yield, ($$), (=$=))
-import Data.Conduit.Binary (sinkFile)
-import Data.Conduit.List (sourceList)
 
 import Math.FiniteFields.F2Pow256
 type Element = F2Pow256
 
---import Math.Algebra.Field.Base (Fp)
+--import Math.Algebra.Field.Base (F97, Fp)
 --import Math.Common.IntegerAsType (IntegerAsType)
 --type Element = F97
 --instance IntegerAsType n => Field (Fp n) where
@@ -39,17 +30,16 @@ type Element = F2Pow256
 
 main :: IO ()
 main =
-    do putStrLn "ExprToDARE: START"
+    do putStrLn "RAE Fun: START"
        --test
        putStrLn "EXERCISE 2"
-       g <- (newGenIO :: IO SystemRandom)
-       let (_, dares) = exprToRP g testExpr1
-       let (dareOne:_) = DL.toList dares
-       print $ dareOne
-       let erp = prepareRPEvaluation dares
-           edares = erpEDares erp
-           (edOne:_) = edares
-       putStrLn $ show edOne
+       g <- newGenIO :: IO SystemRandom
+       let (_, drac) = exprToDRAC g testExpr1
+       let (dracFragOne:_) = DL.toList drac
+       print dracFragOne
+       let (rac, _) = singularizeDRAC drac
+           (racFragOne:_) = rac
+       print racFragOne
        return ()
 
 testExpr1 :: Expr Element

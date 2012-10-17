@@ -13,7 +13,7 @@ _X_ :: Expr Element
 _X_ = Var "x"
 
 _TEST_EXPR_ :: Expr Element
-_TEST_EXPR_ = _X_ ^ (10000::Integer) {-1 + _X_ * _X_ * _X_ * _X_ * _X_ * _X_ *
+_TEST_EXPR_ = _X_ ^ (1000::Integer) {-1 + _X_ * _X_ * _X_ * _X_ * _X_ * _X_ *
               (foldl (*) 1 $ replicate 1000 _X_)-}
 
 type RMonad = ResourceT IO

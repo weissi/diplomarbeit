@@ -37,22 +37,32 @@ Library
                       monad-control >= 0.3,
                       vector >= 0.9
     Default-Language: Haskell2010
-    Exposed-Modules:  Codec.DARE, Codec.LBS, Data.ExpressionTypes,
-                      Data.FieldTypes, Math.FiniteFields.F2Pow256,
+    Exposed-Modules:  Codec.LBS,
+                      Data.RAE.Conduit,
+                      Data.RAE.Encoder,
+                      Data.RAE.Decoder,
+                      Data.RAE.Types,
+                      Data.RAE.Evaluation,
+                      Data.ExpressionTypes,
+                      Data.FieldTypes,
+                      Math.FiniteFields.F2Pow256,
                       Data.LinearExpression,
-                      Math.FiniteFields.Foreign.FFInterface,
-                      Data.Helpers, Math.MatrixOnLists, Data.DARETypes
-                      Data.DAREEvaluation, Data.OAFEComm,
+                      Data.Helpers,
+                      Math.MatrixOnLists,
+                      Data.OAFE,
                       Data.Conduit.ProtoBufConduit,
-                      Data.SetupPhase
-    Other-Modules:    Data.ProtoBufs.OAFE,
+                      Data.SetupPhase,
+                      Data.RAE.Encoder.Internal.DRAC,
+                      Data.RAE.Encoder.Internal.RAC
+    Other-Modules:    Math.FiniteFields.Foreign.FFInterface,
+                      Data.ProtoBufs.OAFE,
                       Data.ProtoBufs.OAFE.OAFEConfig,
                       Data.ProtoBufs.OAFE.LinearExpr,
                       Data.ProtoBufs.OAFE.OAFEEvaluationRequest,
                       Data.ProtoBufs.OAFE.OAFEEvaluationResponse,
-                      Data.ProtoBufs.ARE.ARE,
-                      Data.ProtoBufs.ARE.MulTerm,
-                      Data.ProtoBufs.ARE.OAFEReference,
+                      Data.ProtoBufs.RAE.RAE,
+                      Data.ProtoBufs.RAE.MulTerm,
+                      Data.ProtoBufs.RAE.OAFEReference,
                       Data.ProtoBufs.Setup.SetupDavidToGoliath,
                       Data.ProtoBufs.Setup.SetupGoliathToDavid
     include-dirs:     lib/Math/FiniteFields/Foreign
@@ -132,9 +142,9 @@ Executable Token
     GHC-Options:      -rtsopts
     GHC-Prof-Options: -rtsopts -auto-all -caf-all
 
-Test-Suite TestDARE
+Test-Suite TestRAE
     type:             exitcode-stdio-1.0
-    main-is:          TestDARE.hs
+    main-is:          TestRAE.hs
     Default-Language: Haskell2010
     build-depends:    base, HTF >= 0.9, HaskellForMaths >= 0.4,
                       crypto-api >= 0.10,
@@ -159,10 +169,10 @@ Test-Suite TestMisc
     hs-source-dirs:   test
     GHC-Prof-Options: -rtsopts -auto-all -caf-all
 
-Benchmark BenchDARE
+Benchmark BenchRAE
     Type:             exitcode-stdio-1.0
     HS-Source-Dirs:   bench
-    Main-Is:          BenchDARE.hs
+    Main-Is:          BenchRAE.hs
     Default-Language: Haskell2010
     Build-Depends:    base,
                       diplomarbeit,
@@ -172,18 +182,18 @@ Benchmark BenchDARE
                       monadcryptorandom >= 0.5,
                       containers >= 0.4
 
---Executable ExprToMRM
---    main-is:          ExprToMRM.hs
---    Default-Language: Haskell2010
---    build-depends:    base, text >= 0.11, containers >= 0.4, dlist >= 0.5,
---                      mtl >= 2.0, diplomarbeit
---    hs-source-dirs:   programs
---    GHC-Options:      -Wall
---    GHC-Options:      -Werror
---    GHC-Prof-Options: -rtsopts -auto-all -caf-all
+Executable ExprToMRM
+    main-is:          ExprToMRM.hs
+    Default-Language: Haskell2010
+    build-depends:    base, text >= 0.11, containers >= 0.4, dlist >= 0.5,
+                      mtl >= 2.0, diplomarbeit
+    hs-source-dirs:   programs
+    GHC-Options:      -Wall
+    GHC-Options:      -Werror
+    GHC-Prof-Options: -rtsopts -auto-all -caf-all
 
-Executable ExprToDARE
-    main-is:          ExprToDARE.hs
+Executable RAEFun
+    main-is:          RAEFun.hs
     Default-Language: Haskell2010
     build-depends:    base, monadcryptorandom >= 0.5, crypto-api >= 0.10,
                       containers >= 0.4, HaskellForMaths >= 0.4, dlist >= 0.5,
