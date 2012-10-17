@@ -16,6 +16,7 @@ function unbuffer() {
 }
 
 echo "Versions"
+echo "--------"
 uname -a
 ghc --version
 echo
