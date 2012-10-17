@@ -2,18 +2,20 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Data.RAE.Encoder.Internal.DRAC
-    ( -- * Public Methods
+    ( -- * Public API
       exprToDRAC
-      -- * Internal Data Types
-    , DualEncPrimExpr(..)
-      -- * Internal Encoding Mehthods
-    , draeEncodeMulRnd
-    , draeEncodeAddRnd
-    , draeEncodeDRAEAddRnd
-    , draeEncodePrimaryExpr
+      -- * Internal, Interesting API
+      -- ** Real, Pure @DRAE@ Encoding
     , draeEncodeMul
     , draeEncodeAdd
     , draeEncodeDRAEAdd
+      -- * Internal, Uninteresting API
+      -- ** @DRAE@ Encoding automatically getting random numbers
+    , draeEncodeMulRnd
+    , draeEncodeAddRnd
+    , draeEncodeDRAEAddRnd
+      -- ** Internal Data Types
+    , DualEncPrimExpr(..)
     ) where
 
 -- # STANDARD LIBRARY
@@ -65,7 +67,7 @@ getRandomInvertibleElement =
                    then return $! rel
                    else loop
 
--- |DRAE for a multiplication getting randoms from generator
+-- |@DRAE@ for a multiplication getting randoms from generator
 draeEncodeMulRnd :: (Monad m, CryptoRandomGen g, Field el, CRandom el)
                  => DualKey el
                  -> DualEncPrimExpr el
@@ -82,7 +84,7 @@ draeEncodeMulRnd skp x1 x2 =
        r8 <- getRandomElement
        return $! draeEncodeMul skp x1 x2 r1 r2 r3 r4 r5 r6 r7 r8
 
--- |DRAE for a multiplication f(x1, x2) = x1 * x2
+-- |@DRAE@ for a multiplication /f(x1, x2) = x1 * x2/
 -- modeled after How to Garble Arithmetic Circuits, p. 13
 draeEncodeMul :: forall el. Field el
               => DualKey el
@@ -120,7 +122,7 @@ draeEncodeMul skp@(!skL, !skR) !x1 !x2 !r1 !r2 !r3 !r4 !r5 !r6 !r7 !r8 =
                              ]
                 )
 
--- |DRAE for an addition getting randoms from generator
+-- |@DRAE@ for an addition getting randoms from generator
 draeEncodeAddRnd :: (Monad m, CryptoRandomGen g, Field el, CRandom el)
                  => DualKey el
                  -> DualEncPrimExpr el
@@ -133,8 +135,7 @@ draeEncodeAddRnd skp x1 x2 =
        r4 <- getRandomElement
        return $! draeEncodeAdd skp x1 x2 r1 r2 r3 r4
 
--- |DRAE for an addition f(x1, x2) = x1 + x2
--- see How to Garble Arithmetic Circuits, p. 13
+-- |@DRAE@ for an addition /f(x1, x2) = x1 + x2/
 draeEncodeAdd :: forall el. (Field el)
               => DualKey el
               -> DualEncPrimExpr el
@@ -201,7 +202,7 @@ decodeDualEncPrimExpr skp prjVar prjKey bepc =
               skInv = (invert . prjKey) skp
            in LinearExpr skInv (prjVar var) (-prjKey dkp * skInv)
 
--- |DRAE for an addition of two DRAEs
+-- |@DRAE@ for an addition of two @DRAE@s
 draeEncodeDRAEAdd :: Field el
                   => DualKey el
                   -> DRAE el
@@ -216,7 +217,7 @@ draeEncodeDRAEAdd skp
         _ = if (skp /= dlSkp) || (skp /= drSkp) then error "skps differ" else ()
      in DRAE (skp, dkp) (dlMuls `DL.append` drMuls) (dlAdds `DL.append` drAdds)
 
--- |DRAE for a DRAE addition getting randoms from generator
+-- |@DRAE@ for a @DRAE@ addition getting randoms from generator
 draeEncodeDRAEAddRnd :: (Monad m, CryptoRandomGen g, Field el)
                      => DualKey el
                      -> DRAE el
@@ -234,7 +235,7 @@ draeEncodePrimaryExprRnd skp e =
        r2 <- getRandomElement
        return $! draeEncodePrimaryExpr skp e r1 r2
 
--- |DRAE encode primary expressions
+-- |@DRAE@ encode primary expressions
 draeEncodePrimaryExpr :: Field el
                       => DualKey el
                       -> DualEncPrimExpr el

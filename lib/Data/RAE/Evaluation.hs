@@ -7,13 +7,12 @@
 module Data.RAE.Evaluation
     ( -- * Public API
       evalRAE
+    , RAEEvaluationFailure(..)
       -- * Important Special Variable Names
     , _SPECIAL_VAR_OUT_, _SPECIAL_VAR_PRE_OUT_
     , _SPECIAL_VAR_ADDED_PRE_OUT_
       -- * Direct Evaluation of @RAC@s and @DRAC@s (for tests/benchmarks)
     , runRAC, runDRAC
-      -- * Misc
-    , RAEEvaluationFailure(..)
     ) where
 
 -- # STANDARD LIBRARY
