@@ -1,18 +1,30 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -F -pgmF htfpp #-}
 
 -- # Standard Library
+import Control.Concurrent (forkIO, killThread)
+import Control.Concurrent.STM (atomically)
+import Control.Concurrent.STM.TMVar (newTMVar, newEmptyTMVar, TMVar, takeTMVar)
 import Control.Monad (liftM)
+import Data.IORef (IORef, newIORef)
 import Data.Map (Map)
 import qualified Data.Map as M
 
 -- # Site Packages
-import Control.Monad.CryptoRandom (CRandT, getCRandom, runCRandT, CRandom)
+import Control.Concurrent.STM.TBMChan (TBMChan, newTBMChan, writeTBMChan)
+import Control.Monad (liftM)
+import Control.Monad.CryptoRandom (CRandT, getCRandom, runCRandT, CRandom(..))
+import Control.Monad.IO.Class (liftIO)
 import Crypto.Random (SystemRandom, GenError, CryptoRandomGen, newGenIO)
+import Data.Conduit (($=), ($$))
+import Data.Conduit.List (sourceList)
+import Data.Conduit.TMChan (sourceTBMChan, sinkTBMChan)
 import Math.Algebra.Field.Base
 import Math.Common.IntegerAsType (IntegerAsType)
 import Math.FiniteFields.F2Pow256
 import System.Random (Random(..), RandomGen(..))
+import qualified Data.Conduit.List as CL
 
 -- # Local
 import Data.RAE.Encoder
@@ -22,6 +34,8 @@ import Data.RAE.Decoder
 import Data.RAE.Types
 import Data.ExpressionTypes
 import Data.FieldTypes
+import Functionality.David
+import Functionality.Token
 
 -- # HTF
 import Test.Framework
@@ -37,6 +51,13 @@ type Element = F2Pow256
 --        case n of
 --          0 -> error "0 is not invertible"
 --          n' -> 1 / n'
+--    one = 1
+--    zero = 0
+--instance IntegerAsType n => CRandom (Fp n) where
+--    crandom g =
+--        case crandom g of
+--          Left err -> Left err
+--          Right (a, g') -> Right (fromIntegral (a :: Int), g')
 
 _SOME_POS_NUMS_ :: [Element]
 _SOME_POS_NUMS_ = map fromIntegral $ [1..100] ++
@@ -57,6 +78,11 @@ _VAL_X_ = 23
 _VAL_Y_ :: Field el => el
 _VAL_Y_ = 42
 
+_TEST_VAR_MAP_CLEAN_ :: Field el => VarMapping el
+_TEST_VAR_MAP_CLEAN_ = M.fromList [ ("x", _VAL_X_)
+                                  , ("y", _VAL_Y_)
+                                  , ("z", _VAL_Y_)
+                                  ]
 _TEST_VAR_MAP_ :: Field el => VarMapping el
 _TEST_VAR_MAP_ = M.fromList [ ("x", _VAL_X_)
                             , (leftVar "x", _VAL_X_)
@@ -99,19 +125,71 @@ instance IntegerAsType n => Random (Fp n) where
             rfp = fromIntegral rint'
             in (rfp, g')
 
-execExpr :: (CRandom el, Field el) => Expr el -> IO (Maybe el)
+execExpr :: (Show el, CRandom el, Field el) => Expr el -> IO (Maybe el)
 execExpr expr =
     do g <- (newGenIO :: IO SystemRandom)
-       let (_, drac) = exprToDRAC g expr
+       let varMap = _TEST_VAR_MAP_CLEAN_
+           (_, drac) = exprToDRAC g expr
            (rac, oac) = singularizeDRAC drac
-           (outDirect, _) = runDRAC _TEST_VAR_MAP_ drac
-           outRAC = case runRAC rac oac _TEST_VAR_MAP_ of
+           (outDirect, _) = runDRAC varMap drac
+           outRAC = case runRAC rac oac varMap of
                       Left err -> trace err Nothing
                       Right val -> Just val
            out = if outDirect == outRAC
                     then outDirect
                     else trace "DIRECT != RAC EVAL" Nothing
-       return out
+       funcOutM <- execExprFuncs varMap expr
+       let finalOut = if out == funcOutM
+                         then out
+                         else trace "DIRECT != FUNC" Nothing
+       return finalOut
+
+execExprFuncs :: forall el. (Show el, CRandom el, Field el)
+              => VarMapping el -> Expr el -> IO (Maybe el)
+execExprFuncs varMap expr =
+    do -- start goliath
+       (rac, oac) <- goliath expr
+       -- setup OAFE configuration var
+       vOAC <- atomically $ newTMVar oac
+       -- setup channels
+       david2token <- atomically $ newTBMChan 10
+       token2david <- atomically $ newTBMChan 10
+       goliath2david <- atomically $ newTBMChan 10
+       -- setup result var
+       vResult <- atomically newEmptyTMVar
+       -- start token in new thread
+       tokenTid <- forkIO (token vOAC david2token token2david)
+       -- start pusher in new thread
+       pushTid <- forkIO (pushRAC rac goliath2david)
+       -- run david
+       l "RUNNING DAVID"
+       runRACEvaluation varMap david2token token2david goliath2david vResult l
+       l "DAVID DONE"
+       -- kill threads
+       killThread tokenTid
+       killThread pushTid
+       -- fetch result
+       result <- atomically $ takeTMVar vResult
+       return $! result
+    where -- LOGGING
+          l = \_ -> return ()
+          goliath expr =
+              do g <- newGenIO :: IO SystemRandom
+                 let (errM, rac, oac) = exprToRAC g expr
+                 case errM of
+                   Left err -> fail $ show err
+                   Right _ -> return (rac, oac)
+          token vOAC d2t t2d =
+              do sourceTBMChan d2t
+                 $= CL.mapM (printEvaluation "EVAL REQ: ")
+                 $= CL.mapM (liftIO . (runOAFEEvaluation vOAC))
+                 $= CL.mapM (printEvaluation "EVAL RSP: ")
+                 $$ sinkTBMChan t2d
+          printEvaluation str e =
+              do liftIO $ l $ str ++ show e
+                 return e
+          pushRAC :: RAC el -> TBMChan (RACFragment el) -> IO ()
+          pushRAC rac g2d = sourceList rac $$ sinkTBMChan g2d
 
 test_simpleDRAE =
     do act <- execExpr $ sum (replicate 96 1)

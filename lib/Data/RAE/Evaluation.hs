@@ -207,10 +207,10 @@ oneZeroV :: Field el => Vector (el, el)
 oneZeroV = V.singleton (one, zero)
 
 _SPECIAL_VAR_OUT_ :: VariableName
-_SPECIAL_VAR_OUT_ = "out"
+_SPECIAL_VAR_OUT_ = "__out"
 
 _SPECIAL_VAR_ADDED_PRE_OUT_ :: VariableName
-_SPECIAL_VAR_ADDED_PRE_OUT_ = "__added_z"
+_SPECIAL_VAR_ADDED_PRE_OUT_ = "__added_last_rae"
 
 _SPECIAL_VAR_PRE_OUT_ :: VariableName
-_SPECIAL_VAR_PRE_OUT_ = "z"
+_SPECIAL_VAR_PRE_OUT_ = "__last_rae"

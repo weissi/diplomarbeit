@@ -4,8 +4,7 @@ module Main where
 -- # STDLIB
 import Control.Concurrent (forkIO)
 import Control.Concurrent.STM.TMVar ( TMVar, isEmptyTMVar
-                                    , putTMVar, takeTMVar
-                                    , newEmptyTMVar
+                                    , putTMVar, newEmptyTMVar
                                     )
 import Control.Monad.STM (atomically)
 import Control.Monad.IO.Class (MonadIO(..))
@@ -27,13 +26,13 @@ import qualified Network.Socket as NS
 -- # LOCAL
 import Data.OAFE ( OAFEConfiguration, OAFEEvaluationRequest
                  , OAFEEvaluationResponse
-                 , processOAFEEvaluationRequest
                  )
 import Data.RAE.Conduit ( oafeConfigParseConduit
                         , oafeEvaluationRequestParseConduit
                         , oafeEvaluationResponseSerializeConduit
                         )
 import Data.LinearExpression (VariableName)
+import Functionality.Token (runOAFEEvaluation)
 
 import StaticConfiguration
 
@@ -68,20 +67,9 @@ tokenEval vOAC appData =
         sink = CN.appSink appData
      in src
         $= evalRequestParseConduit
-        $= CL.mapM doOAFEEvaluation
+        $= CL.mapM (liftIO . (runOAFEEvaluation vOAC))
         $= evalResponseSerializeConduit
         $$ sink
-    where
-        doOAFEEvaluation :: MonadResource m
-                         => OAFEEvaluationRequest Element
-                         -> m (OAFEEvaluationResponse Element)
-        doOAFEEvaluation req =
-           do oac <- liftIO $ atomically $ takeTMVar vOAC
-              let rsp = processOAFEEvaluationRequest oac req
-                  var = fst rsp
-                  oac' = HM.delete var oac
-              liftIO $ atomically $ putTMVar vOAC oac'
-              return rsp
 
 tokenClient :: forall m. (MonadResource m, MonadIO m)
             => TMVar () -> TMVar (OAFEConfiguration Element) -> Application m

@@ -2,21 +2,16 @@ module Main where
 
 -- # STDLIB
 import Control.Concurrent (forkIO, myThreadId, killThread)
-import Control.Concurrent.STM.TMVar ( TMVar, newEmptyTMVar, putTMVar
+import Control.Concurrent.STM.TMVar ( TMVar, newEmptyTMVar
                                     , takeTMVar, tryPutTMVar
                                     )
 import Control.Exception.Base (finally, catch, IOException)
 import Control.Monad (liftM, when, void)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.STM (atomically)
-import Data.IORef (newIORef, readIORef, writeIORef)
-import Data.Maybe (isJust)
 
 -- # SITE PACKAGES
-import Control.Concurrent.STM.TBMChan ( TBMChan
-                                      , newTBMChan, readTBMChan, writeTBMChan
-                                      , closeTBMChan, tryReadTBMChan
-                                      )
+import Control.Concurrent.STM.TBMChan (TBMChan, newTBMChan, closeTBMChan)
 import Data.ByteString (ByteString)
 import Data.Conduit.TMChan (sourceTBMChan, sinkTBMChan)
 import Data.Conduit ( Conduit, MonadResource
@@ -26,20 +21,12 @@ import Data.Conduit ( Conduit, MonadResource
 import qualified Data.Conduit.List as CL
 import qualified Data.Conduit.Network as CN
 import qualified Data.Map as M
-import qualified Data.HashMap.Strict as HM
 import qualified Data.Text as T
-import qualified Data.Vector as V
 
 -- # LOCAL
-import Data.OAFE ( OAFEEvaluationRequest, OAFEEvaluationResponse
-                 , OAFEReference, OAFEEvaluation
-                 )
-import Data.RAE.Evaluation ( evalRAE, _SPECIAL_VAR_OUT_, _SPECIAL_VAR_PRE_OUT_
-                           , _SPECIAL_VAR_ADDED_PRE_OUT_
-                           )
-import Data.RAE.Types (RAE, leftVar, rightVar)
+import Data.OAFE (OAFEEvaluationRequest, OAFEEvaluationResponse)
 import Data.Helpers (takeOneConduit, runTCPClientNoWait)
-import Data.LinearExpression (VarMapping, VariableName)
+import Data.LinearExpression (VarMapping)
 import Data.RAE.Conduit ( oafeEvaluationResponseParseConduit
                         , oafeEvaluationRequestSerializeConduit
                         , racFragmentParseConduit
@@ -49,6 +36,7 @@ import Data.SetupPhase ( SetupGoliathToDavid, sd2gSerializeConduit
                        , clientSettingsFromSetupG2D
                        , sd2gSerializeConduit
                        )
+import Functionality.David (runRACEvaluation)
 
 import StaticConfiguration
 
@@ -71,7 +59,8 @@ evalReqSerializeConduit = oafeEvaluationRequestSerializeConduit
 -- The communication threads tasks are twofold:
 -- One serializes and sends OAFE evaluation requests to the Token, the other
 -- receives and parses OAFE evaluation responses. Both are connected via the
--- 'reqs' and 'rsps' channels to the evaluation thread (see 'evaluate').
+-- 'reqs' and 'rsps' channels to the evaluation thread
+-- (see @Functionality.David.runRACEvaluation@).
 spawnCommThreads :: CN.ClientSettings RMonad
                  -> TBMChan (OAFEEvaluationRequest Element)
                  -> TBMChan (OAFEEvaluationResponse Element)
@@ -96,103 +85,6 @@ spawnCommThreads tokenSettings reqs rsps =
               netSrc
               $= evalRspParseConduit
               $$ sinkTBMChan rsps
-
--- | This is the main functionality of David: Evaluating AREs.
---
--- It pulls the next ARE from the channel 'cRACFrag'. After having evaluated the
--- ARE, its output gets sent to the Token. The communication threads (see
--- 'spawnCommThreads') do the real work. This function communication with the
--- communication threads via the channels 'reqs' and 'rsps'. The OAFE evaluation
--- requests get pushed to 'reqs', after the Token has returned the evaluations,
--- they are received from 'rsps' and saved in a 'Map'.
-evaluate :: VarMapping Element
-         -> TBMChan (OAFEEvaluationRequest Element)
-         -> TBMChan (OAFEEvaluationResponse Element)
-         -> TBMChan (VariableName, RAE OAFEReference Element)
-         -> TMVar (Maybe Element)
-         -> DieCommand
-         -> IO ()
-evaluate varMap reqs rsps cRACFrag vResult die =
-    do oaeRef <- newIORef =<< evaluateInitialVars (M.toList varMap)
-       loop oaeRef
-    where loop oaeRef =
-              do areStmt <- atomically $ readTBMChan cRACFrag
-                 case areStmt of
-                   Just (var, rae) ->
-                      do putStrLn ("Next ARE evaluates variable " ++
-                                   T.unpack var ++ ":")
-                         oae <- if var == leftVar _SPECIAL_VAR_OUT_
-                                   then readIORef oaeRef >>= doPreOutAddition
-                                   else readIORef oaeRef
-                         case evalRAE rae oae of
-                           Left err -> die $ "ARE eval failure: " ++ show err
-                           Right val ->
-                               do putStrLn " --> ARE evaluation done"
-                                  atomically $ writeTBMChan reqs (var, val)
-                                  putStrLn " --> OAFE eval request sent"
-                                  oae' <- fetchResponse (Just var) oae
-                                  putStrLn " --> OAFE eval response received"
-                                  writeIORef oaeRef oae'
-                         loop oaeRef
-                   Nothing ->
-                      do oae <- readIORef oaeRef
-                         case ( liftM V.toList $
-                                HM.lookup (leftVar _SPECIAL_VAR_OUT_) oae
-                              , liftM V.toList $
-                                HM.lookup (rightVar _SPECIAL_VAR_OUT_) oae
-                              ) of
-                           (Just [l], Just [r]) ->
-                               if l == r
-                                  then atomically $ putTMVar vResult (Just l)
-                                  else die "The impossible happened! outL!=outR"
-                           _ -> atomically $ putTMVar vResult Nothing
-          doPreOutAddition :: OAFEEvaluation Element
-                           -> IO (OAFEEvaluation Element)
-          doPreOutAddition oae =
-              let svl = leftVar _SPECIAL_VAR_PRE_OUT_
-                  svr = rightVar _SPECIAL_VAR_PRE_OUT_
-               in case ( liftM V.toList $ HM.lookup svl oae
-                       , liftM V.toList $ HM.lookup svr oae
-                       ) of
-                    (Just [valL], Just [valR]) ->
-                        do atomically $
-                             writeTBMChan reqs
-                                          ( _SPECIAL_VAR_ADDED_PRE_OUT_
-                                          , valL+valR
-                                          )
-                           fetchResponse (Just _SPECIAL_VAR_ADDED_PRE_OUT_) oae
-                    _ -> die "Pre out variables not in OAE" >> undefined
-          fetchResponse :: Maybe VariableName
-                        -> OAFEEvaluation Element
-                        -> IO (OAFEEvaluation Element)
-          fetchResponse force oae =
-              do res <- if isJust force
-                           then liftM Just (atomically $    readTBMChan rsps)
-                           else             atomically $ tryReadTBMChan rsps
-                 case res of
-                   Just (Just (var,val)) ->
-                       let force' =
-                             case force of
-                               Just forceVar ->
-                                   if forceVar==var || forceVar `HM.member` oae
-                                      then Nothing
-                                      else Just forceVar
-                               Nothing -> Nothing
-                        in fetchResponse force' (HM.insert var val oae)
-                   Just Nothing ->
-                       return oae
-                   Nothing ->
-                       fail "FUCK, channel closed"
-          evaluateInitialVars initialVars =
-              evaluateInitialVars' initialVars HM.empty
-              where evaluateInitialVars' vars oae =
-                        case vars of
-                          [] -> return oae
-                          ((var, val):vars') ->
-                              do atomically $ writeTBMChan reqs (var, val)
-                                 oae' <- fetchResponse (Just var) oae
-                                 evaluateInitialVars' vars' oae'
-
 -- | Start the evaluation server and the evaluation thread.
 --
 -- The evaluation server accepts an ARE stream from Goliath and transmits the
@@ -206,7 +98,9 @@ runEvaluator :: VarMapping Element
 runEvaluator varMap reqs rsps vResult die =
     do vStop <- atomically newEmptyTMVar
        cRACFrag <- atomically $ newTBMChan _INCOMING_ARE_CHAN_SIZE_
-       _ <- forkIO $ evaluate varMap reqs rsps cRACFrag vResult die
+       _ <- forkIO $
+             (runRACEvaluation varMap reqs rsps cRACFrag vResult putStrLn)
+               `catch` (\e -> die $ show (e :: IOException))
        runResourceT
            (CN.runTCPServer _SRV_CONF_DAVID_FROM_GOLIATH_ (conn vStop cRACFrag))
          `catch` (\e -> die $ show (e :: IOException))
