@@ -30,26 +30,26 @@ type OAFEConfigGen el = HashMap VariableName (Int, DList (el, el))
 _EMPTY_RAE_ :: Field el => RAE OAFEReference el
 _EMPTY_RAE_ = RAE [] [] zero
 
-edModifyConst :: Field el
-              => RAE OAFEReference el
-              -> (el -> el -> el)
-              -> el
-              -> RAE OAFEReference el
-edModifyConst rae op el =
+raeModifyConst :: Field el
+               => RAE OAFEReference el
+               -> (el -> el -> el)
+               -> el
+               -> RAE OAFEReference el
+raeModifyConst rae op el =
     rae { raeConst = el `seq` raeConst rae `op` el }
 
-edAddAddTerm :: Field el
-             => RAE OAFEReference el
-             -> OAFEReference
-             -> RAE OAFEReference el
-edAddAddTerm rae oaref =
+raeAddAddTerm :: Field el
+              => RAE OAFEReference el
+              -> OAFEReference
+              -> RAE OAFEReference el
+raeAddAddTerm rae oaref =
     rae { raeAddTerms = oaref : raeAddTerms rae }
 
-edAddMulTerm :: Field el
-             => RAE OAFEReference el
-             -> (OAFEReference, OAFEReference)
-             -> RAE OAFEReference el
-edAddMulTerm rae oarefs =
+raeAddMulTerm :: Field el
+              => RAE OAFEReference el
+              -> (OAFEReference, OAFEReference)
+              -> RAE OAFEReference el
+raeAddMulTerm rae oarefs =
     rae { raeMulTerms = oarefs : raeMulTerms rae }
 
 -- | Transform a @DRAC@ to a @RAC@.
@@ -122,9 +122,9 @@ singularizeDRAE (DRAE _ draeMuls draeAdds) !oafeCfg =
             case le of
               LinearExpr {} ->
                   let (oaref, !oac') = oafeReference oac le
-                   in (edAddAddTerm rae oaref, oac')
+                   in (raeAddAddTerm rae oaref, oac')
               ConstLinearExpr cle ->
-                  (edModifyConst rae (+) cle, oac)
+                  (raeModifyConst rae (+) cle, oac)
         processMuls :: Field el
                     => (RAE OAFEReference el, OAFEConfigGen el)
                     -> (LinearExpr el, LinearExpr el)
@@ -136,15 +136,15 @@ singularizeDRAE (DRAE _ draeMuls draeAdds) !oafeCfg =
               (ConstLinearExpr clel, ler@(LinearExpr {})) ->
                   let ler' = scalarMul ler clel
                       (oaref, oac') = oafeReference oac ler'
-                   in (edAddAddTerm rae oaref, oac')
+                   in (raeAddAddTerm rae oaref, oac')
               (lel@(LinearExpr {}), ConstLinearExpr cler) ->
                   let lel' = scalarMul lel cler
                       (oaref, oac') = oafeReference oac lel'
-                   in (edAddAddTerm rae oaref, oac')
+                   in (raeAddAddTerm rae oaref, oac')
               (lel, ler) ->
                   let (oarefl, oac')  = oafeReference oac  lel
                       (oarefr, oac'') = oafeReference oac' ler
-                   in (edAddMulTerm rae (oarefl, oarefr), oac'')
+                   in (raeAddMulTerm rae (oarefl, oarefr), oac'')
         draeMulsList = DL.toList draeMuls
         draeAddsList = DL.toList draeAdds
         fstMul :: ((a, b), (c, d)) -> (a, c)
