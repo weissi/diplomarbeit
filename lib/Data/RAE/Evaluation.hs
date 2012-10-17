@@ -1,12 +1,19 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts #-} -- for RAEEvaluationFailure
+{-# LANGUAGE FlexibleContexts #-} -- for 'failure' library
 
+-- | This module provides various RAE evaluation possibilities.
 module Data.RAE.Evaluation
-    ( runRAC, runDRAC, evalRAE
+    ( -- * Public API
+      evalRAE
+      -- * Important Special Variable Names
     , _SPECIAL_VAR_OUT_, _SPECIAL_VAR_PRE_OUT_
     , _SPECIAL_VAR_ADDED_PRE_OUT_
+      -- * Direct Evaluation of @RAC@s and @DRAC@s (for tests/benchmarks)
+    , runRAC, runDRAC
+      -- * Misc
+    , RAEEvaluationFailure(..)
     ) where
 
 -- # STANDARD LIBRARY
@@ -35,6 +42,22 @@ import Data.RAE.Types ( DRAC, DRACFragment, RACFragment
                       , leftVar, rightVar
                       )
 
+
+-- | Indicates what went wrong when the evaluation fails.
+data RAEEvaluationFailure =  UnknownFailure String String
+                           | UnknownVariable VariableName String
+                           | IndexOutOfBounds VariableName Int String
+                           deriving Show
+
+-- | The monad used to execute a @RAC@.
+type RunRACStateMonad m el = StateT (OAFEEvaluation el) m
+
+-- | The monad used to execute a @DRAC@.
+type RunDRACStateMonad el = State (VarMapping el)
+
+-- | Directly evaluate a @DRAC@.
+--
+-- This is usually only in use in tests and benchmarks.
 runDRAC :: forall el. (Field el)
         => VarMapping el
         -> DRAC el
@@ -52,6 +75,9 @@ runDRAC initialVarMap drac =
             _ -> Nothing
    in (out, outVarMap)
 
+-- | Directly evaluate a @RAC@.
+--
+-- This is usually only in use in tests and benchmarks.
 runRAC :: forall el. (Field el)
        => RAC el
        -> OAFEConfiguration el
@@ -76,11 +102,19 @@ runRAC racFrag oac vars =
                    Nothing ->
                        failure $ UnknownFailure "output not calculated" "runRAC"
 
-data RAEEvaluationFailure = UnknownFailure String String
-                           | UnknownVariable VariableName String
-                           | IndexOutOfBounds VariableName Int String
-                           deriving Show
+-- | Initially evaluate an OAFE.
+--
+-- Helper method for @runRAC@
+initiallyEvaluateOAFE :: (Failure RAEEvaluationFailure f, Field el)
+                      => OAFEConfiguration el
+                      -> VarMapping el
+                      -> f (OAFEEvaluation el)
+initiallyEvaluateOAFE oac vars =
+    foldM (evaluateOAFE oac) HM.empty $ M.toList vars
 
+-- | Partially evaluate an OAFE.
+--
+-- Helper function.
 evaluateOAFE :: (Failure RAEEvaluationFailure f, Field el)
              => OAFEConfiguration el
              -> OAFEEvaluation el
@@ -96,13 +130,6 @@ evaluateOAFE oac curEval (var, val) =
           -}
       Just xs ->
           return $ HM.insert var (V.map (\(s, i) -> s * val + i) xs) curEval
-
-initiallyEvaluateOAFE :: (Failure RAEEvaluationFailure f, Field el)
-                      => OAFEConfiguration el
-                      -> VarMapping el
-                      -> f (OAFEEvaluation el)
-initiallyEvaluateOAFE oac vars =
-    foldM (evaluateOAFE oac) HM.empty $ M.toList vars
 
 evaluateRAE' :: forall f. forall el.
                  (Failure RAEEvaluationFailure f, Field el)
@@ -130,12 +157,20 @@ evaluateRAE' (RAE muls adds c) oafeVals =
                                 IndexOutOfBounds var idx "evaluateRAE'"
                        else return $ vals V.! idx
 
+-- | Evaluate one @RAE@.
+--
+-- In real-world use by the functionality David.
 evalRAE :: Field el
          => RAE OAFEReference el
          -> OAFEEvaluation el
          -> Either RAEEvaluationFailure el
 evalRAE = evaluateRAE
 
+
+-- | Evaluate one @RAE@.
+--
+-- In real-world use by the functionality David.
+-- (same as @evalRAE@ but not exported and with @Failure@ type)
 evaluateRAE :: forall f. forall el.
                 (Failure RAEEvaluationFailure f, Field el)
              => RAE OAFEReference el
@@ -152,8 +187,9 @@ evaluateRAE rae vals =
           rAdds = foldl' (+) zero adds
       return $ rMuls + rAdds + c
 
-type RunDRACStateMonad el = State (VarMapping el)
-
+-- | Execute one @DRACFragment@.
+--
+-- Used internally only.
 execDRACFragment :: (Field el)
                  => DRACFragment el -> (RunDRACStateMonad el) (Maybe (el, el))
 execDRACFragment (outVar, drae) =
@@ -173,8 +209,9 @@ execDRACFragment (outVar, drae) =
        put varMap'''
        return valsM
 
-type RunRACStateMonad m el = StateT (OAFEEvaluation el) m
-
+-- | Execute one @RACFragment@.
+--
+-- Used internally only.
 execRACFragment :: (Failure RAEEvaluationFailure f, Field el)
                 => OAFEConfiguration el
                 -> RACFragment el
@@ -206,11 +243,15 @@ execRACFragment oac (outVar, rae) =
 oneZeroV :: Field el => Vector (el, el)
 oneZeroV = V.singleton (one, zero)
 
+-- | The special variable that contains the overall output.
 _SPECIAL_VAR_OUT_ :: VariableName
 _SPECIAL_VAR_OUT_ = "__out"
 
+-- | The special variable that contains the added output of the last reguar
+-- @RAE@.
 _SPECIAL_VAR_ADDED_PRE_OUT_ :: VariableName
 _SPECIAL_VAR_ADDED_PRE_OUT_ = "__added_last_rae"
 
+-- | The special variable that contains the output of the last regular @RAE@.
 _SPECIAL_VAR_PRE_OUT_ :: VariableName
 _SPECIAL_VAR_PRE_OUT_ = "__last_rae"

@@ -1,4 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+-- | This module contains direct DRAE decoding.
+--
+-- That's not needed in the real-world. Only for tests/benchmarks.
 module Data.RAE.Decoder (decodeDRAE) where
 
 -- # STDLIB
@@ -15,6 +18,8 @@ import Data.RAE.Types (DRAE(..), VarMapping)
 import qualified Data.LinearExpression as LE
 
 -- |DRAE decoder
+--
+-- Only used internally.
 decodeDRAE :: forall el. Field el
            => VarMapping el
            -> DRAE el

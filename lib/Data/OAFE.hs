@@ -1,3 +1,4 @@
+-- | OAFE Types and Functions.
 module Data.OAFE
     ( OAFEEvaluation
     , OAFEEvaluationRequest
@@ -24,6 +25,7 @@ type OAFEEvaluationResponse el = (VariableName, Vector el)
 type OAFEConfiguration el = HashMap VariableName (Vector (el, el))
 data OAFEReference = OAFERef !VariableName !Int deriving Show
 
+-- | Process one @OAFEEvaluationRequest@.
 processOAFEEvaluationRequest :: Field el
                              => OAFEConfiguration el
                              -> OAFEEvaluationRequest el

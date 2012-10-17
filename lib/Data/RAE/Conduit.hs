@@ -9,6 +9,7 @@ module Data.RAE.Conduit
     , oafeEvaluationRequestSerializeConduit
     , racFragmentSerializeConduit
     , racFragmentParseConduit
+    , ByteSerializable(..)
     ) where
 
 -- # STDLIB

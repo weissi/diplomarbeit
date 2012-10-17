@@ -1,3 +1,4 @@
+-- | Bring together Conduits and ProtocolBuffers.
 module Data.Conduit.ProtoBufConduit (pbufSerialize, pbufParse) where
 
 -- # STDLIB
@@ -13,11 +14,13 @@ import Text.ProtocolBuffers.WireMessage ( Wire
                                         , messageWithLengthGetM, runGet
                                         )
 
+-- | Serialize a ProtocolBuffer.
 pbufSerialize :: (MonadResource m, ReflectDescriptor w, Wire w)
               => Conduit w m ByteString
 pbufSerialize = awaitForever f
     where f pb = mapM_ yield $ BSL.toChunks $ runPut (messageWithLengthPutM pb)
 
+-- | Parse a ProtocolBuffer.
 pbufParse :: (MonadResource m, ReflectDescriptor w, Wire w, Show w)
           => Conduit ByteString m w
 pbufParse =

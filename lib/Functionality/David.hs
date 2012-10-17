@@ -127,4 +127,3 @@ runRACEvaluation varMap reqs rsps cRACFrag vResult logMsg =
                                  atomically $ writeTBMChan reqs (var, val)
                                  oae' <- fetchResponse (Just var) oae
                                  evaluateInitialVars' vars' oae'
-

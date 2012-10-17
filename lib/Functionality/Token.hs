@@ -14,6 +14,10 @@ import Data.OAFE ( OAFEConfiguration, OAFEEvaluationRequest
                  , processOAFEEvaluationRequest
                  )
 
+-- | This is the main 'Token' functionality: Process an OAFE evaluation request.
+--
+-- The @OAFEConfiguration@ is a @TMVar@ because each variable can only be
+-- evaluated once.
 runOAFEEvaluation :: Field el
                   => TMVar (OAFEConfiguration el)
                   -> OAFEEvaluationRequest el

@@ -1,3 +1,5 @@
+-- | Functions for the network setup phase between the two parties Goliath and
+-- David.
 module Functionality.SetupPhase
     ( SetupDavidToGoliath(..), SetupGoliathToDavid(..)
     , sg2dParseConduit, sd2gParseConduit
