@@ -7,8 +7,8 @@ Maintainer:     weiss@tux4u.de
 Cabal-Version:  >= 1.10
 Build-Type:     Simple
 Category:       Thesis
-Description:    Diplomarbeit of Johannes Weiss
-Synopsis:       Diplomarbeit of Johannes Weiss
+Description:    Diplomarbeit of Johannes Weiß
+Synopsis:       Diplomarbeit of Johannes Weiß
 
 Source-Repository head
     Type:     git
