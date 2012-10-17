@@ -28,11 +28,12 @@ import Data.RAE.Conduit ( oafeConfigSerializeConduit
                         , racFragmentSerializeConduit
                         )
 import Data.Helpers (takeOneConduit)
-import Data.SetupPhase ( SetupDavidToGoliath(..), SetupGoliathToDavid(..)
-                       , sg2dSerializeConduit, sd2gParseConduit
-                       , setupG2DFromClientSettings
-                       , clientSettingsFromSetupD2G
-                       )
+import Functionality.SetupPhase ( SetupDavidToGoliath(..)
+                                , SetupGoliathToDavid(..)
+                                , sg2dSerializeConduit, sd2gParseConduit
+                                , setupG2DFromClientSettings
+                                , clientSettingsFromSetupD2G
+                                )
 
 import StaticConfiguration
 

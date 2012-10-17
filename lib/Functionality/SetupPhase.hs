@@ -1,10 +1,10 @@
-module Data.SetupPhase ( SetupDavidToGoliath(..), SetupGoliathToDavid(..)
-                       , sg2dParseConduit, sd2gParseConduit
-                       , sg2dSerializeConduit, sd2gSerializeConduit
-                       , clientSettingsFromSetupD2G, clientSettingsFromSetupG2D
-                       , setupG2DFromClientSettings, setupD2GFromClientSettings
-                       )
-                       where
+module Functionality.SetupPhase
+    ( SetupDavidToGoliath(..), SetupGoliathToDavid(..)
+    , sg2dParseConduit, sd2gParseConduit
+    , sg2dSerializeConduit, sd2gSerializeConduit
+    , clientSettingsFromSetupD2G, clientSettingsFromSetupG2D
+    , setupG2DFromClientSettings, setupD2GFromClientSettings
+    ) where
 
 -- # STDLIB
 

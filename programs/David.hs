@@ -31,11 +31,11 @@ import Data.RAE.Conduit ( oafeEvaluationResponseParseConduit
                         , oafeEvaluationRequestSerializeConduit
                         , racFragmentParseConduit
                         )
-import Data.SetupPhase ( SetupGoliathToDavid, sd2gSerializeConduit
-                       , sg2dParseConduit, setupD2GFromClientSettings
-                       , clientSettingsFromSetupG2D
-                       , sd2gSerializeConduit
-                       )
+import Functionality.SetupPhase ( SetupGoliathToDavid, sd2gSerializeConduit
+                                , sg2dParseConduit, setupD2GFromClientSettings
+                                , clientSettingsFromSetupG2D
+                                , sd2gSerializeConduit
+                                )
 import Functionality.David (runRACEvaluation)
 
 import StaticConfiguration
