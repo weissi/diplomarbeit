@@ -1,0 +1,324 @@
+\JWlone{Discontinued Approaches}
+\label{sec:discontinued}
+
+\JWltwo{Using Decomposable Affine Randomized Encodings}
+\label{sec:dare}
+
+The transformation from general functions to affine functions used in this
+thesis will lead to a slightly modified form of \emph{Decomposable Affine
+Randomized Encodings} (DAREs) \cite{gac2012} only called \emph{Affine Randomized
+Encoding} (ARE) in this thesis. The modification is necessary because this
+thesis uses OAFEs to evaluate the DAREs and does therefore not depend on the
+learning with errors (LWE) problem. This leads to further changes: The
+\emph{affinization gadget} \cite{gac2012} is modified and the
+\emph{key--shrinking gadget} \cite{gac2012} is not needed.
+
+\noindent{}The following sections will describe the whole process.
+
+\JWlthree{Definitions}
+\label{sec:affinization_definitions}
+
+An \emph{Linear Randomized Expression} (LRE) is an element of the set
+$\mathcal{F}_{AR}$ ($K$ a finite field), an \emph{Affine Randomized Encoding}
+(ARE) an element of the set $\mathcal{E}_{AR}$. One important constraint has to
+hold for all LREs and therefore for all AREs, too: After fully evaluating a LRE,
+i.e. replacing the variable by its actual value, the now constant LRE should
+reveal no more information that the result of a full decoding of the respective
+ARE. The safety is proven in \emph{How to Garble Arithmetic Circuits}
+\cite{gac2012}.
+
+\begin{align*}
+  \mathcal{V} = & \{ x \mid x~\text{a variable over}~K \} \\
+%
+  \mathcal{F}_{AR} = & \{ s \cdot x + i \mid s, i \in K, x \in \mathcal{V} \}
+  \cup \{ v \mid v \in K \} \\
+%
+  \mathcal{E}_{AR} = & \{ (M, A) \mid
+    M \subseteq \mathcal{F}_{AR} \times \mathcal{F}_{AR},
+    A \subseteq, \mathcal{F}_{AR};
+    A, M~\text{finite multi--sets} \}
+%
+\end{align*}
+
+
+\JWlthree{Encoding}
+\label{sec:affinization_encoding}
+
+\begin{itemize}
+
+\item A function $f_1(x_1, x_2) = x_1 + x_2$ can be securely encoded by
+$ENC_A(f_1, r)$; $r \in K$ being uniformly at random
+
+\item A function $f_2(x_1, x_2, x_3) = x_1 \cdot x_2 + x_3$ can be securely
+encoded by $ENC_M(f_2, r_1, r_2, r_3, r_4)$; $r_1, r_2, r_3, r_4 \in K$ being
+uniformly at random
+\end{itemize}
+
+\begin{align*}
+ENC_A(f_1, r) = \Big( & \emptyset, (x_1 + r, 1 \cdot x_2 - r)\Big) \\
+ENC_M(f_2,  r_1, r_2, r_3, r_4) = \Bigg( & \bigg\{
+\begin{pmatrix}1 \cdot x_1 - r_1\\1 \cdot x_2 - r_2\end{pmatrix} \bigg\}\\
+,& \bigg\{r_2 \cdot x_1 -r_1r_2+r_3 \\
+&\ ,\ r_1 \cdot x_2 + r_4 \\
+&\ ,\ 1 \cdot x_3-r_3-r_4\bigg\} \Bigg)
+\end{align*}
+
+
+\JWlthree{Decoding}
+\label{sec:affinization_decoding}
+
+Decoding a fully evaluated ARE $\mathcal{E}_{AR} = \{(M,A)\}$ as $r =
+DEC(\mathcal{E}_{AR})$ is
+straightforward:
+
+\begin{align*}
+M' &= \Bigg\{ m_1 \cdot m_2\ \Bigg|\ \begin{pmatrix}m_1\\m_2\end{pmatrix}
+\in M \Bigg\} \\
+r & = \sum_{a \in A} a + \sum_{m \in M'} m
+\end{align*}
+
+
+\JWlthree{Randomized Variables}
+\label{sec:rv}
+
+Whenever a circuit is not directly transformable to one single ARE, sub--AREs
+get replaced by \emph{Randomized Variables} (RV). RVs are just (sub--)ARE that
+get transmitted to the second party (see section \ref{sec:are}) which
+fully evaluates them and saves the result just like an ordinary input variable
+(such as $x_D$). Following AREs may then use the RVs as pseudo--inputs. But
+since a ARE reveals as much information as its decoded form, the original ARE
+cannot just be transmitted as the final overall ARE. That would reveal
+intermediate information. Therefore, RVs get an additional garbling step: Say
+the following property would hold for a variable $v$ being the decoded value of
+an ARE $e$:
+
+\begin{align*}
+  v = DEC(e \in \mathcal{E}_{AR})
+\end{align*}
+
+\noindent{}Then a modified ARE $\hat{e} \in \mathcal{E}_{AR}^+$ decoding to a
+value $\hat{v}$
+
+\begin{align*}
+\hat{v} = \alpha \cdot (v + \beta) = DEC(\hat{e})
+\end{align*}
+
+\noindent{}with secret keys---known only by the first party---$\alpha$ and
+$\beta$ would get transmitted.
+
+
+\JWltwo{Using Linear Bijection Straight--Line Programs}
+\label{sec:using-lbs}
+
+The first approach taken in this thesis to transform general formulas to affine
+functions suitable for OAFEs was via Linear Bijection Straight--Line Programs.
+The results looked promising at a first glance but a problem leading to
+exponential blowup when using multiplications emerged. This approach is partly
+implemented as explained in detail in the next few section but plays no role in
+the overall solution.
+
+\JWlthree{From Arithmetic Formulas To Matrix Multiplications}
+\label{sec:FormulasToMatrixMuls}
+
+Our definition of formulas is the same as in \cite{cleve91}: Formulas are
+circuits that are trees. A postorder traversal is enough to evaluate the formula
+easily. We describe the evaluation of such a formula using \emph{linear
+bijection straight--line programs} (LBS programs)\cite{cleve91} which use at
+most $\omega$ registers. A LBS program can be simulated by matrix
+multiplications, one statement is simulated by one matrix multiplication. The
+matrices are elements of $SL_w(K)$, the special linear group consisting of
+$\omega \times \omega$ matrices with determinant $1$ (and $K$ a field).
+
+A LBS program consists of assignment statements of the following
+forms where $R_{1,...,\omega}$ denote registers, $c \in K$ constants and $x_u
+\in K$ the formula's inputs:
+
+\begin{align}
+R_j & \leftarrow R_j + (R_i \cdot c) \\
+R_j & \leftarrow R_j - (R_i \cdot c) \\
+R_j & \leftarrow R_j + (R_i \cdot x_u) \\
+R_j & \leftarrow R_j - (R_i \cdot x_u)
+\end{align}
+
+
+\JWlfour{Transformation of Formulas to LBS Programs}
+
+The goal is to transform a register $R_{out}$ with a initial value of $0$ to be
+transformed like $R_{out} \leftarrow R_{out} + R_{one} \cdot f(x_G,x_D)$ . The
+special register $R_{one}$ holds a constant $1$. This can be achieved by
+induction as follows.  For the exact definitions, proofs and algorithms how to
+transform arbitrary formulas to LBS programs see \cite{cleve91}.
+
+
+\JWlfive{Depth $d = 0$}
+
+The construction of the LBS for $d = 0$ is very straightforward:
+$R_j \leftarrow R_j \pm R_i \cdot c$ or $R_j \leftarrow R_j \pm R_i \cdot x_u$ .
+
+
+\JWlfive{Depth $d > 0$}
+
+Having LBS programs that do $R_j \leftarrow R_j \pm R_i \cdot l(x_G, x_D)$  and
+$R_j \leftarrow R_j \pm R_i \cdot r(x_G, x_D)$ we can
+transform formulas of depth $d > 0$ to a LBS program using only formulas of
+of depth $d - 1$ until $d = 0$.
+
+\JWlsix{Additive:} We can construct a LBS program doing $R_j \leftarrow
+R_j + R_i \cdot (l + r)(x_G, x_D)$ easily by the following LBS program
+
+\begin{align*}
+R_j & \leftarrow R_j + R_i \cdot l(x_G, x_D) \\
+R_j & \leftarrow R_j + R_i \cdot r(x_G, x_D)
+\end{align*}
+
+Alike for $R_j \leftarrow R_j - R_i \cdot (l + r)(x_G, x_D)$
+
+\begin{align*}
+R_j & \leftarrow R_j - R_i \cdot l(x_G, x_D) \\
+R_j & \leftarrow R_j - R_i \cdot r(x_G, x_D)
+\end{align*}
+
+
+\JWlsix{Multiplicative:} We can construct a LBS program doing $R_j
+\leftarrow R_j + R_i \cdot (l \cdot r)(x_G, x_D)$ less obviously by the LBS
+program
+
+\begin{align*}
+R_k & \leftarrow R_k - R_j \cdot r(x_G, x_D) \\
+R_j & \leftarrow R_j + R_i \cdot l(x_G, x_D) \\
+R_k & \leftarrow R_k + R_j \cdot r(x_G, x_D) \\
+R_j & \leftarrow R_j - R_i \cdot l(x_G, x_D)
+\end{align*}
+
+Alike for $R_j \leftarrow R_j - R_i \cdot (l \cdot r)(x_G, x_D)$
+
+\begin{align*}
+R_k & \leftarrow R_k - R_j \cdot r(x_G, x_D) \\
+R_j & \leftarrow R_j - R_i \cdot l(x_G, x_D) \\
+R_k & \leftarrow R_k + R_j \cdot r(x_G, x_D) \\
+R_j & \leftarrow R_j + R_i \cdot l(x_G, x_D)
+\end{align*}
+
+
+\JWlfour{Current Implementation State}
+
+The current implementation is a Haskell library which does the transformation
+from the formula, over the LBS program to the matrices. Exemplary,
+the definition of the function $f(x_G,x_D) = 3x \cdot (x_G + x_D^2)$ looks like
+
+\lstset{language=Haskell}
+
+\begin{lstlisting}
+_Xg_ :: Expr
+_Xg_ = Var "Xg"
+
+_Xd_ :: Expr
+_Xd_ = Var "Xd"
+
+f :: Expr
+f = 3 * _Xg_ * (_Xg_ + _Yd_ * _Yd_)
+\end{lstlisting}
+
+\noindent{}The resulting LBS program which will hold the result in \texttt{R1}
+looks like:
+
+\begin{lstlisting}
+R1 <- R1 - R2 * Xg
+R1 <- R1 - R3 * Xd
+R3 <- R3 - R2 * Xd
+R1 <- R1 + R3 * Xd
+R3 <- R3 + R2 * Xd
+R2 <- R2 - R3 * Xg
+R3 <- R3 + R0 * 3
+R2 <- R2 + R3 * Xg
+R3 <- R3 - R0 * 3
+R1 <- R1 + R2 * Xg
+R1 <- R1 - R3 * Xd
+R3 <- R3 + R2 * Xd
+R1 <- R1 + R3 * Xd
+R3 <- R3 - R2 * Xd
+R2 <- R2 - R3 * Xg
+R3 <- R3 - R0 * 3
+R2 <- R2 + R3 * Xg
+R3 <- R3 + R0 * 3
+\end{lstlisting}
+
+\noindent{}The construction of the matrices is straight--forward: The statement
+$R_i \leftarrow R_i + (R_j \cdot \alpha)$ is equivalent to the $K^{\omega \times
+\omega}$ identity matrix whose entry $i,j$ is set to $\alpha$.
+
+
+\JWlthree{Grouping the Matrices}
+\label{sec:matrix-grouping}
+
+The grouping process is very straightforward, too: From the process described in
+section \ref{sec:FormulasToMatrixMuls} we obtain matrices $\widehat{M_1}$ to
+$\widehat{M_n}$ which each have the effect of exactly one LBS program statement.
+Using associativity, we group together a variable amount of matrices
+$\widehat{M_1}$ to $\widehat{M_n}$. Each group is complete when there is at
+least one reference to the \emph{other party's input} $x_D$.  Matrices $M_1$ to
+$M_m$ where $M_1$ to $M_{m-1}$ definitely have at least one reference to $x_D$
+and $M_m$ may or may not are the result of this step.  Obviously the following
+properties hold:
+
+\begin{align*}
+n & \geq m \\
+\prod_{i=1}^m M_i & = \prod_{j=1}^n \widehat{M_j}
+\end{align*}
+
+\JWlthree{Garbling the Matrices}
+\label{sec:matrix-garbling}
+
+Let $D_L$ be the $\omega \times \omega$ matrix whose entry $2,2$ is $1$, and
+whose other entries are $0$. Multiplication of $D_L$ selects the second row of
+matrices multiplied on the right of $D_L$. Let $D_R$ be the $\omega \times
+\omega$ matrix whose entry $1,1$ is $1$, and whose other entries are $0$. This
+matrix will select the first column when multiplied on the left of any matrix.
+Using additional matrices $S_1$ to $S_{m}$ uniformly at random and invertible,
+we can build up $m$ garbled matrix groups:
+
+\begin{align*}
+U_1 & = D_L M_1 S_1 \\
+U_i & = S_{i-1}^{-1} M_i S_i &
+\text{for $i \in \{n \in \mathbb{N} \big| 1 < n < m\}$}\\
+U_m & = S_{m-1}^{-1} M_m D_R
+\end{align*}
+
+\noindent{} Hence, each $U_{1..m}$ does not reveal usable information by itself
+\cite{cramer03}, but $\prod_{i=1}^m U_i$ does still calculate the desired
+result.
+
+
+\JWlthree{Evaluating them using OAFEs (David \& Goliath)}
+
+From section \ref{sec:matrix-garbling} we obtain the matrices $U_{1..m} \in
+K^{\omega \times \omega}$. We can easily reshape the matrices $U_{1..m}$ to
+vectors $u_{1..m} \in K^{\omega^2}$ and concatenate the vectors $u_{1..m}$ to
+one giant vector $\mu \in K^{m\omega^2}$. After that we deduce two vectors $a$
+and $b$ that hold the following property ($a, b \in K^{m\omega^2}$, $x_D$ a
+scalar variable, as in section \ref{sec:matrix-grouping} David's input):
+
+\begin{align}
+a \cdot x_D + b = \mu
+\end{align}
+
+Using the $\prod^{\text{semi-int}}_{\text{OAFE}}$ protocol\cite{davidgoliath} we
+are now ready to evaluate the function securely:
+
+\begin{itemize}
+
+\item The setup is: $a, b$ as above, $\mathbb{F}_q = K$, $k = m\omega^2$ and $m$
+known to both, David and Goliath
+
+\item After applying the protocol, David is now able to evaluate the linear
+functions to his result vector $y \in K^{m\omega^2} = GWh + \tilde{a}x_D +
+\tilde{b}$ ($G$, $W$, $h$, $\tilde{a}$ ,$\tilde{b}$ as in the paper
+\cite{davidgoliath})
+
+\item The last but one step is to reshape $y$ to the matrices $F_{1..m}
+\in K^{m\omega^2}$
+
+\item Finally, the entry $2, 1$ of $\prod_{i=1}^m F_i$ is the desired result of
+$f(x_G,x_D)$.
+
+\end{itemize}

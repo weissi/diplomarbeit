@@ -1,0 +1,65 @@
+\documentclass[10pt, a4paper, openright]{book}
+
+% language
+\usepackage[american]{babel}
+\usepackage[utf8]{inputenc}
+
+% bib
+\bibliographystyle{plainurl}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{url}
+
+% I need them :-)
+\usepackage[plainpages=false]{hyperref}
+\hypersetup {
+   pdfauthor={Johannes Wei\ss},
+   pdftitle={Diplomarbeit Johannes Wei\ss},
+   pdfsubject={Diploma Thesis},
+   pdfkeywords={KIT, crypto, diploma thesis, Diplomarbeit, Informatik, computer
+   science}
+}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{tikz}
+
+\input{commands}
+
+\title{Efficient Secure Function Evaluation using Garbled Arithmetic Circuits
+and Untrusted Tamper--Proof Hardware}
+
+\author{Johannes Weiß}
+
+\begin{document}
+
+\selectlanguage{american}
+
+\pagenumbering{Roman}
+
+\input{title}
+
+\frontmatter
+\tableofcontents
+
+\mainmatter
+
+\cleardoublepage
+
+\input{introduction}
+
+\input{methods}
+
+\input{protocols}
+
+\input{implementation}
+
+\input{discontinued}
+
+\backmatter
+
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliography{bibliography}
+
+\end{document}
+% vim: set spell spelllang=en_us fileencoding=utf8 :

@@ -39,25 +39,25 @@ function try_pdflatex() {
 
 set -e
 STEP="pdflatex run 1"
-try_pdflatex $TEXOPTS roadmap
+try_pdflatex $TEXOPTS thesis
 STEP="bibtex"
-bibtex build/roadmap
+bibtex build/thesis
 STEP="pdflatex run 2"
-try_pdflatex $TEXOPTS roadmap
+try_pdflatex $TEXOPTS thesis
 STEP="pdflatex run 3"
-pdflatex $TEXOPTS -halt-on-error roadmap 2>&1 | tee /tmp/pdflatex.out
+pdflatex $TEXOPTS -halt-on-error thesis 2>&1 | tee /tmp/pdflatex.out
 STEP="main program"
-cp build/roadmap.pdf .
+cp build/thesis.pdf .
 
 echo BUILD SUCCESSFUL
 
 case "$(uname -s)" in
     Darwin)
-        open roadmap.pdf
+        open thesis.pdf
         ;;
     Linux)
         if pgrep -f 'evince (.+\/)?thesis.pdf' > /dev/null; then
-            evince roadmap.pdf
+            evince thesis.pdf
         fi
         ;;
     *)
