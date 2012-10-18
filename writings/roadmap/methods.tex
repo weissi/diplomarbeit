@@ -1,6 +1,229 @@
 \JWlone{Methods}
 \label{sec:methods}
 
+This chapter describes how arbitrary arithmetic functions can be expressed in
+terms of affine expressions. This is the most important part of this thesis
+because it is the key part of evaluating arbitrary arithmetic expressions
+using OAFEs \cite{davidgoliath}.
+
+
+%
+% DEFINITIONS
+%
+\JWltwo{Definitions}
+\label{sec:rae-definitions}
+
+This chapter defines important entities that are used to define the more complex
+entities in the following chapters.
+
+% Field K
+\JWlthree*{Field $K$}
+
+\label{def:field} Throughout this thesis, $K$ represents an arbitrary finite
+field, such as $\mathbb{F}_{2^{256}}$.
+
+
+% Variables
+\JWlthree*{Variables}
+
+\label{def:variable} Variables are textual placeholders for real values.
+Formally represented by
+
+\begin{align*}
+  \mathcal{V} = & \{ x \mid x~\text{a variable that can be set to an element
+  $e$}, e \in K \}
+\end{align*}
+
+
+%
+% DUAL RANDOMIZED AFFINE VALUES
+%
+\JWltwo{Dual Randomized Affine Values}
+\label{sec:drav}
+
+\JWdef{Dual Randomized Affine Value}{DRAV}{s} are encrypted, signed values
+representing a scalar value of the field $K$. Each DRAV is encrypted by a pair
+of \emph{dual keys}. The first dual key, the \emph{static key}, remains the same
+in the whole DRAC (see chapter \ref{def:DRAC}) generation procedure and is
+usually written as $(\alpha_l, \alpha_r)$. The second dual key, the
+\emph{dynamic key} is a short--lived key, usually represented as $(\beta,
+\beta')$. Two DRAVs only share the same dynamic key by hazard but always share
+the same static key. Encoding a regular value $v \in K$ as a DRAV
+$\widetilde{v} \in \mathcal{V}_K$ is very simple:
+
+\begin{align*}
+  \widetilde{v} = E(v) = (\widetilde{v_l}, \widetilde{v_r}) =
+    (\alpha_l \cdot v + \beta, \alpha_r \cdot v + \beta')
+\end{align*}
+
+So if the keys are uniformly at random, the two components of the tuple
+$\widetilde{v}$ are uniformly at random, too. Decoding is:
+
+\begin{align*}
+  v = D(\widetilde{v}) =
+  \left\{
+    \begin{array}{l l}
+      \frac{\widetilde{v_l} - \beta}{\alpha_l} & \quad
+      \text{if}~\frac{\widetilde{v_l} - \beta}{\alpha_l} =
+      \frac{\widetilde{v_r} - \beta'}{\alpha_r}\\
+      \perp & \quad \text{otherwise ($\widetilde{v}$ is non--well--formed)}\\
+    \end{array}\right.
+\end{align*}
+
+\begin{JWtodoBox}
+  \begin{itemize}
+    \item Was ist well--formedness, non--well--formedness?
+    \item Final Value evaluation, also Addieren der Komponenten
+    \item Arithmetic auf DRAVs (kann man aus dem alten CBRAE Kapitel klauen)
+  \end{itemize}
+\end{JWtodoBox}
+
+
+%
+% DUAL RANDOMIZED AFFINE ENCODING
+%
+\JWltwo{Dual Randomized Affine Encoding}
+\label{sec:drae}
+
+\JWdef{Dual Randomized Affine Encoding}{DRAE}{s} are affine representations of
+parts of arithmetic circuits that fulfill several properties:
+
+\begin{enumerate}
+
+  \item \label{prop:drae-encrypted} DRAEs are encrypted: Without the encryption
+    keys, they don't reveal any information.
+
+  \item \label{prop:drae-signed} DRAEs are signed: If someone tries to forge a
+    DRAE, it will become non--well--formed and operations with that DRAE result
+    in non--well--formed DRAEs.
+
+  \item \label{prop:drae-oafe} DRAEs can be securely evaluated using OAFEs.
+
+  \item \label{prop:drae-not-enough} DRAEs can not express arbitrary arithmetic
+    circuits alone.
+
+\end{enumerate}
+
+\noindent{}A DRAE can be eventually evaluated to a final value, that is a DRAV
+(see chapter \ref{def:DRAV}).
+
+
+%
+% DUAL RANDOMIZED AFFINE CIRCUITS
+%
+\JWltwo{Dual Randomized Affine Circuits}
+\label{sec:drac}
+
+\JWdef{Dual Randomized Affine Circuit}{DRAC}{s} are representations of entire
+arbitrary arithmetic circuits. DRACs are sequences of DRAEs, each assigned to a
+variable.
+
+% EVALUATION
+\JWlthree{Evaluation}
+\label{sec:DRAC-eval}
+
+A DRAC can be evaluated by evaluating one DRAE after the other and assigning the
+resulting DRAV to the variable the DRAE is assigned to. The DRAE sequence is
+ordered, so a DRAE should be evaluatable by only inputting the regular inputs
+and the variables set by evaluating prior DRAEs.
+
+
+\JWltwo{DRAEs weiter...}
+
+are very similar to AREs
+(section \ref{sec:are}) but use CBRVs (section \ref{sec:cbrv}) instead of plain
+values and RVs (section \ref{sec:rv}). \ref{def:LW} \ref{def:AW}
+
+\begin{align}
+  \mathcal{F}_{AR} = & \{ s \cdot x + i \mid s, i \in K, x \in \mathcal{V} \}
+  \cup \{ v \mid v \in K \} \\
+%
+  \mathcal{B}_{AR} = & \{ (\alpha_l \cdot f + \beta, \alpha_r \cdot f + \beta' )
+  \mid \alpha_l, \alpha_r \in K \setminus \{0\}; \beta, \beta' \in K; f \in
+  \mathcal{F}_{AR} \} \\
+%
+  \label{rel:drae}
+  \mathcal{E}_{AR} = & \{ (M, A) \mid
+    M \subseteq \mathcal{B}_{AR} \times \mathcal{B}_{AR},
+    A \subseteq, \mathcal{B}_{AR};
+    A, M~\text{finite multi--sets} \}
+%
+\end{align}
+
+\noindent Intuitively, $\mathcal{V}$ are ordinary inputs and CBRVs,
+$\mathcal{F}_{AR}$ represent linear, encrypted particles that encode parts of
+the final function. To prevent illegal information gaining by a corrupted second
+party, $\mathcal{B}_{AR}$ represents checked and encoded intermediate values
+(see section \ref{sec:cbrv}) that can safely be passed to untrusted parties.
+$\mathcal{E}_{AR}$ is the final encoding, powerful enough to encode arbitrary
+arithmetic functions. $\mathcal{E}_{AR}$s are full--blown DRAEs as presented in
+this thesis. The decoding part remains as in section
+\ref{sec:affinization_decoding}. The result will be a tuple that can then be
+decoded in one last step as in section \ref{sec:eval-final-value}.
+
+
+\JWlthree{Encoding Arithmetic Operations as DRAEs}
+\label{sec:encode-drae}
+
+As in section \ref{sec:cbrv} we assume the universal decoding function
+$D(\widetilde{x})$. With CBRVs, the arithmetic operations are mapped as follows:
+
+
+\JWlfour{Addition}
+
+Two CBRVs $\widetilde{x}$ and $\widetilde{y}$ can be added componentwise to
+$\widetilde{z} = \left(\widetilde{x_1} + \widetilde{y_1}, \widetilde{x_2} +
+\widetilde{y_2}\right)$. Since the first party is in
+possession of the encryption keys ($\widetilde{x} = \left(\alpha_l \cdot x +
+\beta_1, \alpha_r \cdot x + \beta_2\right)$, $\widetilde{y} = \left(\alpha_l
+\cdot x + \beta_3, \alpha_r \cdot x + \beta_4\right)$) it's obvious that:
+$\widetilde{z} = \left(\alpha_l \cdot (x+y) + (\beta_1 + \beta_3), \alpha_r
+\cdot (x+y) + (\beta_2 + \beta_4)\right)$ and $\widetilde{z}$ is well--formed.
+
+Having two DRAEs, they can be added by simply concatenating the multiplicative
+($M$ in relation \ref{rel:drae}) and additive ($A$) parts.
+
+
+\JWlfour{Addition -- Alternative Form}
+
+The alternative addition form is
+$\widetilde{z} =
+\left( E\left(D(\widetilde{x_1}) + D(\widetilde{y_1})\right),
+       E\left(D(\widetilde{x_2}) + D(\widetilde{y_2})\right)
+\right)$.
+Since $E(x)$ and $D(x)$ are both linear functions,
+$E\left(D(\ldots) +D(\ldots)\right)$
+are linear expressions, too that can be evaluated using two OAFE calls.
+
+
+\JWlfour{Multiplication}
+
+As for ordinary AREs, the multiplication is not as powerful as the addition,
+direct multiplication of two DRAEs is not possible. DRAE multiplication is
+done using CBRVs sent to the second party. Then, these CBRVs get multiplied as
+described here:
+
+\begin{align*}
+  e & \in \mathcal{E}_{AR}; \widetilde{x}, \widetilde{y} \in \mathcal{B}_{RV};
+  r_1, r_2, r_3, r_4, r_5, r_6, r_7, r_8 \in K;
+  \alpha_l, \alpha_r \in K \setminus \{0\} \\
+  %
+  e & = \widetilde{x} \otimes \widetilde{y} \\
+  %
+  e & = \Bigg(\Big\{\big( \alpha_l \cdot D(\widetilde{x_1}) - r_1,
+                          \alpha_r \cdot D(\widetilde{x_2}) -r_5 \big) \\
+    &\qquad ,     \big(   1        \cdot D(\widetilde{y_1}) - r_2,
+                          1        \cdot D(\widetilde{y_2}) - r_6 \big) \Big\}\\
+    &\qquad   \Big\{\big( \alpha_lr_2 \cdot D(\widetilde{x_2}) + r_3,
+                          \alpha_rr_2 \cdot D(\widetilde{x_1}) + r_7 \big) \\
+    &\qquad ,       \big ( r_1        \cdot D(\widetilde{y_2}) + r_4,
+                           r_5        \cdot D(\widetilde{y_1}) + r_8 \big)
+              \Big\}\Bigg) \\
+\end{align*}
+
+The decryption keys of $e$ are $\alpha_l$, $\alpha_r$ (static keys) and
+$\beta = r_1r_2 + r_3 + r_4$, $\beta' = r_5r_6 + r_7 + r_8$ (dynamic keys).
+
 \JWltwo{Checked Bi--Randomized Variables}
 \label{sec:cbrv}
 
@@ -52,105 +275,6 @@ A CBRF $\widetilde{x}$ is well--formed iff the tuple $D(\widetilde{x})$ consists
 of two equal values.
 
 
-\JWltwo{Checked Bi-Randomized Affine Encodings}
-\label{sec:cbrae}
-
-\emph{Checked Bi-Randomized Affine Encodings} (CBRAEs) are very similar to AREs
-(section \ref{sec:are}) but use CBRVs (section \ref{sec:cbrv}) instead of plain
-values and RVs (section \ref{sec:rv}).
-
-\begin{align}
-  \mathcal{V} = & \{ x \mid x~\text{a variable over}~K \} \\
-%
-  \mathcal{F}_{AR} = & \{ s \cdot x + i \mid s, i \in K, x \in \mathcal{V} \}
-  \cup \{ v \mid v \in K \} \\
-%
-  \mathcal{B}_{AR} = & \{ (\alpha_l \cdot f + \beta, \alpha_r \cdot f + \beta' )
-  \mid \alpha_l, \alpha_r \in K \setminus \{0\}; \beta, \beta' \in K; f \in
-  \mathcal{F}_{AR} \} \\
-%
-  \label{rel:cbrae}
-  \mathcal{E}_{AR} = & \{ (M, A) \mid
-    M \subseteq \mathcal{B}_{AR} \times \mathcal{B}_{AR},
-    A \subseteq, \mathcal{B}_{AR};
-    A, M~\text{finite multi--sets} \}
-%
-\end{align}
-
-\noindent Intuitively, $\mathcal{V}$ are ordinary inputs and CBRVs,
-$\mathcal{F}_{AR}$ represent linear, encrypted particles that encode parts of
-the final function. To prevent illegal information gaining by a corrupted second
-party, $\mathcal{B}_{AR}$ represents checked and encoded intermediate values
-(see section \ref{sec:cbrv}) that can safely be passed to untrusted parties.
-$\mathcal{E}_{AR}$ is the final encoding, powerful enough to encode arbitrary
-arithmetic functions. $\mathcal{E}_{AR}$s are full--blown CBRAEs as presented in
-this thesis. The decoding part remains as in section
-\ref{sec:affinization_decoding}. The result will be a tuple that can then be
-decoded in one last step as in section \ref{sec:eval-final-value}.
-
-
-\JWlthree{Encoding Arithmetic Operations as CBRAEs}
-\label{sec:encode-cbrae}
-
-As in section \ref{sec:cbrv} we assume the universal decoding function
-$D(\widetilde{x})$. With CBRVs, the arithmetic operations are mapped as follows:
-
-
-\JWlfour{Addition}
-
-Two CBRVs $\widetilde{x}$ and $\widetilde{y}$ can be added componentwise to
-$\widetilde{z} = \left(\widetilde{x_1} + \widetilde{y_1}, \widetilde{x_2} +
-\widetilde{y_2}\right)$. Since the first party is in
-possession of the encryption keys ($\widetilde{x} = \left(\alpha_l \cdot x +
-\beta_1, \alpha_r \cdot x + \beta_2\right)$, $\widetilde{y} = \left(\alpha_l
-\cdot x + \beta_3, \alpha_r \cdot x + \beta_4\right)$) it's obvious that:
-$\widetilde{z} = \left(\alpha_l \cdot (x+y) + (\beta_1 + \beta_3), \alpha_r
-\cdot (x+y) + (\beta_2 + \beta_4)\right)$ and $\widetilde{z}$ is well--formed.
-
-Having two CBRAEs, they can be added by simply concatenating the multiplicative
-($M$ in relation \ref{rel:cbrae}) and additive ($A$) parts.
-
-
-\JWlfour{Addition -- Alternative Form}
-
-The alternative addition form is
-$\widetilde{z} =
-\left( E\left(D(\widetilde{x_1}) + D(\widetilde{y_1})\right),
-       E\left(D(\widetilde{x_2}) + D(\widetilde{y_2})\right)
-\right)$.
-Since $E(x)$ and $D(x)$ are both linear functions,
-$E\left(D(\ldots) +D(\ldots)\right)$
-are linear expressions, too that can be evaluated using two OAFE calls.
-
-
-\JWlfour{Multiplication}
-
-As for ordinary AREs, the multiplication is not as powerful as the addition,
-direct multiplication of two CBRAEs is not possible. CBRAE multiplication is
-done using CBRVs sent to the second party. Then, these CBRVs get multiplied as
-described here:
-
-\begin{align*}
-  e & \in \mathcal{E}_{AR}; \widetilde{x}, \widetilde{y} \in \mathcal{B}_{RV};
-  r_1, r_2, r_3, r_4, r_5, r_6, r_7, r_8 \in K;
-  \alpha_l, \alpha_r \in K \setminus \{0\} \\
-  %
-  e & = \widetilde{x} \otimes \widetilde{y} \\
-  %
-  e & = \Bigg(\Big\{\big( \alpha_l \cdot D(\widetilde{x_1}) - r_1,
-                          \alpha_r \cdot D(\widetilde{x_2}) -r_5 \big) \\
-    &\qquad ,     \big(   1        \cdot D(\widetilde{y_1}) - r_2,
-                          1        \cdot D(\widetilde{y_2}) - r_6 \big) \Big\}\\
-    &\qquad   \Big\{\big( \alpha_lr_2 \cdot D(\widetilde{x_2}) + r_3,
-                          \alpha_rr_2 \cdot D(\widetilde{x_1}) + r_7 \big) \\
-    &\qquad ,       \big ( r_1        \cdot D(\widetilde{y_2}) + r_4,
-                           r_5        \cdot D(\widetilde{y_1}) + r_8 \big)
-              \Big\}\Bigg) \\
-\end{align*}
-
-The decryption keys of $e$ are $\alpha_l$, $\alpha_r$ (static keys) and
-$\beta = r_1r_2 + r_3 + r_4$, $\beta' = r_5r_6 + r_7 + r_8$ (dynamic keys).
-
 
 \JWlthree{Evaluating the Final Value}
 \label{sec:eval-final-value}
@@ -158,7 +282,7 @@ $\beta = r_1r_2 + r_3 + r_4$, $\beta' = r_5r_6 + r_7 + r_8$ (dynamic keys).
 In contrast to the RV technique (section \ref{sec:rv}), the
 CBRV technique encodes all values. So even the final value, the result of the
 entire calculation, is encrypted. The encryption works as follows: After
-evaluation the last CBRAE, the second party is in possession of an CBRV tuple
+evaluation the last DRAE, the second party is in possession of an CBRV tuple
 $\widetilde{r} = (\widetilde{r_1}, \widetilde{r_2})$. The second party then
 calculates $\widehat{r} = \widetilde{r_1} + \widetilde{r_2}$ and decodes it to
 $r$ using a specific final OAFE. This OAFE was set up by the first party at the
@@ -173,11 +297,11 @@ The gain of this technique is that the second party is getting caught if it
 cheated. If it cheated somewhere in the process and forged one of its CBRV
 tuples $\widetilde{x} = (\widetilde{x_1}, \widetilde{x_2})$ to $\widetilde{x'} =
 (\widetilde{x_1} + \Delta_1, \widetilde{x_2} + \Delta_2)$, the CBRV
-$\widetilde{x'}$ becomes---except for a negligible probability---non--wellformed
-(see section \ref{sec:cbrv}). The result is that the final
-result will become uniform randomness (assuming $\widetilde{x}$ is forged to
-$\widetilde{x'_1} = \widetilde{x_1} + \Delta_1$ and $\widetilde{x'_2} =
-\widetilde{x_2} + \Delta_2$):
+$\widetilde{x'}$ becomes---except for a negligible
+probability---non--well--formed (see section \ref{sec:cbrv}). The result is that
+the final result will become uniform randomness (assuming $\widetilde{x}$ is
+forged to $\widetilde{x'_1} = \widetilde{x_1} + \Delta_1$ and $\widetilde{x'_2}
+= \widetilde{x_2} + \Delta_2$):
 
 \begin{align*}
   \widehat{x'} = & \widetilde{x'_1} + \widetilde{x'_2} = \widetilde{x_1} +
@@ -208,20 +332,20 @@ $\widetilde{x'_1} = \widetilde{x_1} + \Delta_1$ and $\widetilde{x'_2} =
 
 
 %
-% PREPARING CBRAE EVALUATION USING OAFEs
+% PREPARING DRAE EVALUATION USING OAFEs
 %
-\JWltwo{Preparing CBRAE Evaluation Using OAFEs}
+\JWltwo{Preparing DRAE Evaluation Using OAFEs}
 \label{sec:prep-eval}
 
-After transforming an arithmetic expressing to CBRAEs (section \ref{sec:cbrae})
+After transforming an arithmetic expressing to DRAEs (section \ref{sec:drae})
 assigned to CBRVs (section \ref{sec:cbrv}) the OAFEs (\cite{davidgoliath}) need
 to be set up. First of all, two separate OAFEs have to be set up for each CBRV
 that can be evaluated later on as soon the value is known. The OAFEs are
-configured with the linear expressions inside the CBRAEs. Each CBRAE is then
+configured with the linear expressions inside the DRAEs. Each DRAE is then
 transformed to two \emph{Encoding Descriptors} (EDs) that have the same
-structure as the CBRAEs but contain OAFE references instead of linear
-expressions. Therefore, each CBRAE assigned to a CBRV gets transformed to two
-EDs, because of the tuple form of the CBRVs and CBRAEs.
+structure as the DRAEs but contain OAFE references instead of linear
+expressions. Therefore, each DRAE assigned to a CBRV gets transformed to two
+EDs, because of the tuple form of the CBRVs and DRAEs.
 
 
 %
@@ -249,3 +373,5 @@ with the value if did just calculate. After having calculated the last to ED
 values, it queries a special OAFE (see section \ref{sec:eval-final-value}) using
 the addition of the values of the last two EDs. The evaluation of the special
 OAFE is the result of the whole computation.
+
+% vim: set spell spelllang=en_us fileencoding=utf8 :

@@ -28,8 +28,7 @@
 }%
 {\end{JWboxed}}
 
-\newenvironment{JWfuncSteps}[0]%
-{\begin{itemize}}{\end{itemize}}
+\newenvironment{JWfuncSteps}[0]{\begin{itemize}}{\end{itemize}}
 
 \newcommand{\JWfuncSym}[2]{$\mathcal{F}^\mathrm{#1}_\mathrm{#2}$}
 
@@ -40,8 +39,7 @@
 }%
 {\end{JWboxed}}
 
-\newenvironment{JWprotoSteps}[0]%
-{\begin{enumerate}}{\end{enumerate}}
+\newenvironment{JWprotoSteps}[0]{\begin{enumerate}}{\end{enumerate}}
 
 \newcommand{\JWprotoPhase}[1]{\paragraph{#1}}
 
@@ -51,13 +49,57 @@
 \newcommand{\JWtodo}[1]{\fbox{TODO: #1}}
 \newcommand{\JWmsgTwo}[2]{(\texttt{#1}, \texttt{#2})}
 
+\DeclareDocumentCommand\JWdef{mmg}{%
+  {\label{def:#2}\emph{#1%
+    \IfNoValueF{#3}{#3}%
+    }%
+  } (#2%
+  \IfNoValueF{#3}{#3}%
+  )%
+}
+
+\newenvironment{JWtodoBox}[0]%
+  {\begin{boxedminipage}{\linewidth}TODO:\par}{\end{boxedminipage}}
+
 %chapters
-\newcommand{\JWlone}[1]{\chapter{#1}}
-\newcommand{\JWltwo}[1]{\section{#1}}
-\newcommand{\JWlthree}[1]{\subsection{#1}}
-\newcommand{\JWlfour}[1]{\subsubsection{#1}}
-\newcommand{\JWlfive}[1]{\paragraph{#1}}
-\newcommand{\JWlsix}[1]{\subparagraph{#1}}
+\makeatletter
+\newcommand{\JWlone}{\@ifstar
+  \JWloneNoTOC%
+  \JWloneTOC%
+}
+\newcommand{\JWltwo}{\@ifstar
+  \JWltwoNoTOC%
+  \JWltwoTOC%
+}
+\newcommand{\JWlthree}{\@ifstar
+  \JWlthreeNoTOC%
+  \JWlthreeTOC%
+}
+\newcommand{\JWlfour}{\@ifstar
+  \JWlfourNoTOC%
+  \JWlfourTOC%
+}
+\newcommand{\JWlfive}{\@ifstar
+  \JWlfiveNoTOC%
+  \JWlfiveTOC%
+}
+\newcommand{\JWlsix}{\@ifstar
+  \JWlsixNoTOC%
+  \JWlsixTOC%
+}
+
+\newcommand{\JWloneTOC}[1]{\chapter{#1}}
+\newcommand{\JWloneNoTOC}[1]{\chapter*{#1}}
+\newcommand{\JWltwoTOC}[1]{\section{#1}}
+\newcommand{\JWltwoNoTOC}[1]{\section*{#1}}
+\newcommand{\JWlthreeTOC}[1]{\subsection{#1}}
+\newcommand{\JWlthreeNoTOC}[1]{\subsection*{#1}}
+\newcommand{\JWlfourTOC}[1]{\subsubsection{#1}}
+\newcommand{\JWlfourNoTOC}[1]{\subsubsection*{#1}}
+\newcommand{\JWlfiveTOC}[1]{\paragraph{#1}}
+\newcommand{\JWlfiveNoTOC}[1]{\paragraph*{#1}}
+\newcommand{\JWlsixTOC}[1]{\subparagraph{#1}}
+\newcommand{\JWlsixNoTOC}[1]{\subparagraph*{#1}}
 
 
 %
