@@ -66,7 +66,7 @@ $\widetilde{v}$ are uniformly at random, too. Decoding is:
       \frac{\widetilde{v_l} - \beta}{\alpha_l} & \quad
       \text{if}~\frac{\widetilde{v_l} - \beta}{\alpha_l} =
       \frac{\widetilde{v_r} - \beta'}{\alpha_r}\\
-      \perp & \quad \text{otherwise ($\widetilde{v}$ is non--well--formed)}\\
+      \bot & \quad \text{otherwise ($\widetilde{v}$ is non--well--formed)}\\
     \end{array}\right.
 \end{align*}
 
@@ -77,6 +77,130 @@ $\widetilde{v}$ are uniformly at random, too. Decoding is:
     \item Arithmetic auf DRAVs (kann man aus dem alten CBRAE Kapitel klauen)
   \end{itemize}
 \end{JWtodoBox}
+
+
+% DIRECT DRAV ARITHMETIC
+\JWlthree{Direct DRAV Arithmetic}
+
+Direct DRAV arithmetic only supports addition ($+$) of two DRAVs. Indirect DRAV
+arithmetic has to be used for other operations. The advantage of direct DRAV
+arithmetic is that it can be performed without the knowledge of a DRAV's
+encryption keys.
+
+
+\paragraph{Addition of Well--Formed DRAVs:} Two DRAVs $\widetilde{x} =
+(\widetilde{x_l}, \widetilde{x_r})$ and $\widetilde{y} = (\widetilde{y_l},
+\widetilde{y_r})$ can be added componentwise to $\widetilde{z} =
+\left(\widetilde{x_1} + \widetilde{y_1}, \widetilde{x_2} +
+\widetilde{y_2}\right)$. The encryption keys for $\widetilde{z}$ will be
+$(\alpha_l, \alpha_r)$ and $(\beta_1 + \beta_3, \beta_2 + \beta4)$ assuming
+$\widetilde{x}$ was encrypted with $(\alpha_l, \alpha_r)$ and $(\beta_1,
+\beta_2)$ and $y$ was encrypted with $(\alpha_l, \alpha_r)$ and $(\beta_3,
+\beta_4)$.
+
+\subparagraph{Proof:} From ($\widetilde{x} = \left(\alpha_l \cdot x + \beta_1,
+\alpha_r \cdot x + \beta_2\right)$, $\widetilde{y} = \left(\alpha_l \cdot x +
+\beta_3, \alpha_r \cdot x + \beta_4\right)$) it's obvious that: $\widetilde{z} =
+\left(\alpha_l \cdot (x+y) + (\beta_1 + \beta_3), \alpha_r \cdot (x+y) +
+(\beta_2 + \beta_4)\right)$ and $\widetilde{z}$ is well--formed.
+
+\paragraph{Addition of Non--Well--Formed DRAVs:} It's of particular interest the
+following property holds: $\forall \widetilde{x}: \widetilde{x} + \bot = \bot
++ \widetilde{x} = \bot$. Let $\widetilde{\chi}$ be a non--well--formed DRAV,
+so: $\widetilde{\chi} = (\alpha_l \cdot \chi + \beta_3 + \Delta_l, \alpha_r
+\cdot \chi + \beta_4 + \Delta_r)$. The component--wise addition
+$\widetilde{\nu}$ of $\widetilde{\chi}$ to any well--formed $\widetilde{x} =
+(\alpha_l \cdot x + \beta_1, \alpha_r \cdot x + \beta_2)$ is $\widetilde{\nu} =
+(\alpha_l \cdot (x+\chi) + (\beta_1+\beta_3) + \Delta_l, \alpha_r \cdot (x+\chi)
++ (\beta_2+\beta_4) + \Delta_r)$. Using the universal decoding function $D$, the
+value of $\chi$ is $\chi = D(\widetilde{\chi}) = (x + \chi +
+\frac{\Delta_l}{\alpha_l}, x + \chi + \frac{\Delta_r}{\alpha_r})$. So: $\forall
+(\Delta_r, \Delta_l) \in K \setminus \{(0, 0)\} \wedge \frac{\Delta_l}{\alpha_l}
+\neq \frac{\Delta_r}{\alpha_r}: D(\widetilde{\chi}) = \bot$. Since the
+encryption keys are not known to an attacker, $\frac{\Delta_l}{\alpha_l} \neq 0
+\wedge \frac{\Delta_r}{\alpha_r}$ hold except for a negligible probability if
+$\Delta_r \neq 0 \vee \Delta_r \neq 0$ and that's the property for being forged
+(non--well--formed) which was the assumption. Trivially $\bot + \bot = \bot$ by
+a similar argument.
+
+
+% INDIRECT DRAV ARITHMETIC
+\JWlthree{Indirect DRAV Arithmetic}
+\label{sec:drac-arithmetic}
+
+Indirect DRAV arithmetic assumes the universal encoding and decoding functions
+$E(v)$ and $D(\widetilde{v})$ and therefore the knowledge of the encryption
+keys. Another possibility is to map indirect DRAV arithmetic to OAFE calls that
+are set up by a party that knows the encryption keys.
+
+
+% FINAL DRAV DECODING
+\JWlthree{Final DRAV Decoding}
+\label{sec:drav-final-decoding}
+
+Finally decoding a DRAV can be trivially done using the universal decoding
+function $D(\widetilde{v})$. But $D$ is only available to a party that is in
+possession of the encryption keys.
+
+Additionally a DRAV can also be finally decoded only one additional OAFE call.
+The following procedure will decode a DRAV to a final scalar value although
+$D$ is a partial function. To enable a second party---that is not in possession
+of the encryption keys---to decode a DRAV $\widetilde{v} = (\widetilde{v_1},
+\widetilde{v_2})$, the first party---in possession of the keys---needs to set up
+a special OAFE, called the \emph{final OAFE} below.
+
+The second party's input to the final OAFE is $\widehat{v} = \widetilde{v_1} +
+\widetilde{v_2}$, the addition of both components of the DRAV to decode.  The
+final OAFE was set up by the first party as follows: Assuming $\widetilde{v}$ is
+encrypted by $(\alpha_l, \alpha_r)$ and $(\beta_1, \beta_2)$ the first party
+knows $\widehat{v}$ has to be encrypted using $(\alpha_l + \alpha_r)$ and
+$(\beta_1 + \beta_2)$.  Given this knowledge the final OAFE setup is
+$\frac{1}{\alpha_l + \alpha_r} \cdot \widehat{v} - \frac{\beta_1 +
+\beta_2}{\alpha_l + \alpha_r}$.
+
+Again, it's important that an attacker is getting caught when trying to forge a
+DRAV ($D(\widetilde{v}) = \bot$ if $\widetilde{v}$ has been forged, $\bot$ is
+mapped to uniform randomness in this process since an OAFE has no
+$\bot$--value). If the attacker cheated somewhere in the process and forged one
+of the DRAV tuples $\widetilde{x} = (\widetilde{x_1}, \widetilde{x_2})$ to
+$\widetilde{x'} = (\widetilde{x_1} + \Delta_1, \widetilde{x_2} + \Delta_2)$, the
+DRAV $\widetilde{x'}$ becomes---except for a negligible
+probability---non--well--formed (see section \ref{sec:drav}). The result is that
+the decoded result will become uniform randomness (assuming $\widetilde{x}$ is
+forged to $\widetilde{x'_1} = \widetilde{x_1} + \Delta_1$ and $\widetilde{x'_2}
+= \widetilde{x_2} + \Delta_2$):
+
+\begin{align*}
+  \widehat{x'} = & \widetilde{x'_1} + \widetilde{x'_2} = \widetilde{x_1} +
+  \Delta_1 + \widetilde{x_2} + \Delta_2 \\
+  %
+  \Rightarrow x' = & \frac{1}{\alpha_l + \alpha_v} \cdot \widehat{x'} -
+  \frac{\beta_{x_1} +
+  \beta_{x_2}}{\alpha_l + \alpha_v} \\
+  %
+  \Leftrightarrow x' = & \frac{\widetilde{x_1} + \Delta_1 +
+  \widetilde{x_2} + \Delta_2}{\alpha_l + \alpha_v} -
+  \frac{\beta_{x_1} +\beta_{x_2}}{\alpha_l + \alpha_v}\\
+  %
+  \Leftrightarrow x' = & \frac{(\alpha_l x + \beta_{x_1}) + \Delta_1 +
+  (\alpha_v x + \beta_{x_2}) + \Delta_2}{\alpha_v + \alpha_l} -
+  \frac{\beta_{x_1} +\beta_{x_2}}{\alpha_l + \alpha_v} \\
+  %
+  \Leftrightarrow x' = & \frac{(\alpha_l+\alpha_v)x + (\beta_{x_1}+\beta_{x_2} +
+  \Delta_1+\Delta_2)}{\alpha_l+\alpha_v} -
+  \frac{\beta_{x_1} +\beta_{x_2}}{\alpha_l + \alpha_v} \\
+  %
+  \Leftrightarrow x' = & x + \frac{\beta_{x_1}+\beta_{x_2}}{\alpha_l+\alpha_v}
+  + \frac{\Delta_1 + \Delta_2}{\alpha_l + \alpha_v} -
+  \frac{\beta_{x_1}+\beta_{x_2}}{\alpha_l + \alpha_v} \\
+  %
+  \Leftrightarrow x' = & x + \frac{\Delta_1 + \Delta_2}{\alpha_l + \alpha_v}\\
+\end{align*}
+
+Because an attacker is not in possession of the static encryption keys
+$\alpha_l$ and $\alpha_r$, it cannot control the value of $\frac{\Delta_1 +
+\Delta_2}{\alpha_l + \alpha_r}$. Since $\alpha_l$ and $\alpha_r$ are chosen
+uniform at random, the result $x'$ becomes uniform at random, too.
 
 
 %
@@ -124,8 +248,9 @@ variable.
 
 A DRAC can be evaluated by evaluating one DRAE after the other and assigning the
 resulting DRAV to the variable the DRAE is assigned to. The DRAE sequence is
-ordered, so a DRAE should be evaluatable by only inputting the regular inputs
-and the variables set by evaluating prior DRAEs.
+ordered, so a DRAE can be evaluated by only inputting the regular inputs
+and the variables set by evaluating prior DRAEs. The last DRAV can then be
+decoded as explained in chapter \ref{sec:drav-final-decoding}.
 
 
 \JWltwo{DRAEs weiter...}
@@ -165,20 +290,7 @@ decoded in one last step as in section \ref{sec:eval-final-value}.
 \JWlthree{Encoding Arithmetic Operations as DRAEs}
 \label{sec:encode-drae}
 
-As in section \ref{sec:cbrv} we assume the universal decoding function
-$D(\widetilde{x})$. With CBRVs, the arithmetic operations are mapped as follows:
-
-
 \JWlfour{Addition}
-
-Two CBRVs $\widetilde{x}$ and $\widetilde{y}$ can be added componentwise to
-$\widetilde{z} = \left(\widetilde{x_1} + \widetilde{y_1}, \widetilde{x_2} +
-\widetilde{y_2}\right)$. Since the first party is in
-possession of the encryption keys ($\widetilde{x} = \left(\alpha_l \cdot x +
-\beta_1, \alpha_r \cdot x + \beta_2\right)$, $\widetilde{y} = \left(\alpha_l
-\cdot x + \beta_3, \alpha_r \cdot x + \beta_4\right)$) it's obvious that:
-$\widetilde{z} = \left(\alpha_l \cdot (x+y) + (\beta_1 + \beta_3), \alpha_r
-\cdot (x+y) + (\beta_2 + \beta_4)\right)$ and $\widetilde{z}$ is well--formed.
 
 Having two DRAEs, they can be added by simply concatenating the multiplicative
 ($M$ in relation \ref{rel:drae}) and additive ($A$) parts.
@@ -275,60 +387,6 @@ A CBRF $\widetilde{x}$ is well--formed iff the tuple $D(\widetilde{x})$ consists
 of two equal values.
 
 
-
-\JWlthree{Evaluating the Final Value}
-\label{sec:eval-final-value}
-
-In contrast to the RV technique (section \ref{sec:rv}), the
-CBRV technique encodes all values. So even the final value, the result of the
-entire calculation, is encrypted. The encryption works as follows: After
-evaluation the last DRAE, the second party is in possession of an CBRV tuple
-$\widetilde{r} = (\widetilde{r_1}, \widetilde{r_2})$. The second party then
-calculates $\widehat{r} = \widetilde{r_1} + \widetilde{r_2}$ and decodes it to
-$r$ using a specific final OAFE. This OAFE was set up by the first party at the
-beginning as follows: Assuming $\widetilde{r_1}$ was encrypted using $(\alpha_l,
-\beta_{r_1})$ and $\widetilde{r_2}$ was encrypted using $(\alpha_r,
-\beta_{r_2})$ the first party knows $\widehat{r}$ has to be encrypted using
-$(\alpha_l + \alpha_r, \beta_{r_1} + \beta_{r_2})$. Given this knowledge the
-final OAFE setup is $\frac{1}{\alpha_l + \alpha_r} \cdot \widehat{r} -
-\frac{\beta_{r_1} + \beta_{r_2}}{\alpha_l + \alpha_r}$.
-
-The gain of this technique is that the second party is getting caught if it
-cheated. If it cheated somewhere in the process and forged one of its CBRV
-tuples $\widetilde{x} = (\widetilde{x_1}, \widetilde{x_2})$ to $\widetilde{x'} =
-(\widetilde{x_1} + \Delta_1, \widetilde{x_2} + \Delta_2)$, the CBRV
-$\widetilde{x'}$ becomes---except for a negligible
-probability---non--well--formed (see section \ref{sec:cbrv}). The result is that
-the final result will become uniform randomness (assuming $\widetilde{x}$ is
-forged to $\widetilde{x'_1} = \widetilde{x_1} + \Delta_1$ and $\widetilde{x'_2}
-= \widetilde{x_2} + \Delta_2$):
-
-\begin{align*}
-  \widehat{x'} = & \widetilde{x'_1} + \widetilde{x'_2} = \widetilde{x_1} +
-  \Delta_1 + \widetilde{x_2} + \Delta_2 \\
-  %
-  \Rightarrow x' = & \frac{1}{\alpha_l + \alpha_r} \cdot \widehat{x'} -
-  \frac{\beta_{x_1} +
-  \beta_{x_2}}{\alpha_l + \alpha_r} \\
-  %
-  \Leftrightarrow x' = & \frac{\widetilde{x_1} + \Delta_1 +
-  \widetilde{x_2} + \Delta_2}{\alpha_l + \alpha_r} -
-  \frac{\beta_{x_1} +\beta_{x_2}}{\alpha_l + \alpha_r}\\
-  %
-  \Leftrightarrow x' = & \frac{(\alpha_l x + \beta_{x_1}) + \Delta_1 +
-  (\alpha_r x + \beta_{x_2}) + \Delta_2}{\alpha_r + \alpha_l} -
-  \frac{\beta_{x_1} +\beta_{x_2}}{\alpha_l + \alpha_r} \\
-  %
-  \Leftrightarrow x' = & \frac{(\alpha_l+\alpha_r)x + (\beta_{x_1}+\beta_{x_2} +
-  \Delta_1+\Delta_2)}{\alpha_l+\alpha_r} -
-  \frac{\beta_{x_1} +\beta_{x_2}}{\alpha_l + \alpha_r} \\
-  %
-  \Leftrightarrow x' = & x + \frac{\beta_{x_1}+\beta_{x_2}}{\alpha_l+\alpha_r}
-  + \frac{\Delta_1 + \Delta_2}{\alpha_l + \alpha_r} -
-  \frac{\beta_{x_1}+\beta_{x_2}}{\alpha_l + \alpha_r} \\
-  %
-  \Leftrightarrow x' = & x + \frac{\Delta_1 + \Delta_2}{\alpha_l + \alpha_r}
-\end{align*}
 
 
 %
