@@ -19,8 +19,8 @@ entities in the following chapters.
 % Field K
 \JWlthree*{Field $K$}
 
-\label{def:field} Throughout this thesis, $K$ represents an arbitrary finite
-field, such as $\mathbb{F}_{2^{256}}$.
+\label{def:field} Throughout this thesis, $K$ represents an arbitrary large
+finite field, such as $\mathbb{F}_{2^{256}}$.
 
 
 % Variables
@@ -49,15 +49,17 @@ usually written as $(\alpha_l, \alpha_r)$. The second dual key, the
 \emph{dynamic key} is a short--lived key, usually represented as $(\beta,
 \beta')$. Two DRAVs only share the same dynamic key by hazard but always share
 the same static key. Encoding a regular value $v \in K$ as a DRAV
-$\widetilde{v} \in \mathcal{V}_K$ is very simple:
+$\widetilde{v} \in \mathcal{V}_K$ is straightforward, most of the time the
+universal encoding function $E(v)$ is used to describe DRAV encoding.
 
 \begin{align*}
   \widetilde{v} = E(v) = (\widetilde{v_l}, \widetilde{v_r}) =
     (\alpha_l \cdot v + \beta, \alpha_r \cdot v + \beta')
 \end{align*}
 
-So if the keys are uniformly at random, the two components of the tuple
-$\widetilde{v}$ are uniformly at random, too. Decoding is:
+\noindent{}So, if the keys are uniformly at random, the two components of the
+tuple $\widetilde{v}$ are uniformly at random, too. Decoding is (most of the
+time using the universal decoding function $D(\widetilde{v})$):
 
 \begin{align*}
   v = D(\widetilde{v}) =
@@ -70,23 +72,22 @@ $\widetilde{v}$ are uniformly at random, too. Decoding is:
     \end{array}\right.
 \end{align*}
 
-\begin{JWtodoBox}
-  \begin{itemize}
-    \item Was ist well--formedness, non--well--formedness?
-    \item Final Value evaluation, also Addieren der Komponenten
-    \item Arithmetic auf DRAVs (kann man aus dem alten CBRAE Kapitel klauen)
-  \end{itemize}
-\end{JWtodoBox}
+
+% WELL-FORMED DRAVs
+\JWlthree{Well--Formed DRAVs}
+
+A DRAV $\widetilde{v}$ is well--formed iff $D(\widetilde{v}) \neq \bot$.
+Therefore, if $D(\widetilde{\chi}) = \bot$, $\chi$ is non--well-formed.
 
 
 % DIRECT DRAV ARITHMETIC
 \JWlthree{Direct DRAV Arithmetic}
+\label{sec:direct-DRAV-arithmetic}
 
 Direct DRAV arithmetic only supports addition ($+$) of two DRAVs. Indirect DRAV
 arithmetic has to be used for other operations. The advantage of direct DRAV
 arithmetic is that it can be performed without the knowledge of a DRAV's
 encryption keys.
-
 
 \paragraph{Addition of Well--Formed DRAVs:} Two DRAVs $\widetilde{x} =
 (\widetilde{x_l}, \widetilde{x_r})$ and $\widetilde{y} = (\widetilde{y_l},
@@ -126,12 +127,19 @@ a similar argument.
 
 % INDIRECT DRAV ARITHMETIC
 \JWlthree{Indirect DRAV Arithmetic}
-\label{sec:drac-arithmetic}
+\label{sec:indirect-DRAV-arithmetic}
 
 Indirect DRAV arithmetic assumes the universal encoding and decoding functions
 $E(v)$ and $D(\widetilde{v})$ and therefore the knowledge of the encryption
 keys. Another possibility is to map indirect DRAV arithmetic to OAFE calls that
 are set up by a party that knows the encryption keys.
+
+Indirect DRAV arithmetic is straightforward but can only be performed by a party
+in possession of the encryption keys. For any operator $\odot$, $\widetilde{a}
+\odot \widetilde{b} = E(D(\widetilde{a}) \odot D(\widetilde{b}))$. Obviously
+it's important that $\forall x: \bot \odot x = x \odot \bot = \bot$. $\bot$ can
+be represented as a DRAV as a tuple that is made up of two values uniform at
+random.
 
 
 % FINAL DRAV DECODING
@@ -229,7 +237,130 @@ parts of arithmetic circuits that fulfill several properties:
 \end{enumerate}
 
 \noindent{}A DRAE can be eventually evaluated to a final value, that is a DRAV
-(see chapter \ref{def:DRAV}).
+(see chapter \ref{def:DRAV}). Intuitively, a DRAE is composed of two finite
+multi--sets. The first multi--set, called the \emph{additive terms} contains
+computations that can be evaluated to DRAVs. The second multi--set, called the
+\emph{multiplicative terms} contains tuples of computations. The component--wise
+multiplication of each of these tuples yields DRAVs, too. The addition of the
+DRAVs obtained from the additive terms and the DRAVs obtained from the
+multiplicative terms leads to a DRAV that is the evaluation of this DRAE.
+
+More formally, a DRAE can be described as follows where $\mathcal{E}$ represents
+the DRAEs, $\mathcal{C}$ the computations and $\mathcal{V}_\mathcal{C}$ the
+computations that lead to DRAVs.
+
+\begin{align}
+%
+  &\text{The static keys } \alpha_l, \alpha_r \in K \setminus \{0\} \nonumber\\
+%
+  &\text{The dynamic keys } \beta, \beta' \in K \nonumber\\
+%
+  &s, x, x', i \in K \nonumber\\
+%
+  \mathcal{C} = & \{ c(x) = s \cdot x + i \} \nonumber\\
+%
+  \mathcal{V}_\mathcal{C} = & \{ (\alpha_l \cdot f(x) + \beta,
+                      \alpha_r \cdot f'(x') + \beta' )
+                    \mid f, f' \in \mathcal{C} \} \nonumber\\
+%
+  \label{rel:DRAE}
+  \mathcal{E}_\mathcal{C} = & \{ (M, A) \mid
+      M \subseteq \mathcal{V}_\mathcal{C} \times
+      \mathcal{V}_\mathcal{C}, A \subseteq, \mathcal{V}_\mathcal{C};
+  A, M~\text{finite multi--sets} \}
+%
+\end{align}
+
+Pre--evaluating a DRAE to DRAVs can be done by evaluating the OAFEs set up by
+the party in possession of the encryption keys. Obviously none of the
+computations $c \in \mathcal{C}$ becomes visible by the party not in possession
+of the keys. The latter party will only learn exactly one evaluation $c(x)$ for
+each variable $x$. This leads to pre--evaluated DRAEs of the form
+
+\begin{align}
+  \mathcal{V} = & \{ (v_l, v_r) \mid v_l, v_r \in K \}
+  \text{, the DRAVs (chapter \ref{def:DRAV})} \nonumber\\
+%
+  \label{rel:pre-eval-DRAE}
+  \mathcal{E} = & \{ (M, A) \mid
+      M \subseteq \mathcal{V} \times \mathcal{V}, A \subseteq, \mathcal{V} \}
+      \text{, the pre--evaluated DRAEs}
+\end{align}
+
+Evaluating a pre--evaluated DRAE is straightforward: A DRAE $e \in \mathcal{E} =
+(M,A)$ can be evaluated to its single resulting DRAV $r \in \mathcal{V}$ as
+follows (all additions performed component--wise):
+
+\begin{align*}
+M' &= \Bigg\{ m_1 \cdot m_2\ \Bigg|\ \begin{pmatrix}m_1\\m_2\end{pmatrix}
+\in M \Bigg\} \\
+r & = \sum_{a \in A}a + \sum_{m \in M'}m
+\end{align*}
+
+
+% DRAE ARITHMETIC
+\JWlthree{DRAE Arithmetic}
+
+%Direct Addition
+\JWlfour{Addition}
+
+Since two DRAVs can directly be added as explained in chapter
+\ref{sec:direct-DRAV-arithmetic}, two DRAEs can be added by concatenating the
+multiplicative ($M$ in relations \ref{rel:DRAE} and \ref{rel:pre-eval-DRAE}) and
+additive ($A$) terms. Notably, even if the encryption keys change, this
+operation can be performed by any party, in possession of the encryption keys or
+not. Obviously, the same argument holds for pre--evaluated DRAEs.
+
+
+%Indirect Addition
+\JWlfour{Indirect Addition via OAFEs}
+
+The indirect addition of $\widetilde{z} = \widetilde{x_1} + \widetilde{x_2}$ is
+$\widetilde{z} =
+\left( E\left(D(\widetilde{x_1}) + D(\widetilde{y_1})\right),
+       E\left(D(\widetilde{x_2}) + D(\widetilde{y_2})\right)
+\right)$
+(see chapter \ref{sec:indirect-DRAV-arithmetic}).
+Since $E(x)$ and $D(x)$ are both linear functions, $E\left(D(\ldots)
++D(\ldots)\right)$ are linear functions, too that can be evaluated using two
+OAFE calls.  Naturally the OAFEs have to be configured appropriately by the
+party in possession of the encryption keys.
+
+
+%Multiplication
+\JWlfour{Multiplication}
+
+As described in chapter \ref{def:DRAV}, DRAV cannot be multiplied directly.
+Therefore DRAVs have to be multiplied indirectly requiring additional OAFE
+calls. To maintain the important DRAV and DRAE property that any operation on
+bottom ($\bot$) results in bottom, the two components of each DRAV get mixed for
+multiplication.
+
+\JWtodo{Warum müssen sie gemixt werden: Das Argument mit gegen
+Null prüfen}
+
+
+\begin{align*}
+  e & \in \mathcal{E}; \widetilde{x}, \widetilde{y} \in \mathcal{V};
+  r_1, r_2, r_3, r_4, r_5, r_6, r_7, r_8 \in K;
+  \alpha_l, \alpha_r \in K \setminus \{0\} \\
+  %
+  e & = \widetilde{x} \cdot \widetilde{y} \\
+  %
+  e & = \Bigg(\Big\{\big( \alpha_l \cdot D(\widetilde{x_1}) - r_1,
+                          \alpha_r \cdot D(\widetilde{x_2}) -r_5 \big) \\
+    &\qquad ,     \big(   1        \cdot D(\widetilde{y_1}) - r_2,
+                          1        \cdot D(\widetilde{y_2}) - r_6 \big) \Big\}\\
+    &\qquad   \Big\{\big( \alpha_lr_2 \cdot D(\widetilde{x_2}) + r_3,
+                          \alpha_rr_2 \cdot D(\widetilde{x_1}) + r_7 \big) \\
+    &\qquad ,       \big ( r_1        \cdot D(\widetilde{y_2}) + r_4,
+                           r_5        \cdot D(\widetilde{y_1}) + r_8 \big)
+              \Big\}\Bigg) \\
+\end{align*}
+
+\noindent{}The resulting encryption keys of $e$ are $\alpha_l$, $\alpha_r$
+(static keys) and $\beta = r_1r_2 + r_3 + r_4$, $\beta' = r_5r_6 + r_7 + r_8$
+(dynamic keys).
 
 
 %
@@ -250,186 +381,41 @@ A DRAC can be evaluated by evaluating one DRAE after the other and assigning the
 resulting DRAV to the variable the DRAE is assigned to. The DRAE sequence is
 ordered, so a DRAE can be evaluated by only inputting the regular inputs
 and the variables set by evaluating prior DRAEs. The last DRAV can then be
-decoded as explained in chapter \ref{sec:drav-final-decoding}.
-
-
-\JWltwo{DRAEs weiter...}
-
-are very similar to AREs
-(section \ref{sec:are}) but use CBRVs (section \ref{sec:cbrv}) instead of plain
-values and RVs (section \ref{sec:rv}). \ref{def:LW} \ref{def:AW}
-
-\begin{align}
-  \mathcal{F}_{AR} = & \{ s \cdot x + i \mid s, i \in K, x \in \mathcal{V} \}
-  \cup \{ v \mid v \in K \} \\
-%
-  \mathcal{B}_{AR} = & \{ (\alpha_l \cdot f + \beta, \alpha_r \cdot f + \beta' )
-  \mid \alpha_l, \alpha_r \in K \setminus \{0\}; \beta, \beta' \in K; f \in
-  \mathcal{F}_{AR} \} \\
-%
-  \label{rel:drae}
-  \mathcal{E}_{AR} = & \{ (M, A) \mid
-    M \subseteq \mathcal{B}_{AR} \times \mathcal{B}_{AR},
-    A \subseteq, \mathcal{B}_{AR};
-    A, M~\text{finite multi--sets} \}
-%
-\end{align}
-
-\noindent Intuitively, $\mathcal{V}$ are ordinary inputs and CBRVs,
-$\mathcal{F}_{AR}$ represent linear, encrypted particles that encode parts of
-the final function. To prevent illegal information gaining by a corrupted second
-party, $\mathcal{B}_{AR}$ represents checked and encoded intermediate values
-(see section \ref{sec:cbrv}) that can safely be passed to untrusted parties.
-$\mathcal{E}_{AR}$ is the final encoding, powerful enough to encode arbitrary
-arithmetic functions. $\mathcal{E}_{AR}$s are full--blown DRAEs as presented in
-this thesis. The decoding part remains as in section
-\ref{sec:affinization_decoding}. The result will be a tuple that can then be
-decoded in one last step as in section \ref{sec:eval-final-value}.
-
-
-\JWlthree{Encoding Arithmetic Operations as DRAEs}
-\label{sec:encode-drae}
-
-\JWlfour{Addition}
-
-Having two DRAEs, they can be added by simply concatenating the multiplicative
-($M$ in relation \ref{rel:drae}) and additive ($A$) parts.
-
-
-\JWlfour{Addition -- Alternative Form}
-
-The alternative addition form is
-$\widetilde{z} =
-\left( E\left(D(\widetilde{x_1}) + D(\widetilde{y_1})\right),
-       E\left(D(\widetilde{x_2}) + D(\widetilde{y_2})\right)
-\right)$.
-Since $E(x)$ and $D(x)$ are both linear functions,
-$E\left(D(\ldots) +D(\ldots)\right)$
-are linear expressions, too that can be evaluated using two OAFE calls.
-
-
-\JWlfour{Multiplication}
-
-As for ordinary AREs, the multiplication is not as powerful as the addition,
-direct multiplication of two DRAEs is not possible. DRAE multiplication is
-done using CBRVs sent to the second party. Then, these CBRVs get multiplied as
-described here:
-
-\begin{align*}
-  e & \in \mathcal{E}_{AR}; \widetilde{x}, \widetilde{y} \in \mathcal{B}_{RV};
-  r_1, r_2, r_3, r_4, r_5, r_6, r_7, r_8 \in K;
-  \alpha_l, \alpha_r \in K \setminus \{0\} \\
-  %
-  e & = \widetilde{x} \otimes \widetilde{y} \\
-  %
-  e & = \Bigg(\Big\{\big( \alpha_l \cdot D(\widetilde{x_1}) - r_1,
-                          \alpha_r \cdot D(\widetilde{x_2}) -r_5 \big) \\
-    &\qquad ,     \big(   1        \cdot D(\widetilde{y_1}) - r_2,
-                          1        \cdot D(\widetilde{y_2}) - r_6 \big) \Big\}\\
-    &\qquad   \Big\{\big( \alpha_lr_2 \cdot D(\widetilde{x_2}) + r_3,
-                          \alpha_rr_2 \cdot D(\widetilde{x_1}) + r_7 \big) \\
-    &\qquad ,       \big ( r_1        \cdot D(\widetilde{y_2}) + r_4,
-                           r_5        \cdot D(\widetilde{y_1}) + r_8 \big)
-              \Big\}\Bigg) \\
-\end{align*}
-
-The decryption keys of $e$ are $\alpha_l$, $\alpha_r$ (static keys) and
-$\beta = r_1r_2 + r_3 + r_4$, $\beta' = r_5r_6 + r_7 + r_8$ (dynamic keys).
-
-\JWltwo{Checked Bi--Randomized Variables}
-\label{sec:cbrv}
-
-The RV technique (see section \ref{sec:rv}) prevents the
-second party from directly gaining intermediate information. But, for a
-corrupted second party, there is still the possibility of gaining supplemental
-information: The second party could forge an RV value before applying it to one
-of the following AREs. This will not directly reveal additional information
-because the second party does not know the encryption keys used for the RV. So,
-the second party is unaware of the decoded value of the RV. But except for a
-negligible probability $\left(\frac{1}{Char(K)}\right)$, the decoded value is
-non--zero.  The knowledge of a random but non--zero value can then be used to
-test a secret input of the first party against zero. \JWtodo{Beispiel hierfür,
-siehe z.B. Google Doc.}
-
-To address this issue, a similar but secure technique is proposed in here: The
-\emph{Checked Bi--Randomized Variables} (CBRVs). Every input made to an OAFE by
-the second party is encoded as a CBRV. The CBRVs $\hat{v}$ corresponding to a
-value $v$ are: ($\alpha_l, \alpha_r \in K \setminus \{0\}; \beta, \beta' \in K$)
-
-\begin{align*}
-  \widetilde{v} = (\widetilde{v_1}, \widetilde{v_2}) =
-  (\alpha_l \cdot v + \beta, \alpha_r \cdot v + \beta')
-\end{align*}
-
-\noindent{} $\alpha_l$ and $\alpha_r$ are the \emph{static keys}, $\beta$ and
-$\beta'$ the \emph{dynamic keys} of the CBRV. The static keys are (non--zero)
-numbers uniformly at random but constant for the entire procedure. $\beta$ and
-$\beta'$ are fresh, independent and uniformly distributed random numbers for
-every CBRV component generated while processing a circuit. Only the first party
-knows these secret keys. The initial CBRVs used to feed the second party's
-regular inputs party are generated using an OAFE that evaluates for every input
-$x$:
-
-\begin{align*}
-  \widetilde{x} = (\alpha_l \cdot x + \beta_1, \alpha_r \cdot x + \beta_2)
-\end{align*}
-
-The first party is---because it generates and knows all the keys---in possession
-of the encoding and decoding functions
-
-\begin{align*}
-  E(x) &= \left(\alpha_l \cdot x + \beta_1, \alpha_r \cdot x + \beta_2\right) \\
-  D(\widetilde{x}) &= \left(\frac{\widetilde{x_1} - \beta_1}{\alpha_l},
-                       \frac{\widetilde{x_2} - \beta_2}{\alpha_r}\right)
-\end{align*}
-
-A CBRF $\widetilde{x}$ is well--formed iff the tuple $D(\widetilde{x})$ consists
-of two equal values.
-
-
-
-
-%
-% PREPARING DRAE EVALUATION USING OAFEs
-%
-\JWltwo{Preparing DRAE Evaluation Using OAFEs}
-\label{sec:prep-eval}
-
-After transforming an arithmetic expressing to DRAEs (section \ref{sec:drae})
-assigned to CBRVs (section \ref{sec:cbrv}) the OAFEs (\cite{davidgoliath}) need
-to be set up. First of all, two separate OAFEs have to be set up for each CBRV
-that can be evaluated later on as soon the value is known. The OAFEs are
-configured with the linear expressions inside the DRAEs. Each DRAE is then
-transformed to two \emph{Encoding Descriptors} (EDs) that have the same
-structure as the DRAEs but contain OAFE references instead of linear
-expressions. Therefore, each DRAE assigned to a CBRV gets transformed to two
-EDs, because of the tuple form of the CBRVs and DRAEs.
+decoded as explained in chapter \ref{sec:drav-final-decoding}. The result from
+the decoding of the final DRAE is the result of the whole computation or uniform
+at random (meaning $\bot$).
 
 
 %
 % OBLIVIOUS POLYNOMIAL EVALUATION
 %
 \JWltwo{Oblivious Polynomial Evaluation}
-\label{sec:ope}
+\label{sec:OPE}
 
 This section describes the whole process of obliviously evaluating a univariate
-polynomial $f(x) = \sum_{i=1}^k a_ix^i$. The first party (\JWpOne{}) fixes the
-polynomial and configures the OAFEs, the second party (\JWpTwo{}) chooses input
-$x$. Eventually, \JWpTwo{} will learn $f(x)$ but not the polynomial's
-coefficients $a_i$. \JWpOne{} will not learn anything at all.
+polynomial $f(x) = \sum_{i=1}^k a_ix^i$. First of all, the first party
+(\JWpOne{}) fixes the polynomial coefficients and transforms $f(x)$ to a DRAC
+consisting of many DRAEs. The number of DRAEs will be $O(n)$, $n$ being the
+number of arithmetic operations needed by evaluate $f(x)$ as usual. To securely
+evaluate the DRAC, the OAFE setup is calculated by the first party. It's
+important that the first party accumulates all OAFE calls using the same
+variable to one OAFE call resulting in a vector.
 
-The first step is to transform $f$ to OAFEs and EDs (section
-\ref{sec:prep-eval}). The OAFEs are then sent to the second party (\JWpTwo{})
-using the David \& Goliath protocol \cite{davidgoliath}, the EDs are sent to the
-second party using an encrypted channel aswell.
+After the first party has fixed the DRAC and the OAFE configuration, it sends
+them to the second party. The DRAEs inside the DRAC that get actually
+transmitted to the second party resemble the pre--evaluated DRAEs from chapter
+\ref{def:DRAE}. Naturally, every DRAV is replaced by a OAFE reference (and the
+position in the resulting vector) that has to be used to calculate the value.
 
-After having received the OAFEs and EDs, the first party (\JWpOne{}) is not
-needed anymore and the second party (\JWpTwo{}) can evaluate the polynomial by
-itself. To run the evaluation, the second party just evaluated the EDs one by
-one. After each evaluation, it queries the respective OAFE (should be the next)
-with the value if did just calculate. After having calculated the last to ED
-values, it queries a special OAFE (see section \ref{sec:eval-final-value}) using
-the addition of the values of the last two EDs. The evaluation of the special
-OAFE is the result of the whole computation.
+The OAFEs are sent to the second party (\JWpTwo{}) using the David \& Goliath
+protocol \cite{davidgoliath}. The DRAC is transmitted using a singed and
+encrypted channel.
+
+After having received the DRAC and the OAFEs, the second party can evaluate the
+DRAC. It evaluated the DRAEs one by one and assigns the resulting DRAV to the
+variable as described in the DRAC. As explained in chapters
+\ref{sec:drav-final-decoding} and \ref{sec:DRAC-eval} both components of the
+final DRAV have then to be added and passed to the final OAFE which yields the
+unencrypted evaluated value of the polynomial.
 
 % vim: set spell spelllang=en_us fileencoding=utf8 :

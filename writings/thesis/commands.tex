@@ -50,9 +50,7 @@
 \newcommand{\JWmsgTwo}[2]{(\texttt{#1}, \texttt{#2})}
 
 \DeclareDocumentCommand\JWdef{mmg}{%
-  {\label{def:#2}\emph{#1%
-    \IfNoValueF{#3}{#3}%
-    }%
+  {\label{def:#2}\emph{#1\IfNoValueF{#3}{#3}}%
   } (#2%
   \IfNoValueF{#3}{#3}%
   )%

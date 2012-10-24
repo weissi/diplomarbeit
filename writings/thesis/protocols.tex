@@ -59,9 +59,9 @@
 
   \begin{JWprotoSteps}
 
-  \item \JWpOne{} generates OAFEs and EDs (see section \ref{sec:prep-eval})
+  \item \JWpOne{} generates OAFEs and the DRAV (see section \ref{sec:OPE})
 
-  \item \JWpOne{} sends the OAFEs and EDs to \JWpTwo{}
+  \item \JWpOne{} sends the OAFEs and DRAV to \JWpTwo{}
 
   \end{JWprotoSteps}
 
@@ -70,12 +70,12 @@
 
   \begin{JWprotoSteps}
 
-  \item Upon receiving the OAFEs and EDs, \JWpTwo{} evaluates the EDs one by one
-    and saved the values needed for further computations
+  \item Upon receiving the OAFEs and the DRAC, \JWpTwo{} evaluates the DRAV, one
+    DRAE after the other and saves the values needed for further computations
 
-  \item After the Evaluation, \JWpTwo{} adds the values of the last two EDs and
-    queries a special last OAFE with that value. The then received new value is
-    the result of the computation $y = \sum_{i=1}^k a_ix^i$.
+  \item After the Evaluation, \JWpTwo{} adds both components of the last DRAV
+    and queries a special final OAFE with that value. The then received new
+    value is the result of the computation $y = \sum_{i=1}^k a_ix^i$.
 
   \end{JWprotoSteps}
 
