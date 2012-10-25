@@ -1,0 +1,81 @@
+\JWlone{Correctness and Security of the Protocol}
+\label{sec:security}
+
+This chapter proofs the UC \cite{canetti05} security of the protocol described
+in chapter \ref{sec:protocol}. Informally, the goal is to proof that for every
+adversary $\mathcal{A}$ there has to exist a simulator $\mathcal{S}$ such that
+for all environments $\mathcal{Z}$ the ideal functionality is indistinguishable
+from the real protocol. Formally this can be represented as
+
+\begin{align*}
+%
+\forall \mathcal{A}\ \exists \mathcal{S}\ \forall \mathcal{Z} :
+\text{ideal}\ \widetilde{=}\ \text{real}
+%
+\end{align*}
+
+%
+% SIMULATOR
+%
+\JWltwo{Simulators}
+\label{sec:simulators}
+
+
+% SIMULATOR S_DAVID(A)
+\JWlthree{Simulator $\mathcal{S}_{\text{David}}(\mathcal{A})$}
+\label{sec:simulator-david}
+
+\begin{itemize}
+
+\item Setup emulated honest David
+
+\item Feed emulated honest David with the same inputs the corrupted David
+receives
+
+\item Compare the outputs of the emulated, honest David with the corrupted one
+
+\item Should the corrupted David output a false message somewhere, return
+uniform randomness as the final output to the environment
+
+\item Should the corrupted David behave honestly, pass it's input to the ideal
+functionality and output the return value to the environment
+
+\end{itemize}
+
+
+% SIMULATOR S_Goliath(A)
+\JWlthree{Simulator $\mathcal{S}_{\text{Goliath}}(\mathcal{A})$}
+
+%
+% PROOF
+%
+\JWltwo{Security Proof}
+\label{sec:proof}
+
+The proof is a case distinction.
+
+
+% CORRECTNESS --- BOTH PARTIES HONEST
+\JWlthree{Correctness --- Both Parties Honest}
+
+Easy, just works.
+
+
+
+% BOTH PARTIES CORRUPTED
+\JWlthree{Both Parties Corrupted}
+
+The case that both parties are corrupted is just an hypothetical case in the UC
+model.
+
+
+% CORRUPTED DAVID
+\JWlthree{Corrupted \JWpTwo{}}
+
+Use the simulator from chapter \ref{sec:simulator-david}. Perfectly secure.
+
+
+% CORRUPTED GOLIATH
+\JWlthree{Corrupted \JWpOne{}}
+
+% vim: set spell spelllang=en_us fileencoding=utf8 :

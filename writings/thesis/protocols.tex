@@ -1,7 +1,8 @@
 %
 % PROTOCOL DESCRIPTION
 %
-\JWlone{Protocol Description} \label{sec:protocol-description}
+\JWlone{Protocol Description}
+\label{sec:protocol}
 
 \begin{JWfunc}%
   {\JWfuncSymOPE}%
@@ -59,9 +60,9 @@
 
   \begin{JWprotoSteps}
 
-  \item \JWpOne{} generates OAFEs and the DRAV (see section \ref{sec:OPE})
+  \item \JWpOne{} generates OAFEs and the DRAC (see section \ref{sec:OPE})
 
-  \item \JWpOne{} sends the OAFEs and DRAV to \JWpTwo{}
+  \item \JWpOne{} sends the OAFEs and DRAC to \JWpTwo{}
 
   \end{JWprotoSteps}
 
@@ -70,8 +71,9 @@
 
   \begin{JWprotoSteps}
 
-  \item Upon receiving the OAFEs and the DRAC, \JWpTwo{} evaluates the DRAV, one
-    DRAE after the other and saves the values needed for further computations
+  \item Upon receiving the OAFEs and the DRAC, \JWpTwo{} evaluates the DRAC,
+    one DRAE after the other. Each DRAE evaluation leads to a DRAV that
+    \JWpTwo{} saves as a variable that is used for further computations
 
   \item After the Evaluation, \JWpTwo{} adds both components of the last DRAV
     and queries a special final OAFE with that value. The then received new

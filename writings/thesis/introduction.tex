@@ -1,22 +1,28 @@
 \JWlone{Introduction}
 \label{sec:introduction}
 
-This writing describes the process of securely evaluating arithmetic functions
-such as $f(x_G,x_D) = ...$ over finite fields.  As the main building block
-OAFEs---as provided by the David \& Goliath protocol \cite{davidgoliath}---are
-used. However, the first step is to securely express the input function $f(x_G,
-x_D)$ in terms of affine functions. These affine functions can then be securely
-evaluated using OAFEs. At a first glance, the task of expressing a general
-function $f(x_G, x_D)$ using affine functions may seem a rather easy task. The
-challenge is to do it securely: The other party should obviously not be able to
-learn $G$ when it is given the linear functions expressing the partly evaluated
-function $f(G, x_D)$ (value $G$ already set).  Additionally, the process should
-work non--interactively: The first party fixes its input $x_G = G$, partly
-evaluates $f(G, x_D)$, transforms it to affine functions and sends them as OAFEs
-to the second party. The affine functions themselves are either a constant or
-hidden inside an OAFE calculation. After the second party provided their input
-$x_D$ to the OAFEs, it gets (from the OAFEs) the evaluated results of the linear
-functions. The second party is now---using a provided decoder---able to securely
-and fully evaluate $f(x_G, x_D)$ using only the values received from the OAFEs
-and the constants. Neither party will learn more of the other party's input than
-the final result will tell it anyway.
+This thesis describes how to parties can securely evaluate an arithmetic
+function such as $f(x_G,x_D) = ...$ over large finite fields. The main building
+block are OAFEs as provided by the David \& Goliath protocol
+\cite{davidgoliath}. However, the first step is to securely express the input
+function $f(x_G, x_D)$ in terms of affine functions. These affine functions can
+then be securely evaluated using OAFEs. At a first glance, the task of
+expressing an arbitrary function $f(x_G, x_D)$ using affine functions may seem a
+rather easy task. The challenge is to do it securely: The other party should not
+be able to learn $G$ when it is given the affine functions expressing the partly
+evaluated function $f(G, x_D)$ (value $G$ already set).  Additionally, the
+process should work non--interactively: The first party fixes its input $x_G =
+G$, partly evaluates $f(G, x_D)$, transforms it to affine functions and sends
+them as OAFEs to the second party. The affine functions themselves are either
+constant or hidden inside an OAFE calculation. After the second party provided
+their input $x_D$ to the OAFEs, it gets (from the OAFEs) the evaluated results
+of the affine functions. Using the described protocol, the second party is now
+able to securely and fully evaluate $f(x_G, x_D)$. The whole computation is
+expressed in terms of OAFE computations. Neither party will learn more of the
+other party's input than the final result will tell it anyway.
+
+
+\JWltwo{Related Work}
+\label{sec:related-work}
+
+\JWtodo{Hauptsächlich das von chapter \ref{sec:discontinued}}

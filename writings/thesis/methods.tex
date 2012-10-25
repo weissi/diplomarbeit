@@ -23,18 +23,6 @@ entities in the following chapters.
 finite field, such as $\mathbb{F}_{2^{256}}$.
 
 
-% Variables
-\JWlthree*{Variables}
-
-\label{def:variable} Variables are textual placeholders for real values.
-Formally represented by
-
-\begin{align*}
-  \mathcal{V} = & \{ x \mid x~\text{a variable that can be set to an element
-  $e$}, e \in K \}
-\end{align*}
-
-
 %
 % DUAL RANDOMIZED AFFINE VALUES
 %
@@ -307,7 +295,7 @@ r & = \sum_{a \in A}a + \sum_{m \in M'}m
 Since two DRAVs can directly be added as explained in chapter
 \ref{sec:direct-DRAV-arithmetic}, two DRAEs can be added by concatenating the
 multiplicative ($M$ in relations \ref{rel:DRAE} and \ref{rel:pre-eval-DRAE}) and
-additive ($A$) terms. Notably, even if the encryption keys change, this
+additive ($A$) terms. Notably, although the encryption keys change, this
 operation can be performed by any party, in possession of the encryption keys or
 not. Obviously, the same argument holds for pre--evaluated DRAEs.
 
@@ -395,11 +383,13 @@ at random (meaning $\bot$).
 This section describes the whole process of obliviously evaluating a univariate
 polynomial $f(x) = \sum_{i=1}^k a_ix^i$. First of all, the first party
 (\JWpOne{}) fixes the polynomial coefficients and transforms $f(x)$ to a DRAC
-consisting of many DRAEs. The number of DRAEs will be $O(n)$, $n$ being the
-number of arithmetic operations needed by evaluate $f(x)$ as usual. To securely
-evaluate the DRAC, the OAFE setup is calculated by the first party. It's
-important that the first party accumulates all OAFE calls using the same
-variable to one OAFE call resulting in a vector.
+consisting of many DRAEs assigned to variables. The number of DRAEs will be in
+$O(n)$, $n$ being the number of arithmetic operations needed by evaluate $f(x)$
+as usual. To securely evaluate the DRAC, the OAFE setup is calculated by the
+first party. It's important that the first party accumulates all OAFE calls
+using the same variable to one OAFE call resulting in a vector. If the first
+party would provide more than one OAFE that is evaluated using some variable
+$v$, a corrupted party could evaluate the OAFEs with different values for $v$.
 
 After the first party has fixed the DRAC and the OAFE configuration, it sends
 them to the second party. The DRAEs inside the DRAC that get actually
@@ -412,7 +402,7 @@ protocol \cite{davidgoliath}. The DRAC is transmitted using a singed and
 encrypted channel.
 
 After having received the DRAC and the OAFEs, the second party can evaluate the
-DRAC. It evaluated the DRAEs one by one and assigns the resulting DRAV to the
+DRAC. It evaluates the DRAEs one by one and assigns the resulting DRAV to the
 variable as described in the DRAC. As explained in chapters
 \ref{sec:drav-final-decoding} and \ref{sec:DRAC-eval} both components of the
 final DRAV have then to be added and passed to the final OAFE which yields the
