@@ -1,11 +1,21 @@
 \JWlone{Correctness and Security of the Protocol}
 \label{sec:security}
 
-This chapter proofs the UC \cite{canetti05} security of the protocol described
-in chapter \ref{sec:protocol}. Informally, the goal is to proof that for every
-adversary $\mathcal{A}$ there has to exist a simulator $\mathcal{S}$ such that
-for all environments $\mathcal{Z}$ the ideal functionality is indistinguishable
-from the real protocol. Formally this can be represented as
+This chapter states and proofs the security of the protocol in the
+\JWdef{Universal--Composability}{UC} framework by Ran Canetti \cite{canetti05}.
+In the UC framework security is defined by comparing an \emph{ideal model} to a
+\emph{real model}. The ideal model implements the intended functionality
+\JWfuncSym{}{} safely by design.  The protocol under examination runs in the
+real model. In the real model, there is an attacker $\mathcal{A}$ that controls
+all corrupted parties.  In the ideal model, there is a simulator $\mathcal{S}$
+that tries to mimic $\mathcal{A}$. An environment $\mathcal{Z}$ is plugged to
+either the real or the ideal model and has to guess to which it's plugged to. A
+protocol \JWprotoSym{}{} is an universally composable implementation of the
+ideal functionality if for every adversary $\mathcal{A}$ there exists a
+simulator $\mathcal{S}$ such that for all environments $\mathcal{Z}$ the entire
+view of $\mathcal{Z}$ in the real model (with \JWprotoSym{}{} and $\mathcal{A}$)
+is statistically close to its view in the ideal model (with \JWfuncSym{}{} and
+$\mathcal{S}$).
 
 \begin{align*}
 %

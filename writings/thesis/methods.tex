@@ -451,13 +451,13 @@ at random (meaning $\bot$).
 \JWltwo{Oblivious Polynomial Evaluation}
 \label{sec:OPE}
 
-This section describes the whole process of obliviously evaluating a univariate
-polynomial $f(x) = \sum_{i=1}^k a_ix^i$. First of all, the first party
-(\JWpOne{}) fixes the polynomial coefficients and transforms $f(x)$ to a DRAC
-consisting of many DRAEs assigned to variables. The number of DRAEs will be in
-$O(n)$, $n$ being the number of arithmetic operations needed by evaluate $f(x)$
-as usual. To securely evaluate the DRAC, the OAFE setup is calculated by the
-first party. It's important that the first party accumulates all OAFE calls
+This section describes the \JWdef{Oblivious Polynomial Evaluation}{OPE} of a
+univariate polynomial $f(x) = \sum_{i=1}^k a_ix^i$. First of all, the first
+party (\JWpOne{}) fixes the polynomial coefficients and transforms $f(x)$ to a
+DRAC consisting of many DRAEs assigned to variables. The number of DRAEs will be
+in $O(n)$, $n$ being the number of arithmetic operations needed by evaluate
+$f(x)$ as usual. To securely evaluate the DRAC, the OAFE setup is calculated by
+the first party. It's important that the first party accumulates all OAFE calls
 using the same variable to one OAFE call resulting in a vector. If the first
 party would provide more than one OAFE that is evaluated using some variable
 $v$, a corrupted party could evaluate the OAFEs with different values for $v$.

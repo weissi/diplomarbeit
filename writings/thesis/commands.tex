@@ -46,6 +46,7 @@
 \newcommand{\JWprotoSym}[2]{$\Pi^\mathrm{#1}_\mathrm{#2}$}
 
 %misc
+\newcommand{\JWbinary}[1]{\texttt{#1}}
 \newcommand{\JWtodo}[1]{\fbox{TODO: #1}}
 \newcommand{\JWmsgTwo}[2]{(\texttt{#1}, \texttt{#2})}
 
@@ -99,6 +100,12 @@
 \newcommand{\JWlsixTOC}[1]{\subparagraph{#1}}
 \newcommand{\JWlsixNoTOC}[1]{\subparagraph*{#1}}
 
+%links and names
+\newcommand{\JWnamedlink}[2]{\href{#1}{#2}}
+
+%code
+\newcommand{\JWcode}[1]{\texttt{#1}}
+
 
 %
 % SPECIALIZED SHORTCUTS
@@ -108,3 +115,20 @@
 \newcommand{\JWfieldGeneral}[0]{\mathbb{F}_q^k}
 \newcommand{\JWpOne}[0]{Goliath}
 \newcommand{\JWpTwo}[0]{David}
+\newcommand{\JWtoken}[0]{Token}
+
+%tools ans versions
+\newcommand{\JWThaskell}[0]{Haskell}
+\newcommand{\JWTghc}[0]{GHC}
+\newcommand{\JWTXghc}[0]{Glasgow Haskell Compiler}
+\newcommand{\JWTLhaskell}[0]{\JWnamedlink{http://haskell.org}{\JWThaskell}}
+\newcommand{\JWTXLghc}[0]{\JWnamedlink{http://www.haskell.org/ghc/}{\JWTXghc}}
+\newcommand{\JWTVghc}{7.6.1}
+
+%binaries
+\newcommand{\JWBpOne}[0]{\JWbinary{\JWpOne{}}}
+\newcommand{\JWBpTwo}[0]{\JWbinary{\JWpTwo{}}}
+\newcommand{\JWBtoken}[0]{\JWbinary{\JWtoken{}}}
+
+%misc
+\newcommand{\JWport}[1]{\texttt{#1}}

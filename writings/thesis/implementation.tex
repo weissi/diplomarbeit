@@ -1,4 +1,98 @@
 \JWlone{Implementation}
 \label{sec:implementation}
 
-Implemented in Haskell.
+In addition to the mathematical methods (chapter \ref{sec:methods}), the
+protocol description (chapter \ref{sec:protocol}) and the security proof of the
+protocol in the UC framework (chapter \ref{sec:security}), this thesis contains
+an implementation of the protocol. The implementation is written in the lazy,
+functional programming language \JWTLhaskell{}. More specifically \JWThaskell{}
+as implemented by the major \JWThaskell{} compiler the \JWTXLghc{} (\JWTghc{})
+version \JWTVghc{}.
+
+The implementation was designed to match the descriptions in the above chapters
+as closely as possible. The implementation implements Oblivious Polynomial
+Evaluation as explained in chapter \ref{def:OPE}.
+
+Even the Haskell data--types such as \JWcode{DRAC}, \JWcode{DRAE}, \JWcode{RAE},
+\JWcode{LinearExpr} match the names of the constructs described in chapter
+\ref{sec:methods}: DRACs (chapter \ref{def:DRAC}), (chapter \ref{def:DRAE}) and
+linear expressions (named $\mathcal{C}$ in chapter \ref{def:DRAE}). For
+practical reasons the program also features \JWcode{RAC} (Randomized Affine
+Circuits) and \JWcode{RAE} (Randomized Affine Encodings) which are the same as
+their \emph{dual} counterparts but split up by the components. So while running
+the program two \JWcode{RAE}s are derived from one \JWcode{DRAE}.
+
+As in chapter \ref{def:OPE}, the oblivious polynomial evaluation consists of
+three parties: The tamper--proof hardware issuing party \JWpOne{} (executable
+program called \JWBpOne{}), the receiving party \JWpTwo{} (\JWBpTwo{}) and the
+tamper--proof hardware \JWtoken{} (\JWBtoken{}). The individual programs talk to
+each other using TCP/IP networking. The \JWtoken{} implements the OAFE
+functionality \JWfuncSym{seq-ot}{OAFE} as provided by the David \& Goliath
+protocol \cite{davidgoliath}. The \JWtoken{} does not actually implement the
+David \& Goliath protocol but only it's interface. A real implementation using a
+tamper--proof hardware token is left open to potential future works.
+
+
+%
+% COMMUNICATION CHANNELS
+%
+\JWltwo{Communication Channels and Their TCP Ports}
+\label{sec:communication-channels}
+
+
+% GOLIATH TO TOKEN
+\JWlthree{\JWpOne{} To \JWtoken{}}
+\label{sec:comm:goliath2Token}
+
+On TCP port \JWport{23120} \JWpOne{} initiates a connection to the \JWtoken{}.
+This connection is used to transfer the OAFE configuration to the tamper--proof
+hardware token.
+
+
+% DAVID TO TOKEN
+\JWlthree{\JWpTwo{} To \JWtoken{}}
+\label{sec:comm:david2token}
+
+On TCP port \JWport{23021} \JWpTwo{} initiates a connection to the \JWtoken{}.
+This connection is used to evaluate the OAFEs. \JWpTwo{} sends a tells which
+OAFE to evaluate and its value, the \JWtoken{} then replies with a vector
+consisting of the evaluated linear expressions.
+
+
+% GOLIATH TO DAVID
+\JWlthree{\JWpOne{} To \JWpTwo{}}
+\label{sec:comm:goliath2david}
+
+On TCP port \JWport{23102} \JWpOne{} initiates a connection to \JWpTwo{}. This
+connection is a stream of \JWpTwo{} DRAEs (in fact \JWcode{RAE}s) assigned to
+variables, that \JWpTwo{} will evaluate one after the other in the order
+\JWpOne{} has sent them.
+
+
+% DAVID TO GOLIATH
+\JWlthree{\JWpTwo{} To \JWpOne{}}
+\label{sec:comm:david2goliath}
+
+On TCP port \JWport{23201} \JWpTwo{} initiates a connection to \JWpOne{}. This
+connection is not necessary for the protocol itself but is used to exchange
+settings between \JWpOne{} and \JWpTwo{}. \JWpOne{} tells \JWpTwo{} the host
+name and the TCP port of the \JWtoken{} and \JWpTwo{} tells \JWpOne{} the port
+on which \JWpTwo{} accepts the DRAE stream.
+
+
+%
+% DIFFERENCES BETWEEN IMPLEMENTATION AND WRITING
+%
+\JWltwo{Differences Between the Implementation and this Writing}
+\label{sec:implementation-differences}
+
+\begin{itemize}
+
+\item In writing there are no \JWcode{RAE}s
+
+\item Communication Channel from \JWpTwo{} to \JWpOne{}
+(\ref{sec:comm:david2goliath})
+
+\end{itemize}
+
+% vim: set spell spelllang=en_us fileencoding=utf8 :
