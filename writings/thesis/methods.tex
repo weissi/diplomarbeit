@@ -311,7 +311,7 @@ $\widetilde{z} =
 (see chapter \ref{sec:indirect-DRAV-arithmetic}).
 Since $E(x)$ and $D(x)$ are both linear functions, $E\left(D(\ldots)
 +D(\ldots)\right)$ are linear functions, too that can be evaluated using two
-OAFE calls.  Naturally the OAFEs have to be configured appropriately by the
+OAFE calls.  Obviously the OAFEs have to be configured appropriately by the
 party in possession of the encryption keys.
 
 
@@ -329,21 +329,92 @@ Null prüfen}
 
 
 \begin{align*}
-  e & \in \mathcal{E}; \widetilde{x}, \widetilde{y} \in \mathcal{V};
+  E & \in \mathcal{E}; \widetilde{x}, \widetilde{y} \in \mathcal{V};
   r_1, r_2, r_3, r_4, r_5, r_6, r_7, r_8 \in K;
   \alpha_l, \alpha_r \in K \setminus \{0\} \\
   %
-  e & = \widetilde{x} \cdot \widetilde{y} \\
+  E & = \widetilde{x} \cdot \widetilde{y} \\
   %
-  e & = \Bigg(\Big\{\big( \alpha_l \cdot D(\widetilde{x_1}) - r_1,
-                          \alpha_r \cdot D(\widetilde{x_2}) -r_5 \big) \\
-    &\qquad ,     \big(   1        \cdot D(\widetilde{y_1}) - r_2,
-                          1        \cdot D(\widetilde{y_2}) - r_6 \big) \Big\}\\
-    &\qquad   \Big\{\big( \alpha_lr_2 \cdot D(\widetilde{x_2}) + r_3,
-                          \alpha_rr_2 \cdot D(\widetilde{x_1}) + r_7 \big) \\
-    &\qquad ,       \big ( r_1        \cdot D(\widetilde{y_2}) + r_4,
-                           r_5        \cdot D(\widetilde{y_1}) + r_8 \big)
-              \Big\}\Bigg) \\
+  E & = \Bigg(\left\{\left(
+            \begin{pmatrix}
+              \alpha_l \cdot D(\widetilde{x_1}) - r_1 \\
+              \alpha_r \cdot D(\widetilde{x_2}) - r_5
+            \end{pmatrix},
+            \begin{pmatrix}
+              1        \cdot D(\widetilde{y_1}) - r_2 \\
+              1        \cdot D(\widetilde{y_2}) - r_6
+            \end{pmatrix}
+        \right)\right\}, \\
+    &   \qquad\bigg\{
+        \begin{pmatrix}
+            \alpha_lr_2 \cdot D(\widetilde{x_2}) + r_3 \\
+            \alpha_rr_6 \cdot D(\widetilde{x_1}) + r_7
+          \end{pmatrix} \\
+    &  \qquad,
+        \ \begin{pmatrix}
+            r_1        \cdot D(\widetilde{y_2}) + r_4 \\
+            r_5        \cdot D(\widetilde{y_1}) + r_8
+          \end{pmatrix}
+        \bigg\}\Bigg) \\
+\end{align*}
+
+Decoding (see chapter \ref{def:DRAE}) a well--formed $E$ to
+$\widetilde{e} \in \mathcal{V}$ leads to:
+
+\begin{align*}
+  \widetilde{e} & =
+  \begin{pmatrix}
+    (\alpha_l \cdot D(\widetilde{x_1})-r_1) \cdot
+    (1        \cdot D(\widetilde{y_1})-r_2) \\
+    (\alpha_r \cdot D(\widetilde{x_2})-r_5) \cdot
+    (1        \cdot D(\widetilde{y_2})-r_6)
+  \end{pmatrix}
+  +
+  \begin{pmatrix}
+    \alpha_lr_2 \cdot D(\widetilde{x_2}) + r_3 +
+    r_l         \cdot D(\widetilde{y_2}) + r_4 \\
+    r_2         \cdot D(\widetilde{x_1}) + r_7 +
+    r_5         \cdot D(\widetilde{y_1}) + r_8
+  \end{pmatrix} \\
+%
+  & =
+  \begin{pmatrix}
+    \alpha_l \cdot D(\widetilde{x_1}) \cdot D(\widetilde{y_1})
+    -\alpha_lr_2 \cdot D(\widetilde{x_1})
+    -r_1 \cdot D(\widetilde{y_1})
+    +r_1r_2 \\
+    \alpha_r \cdot D(\widetilde{x_2}) \cdot D(\widetilde{y_2})
+    -\alpha_rr_6 \cdot D(\widetilde{x_2})
+    -r_5 \cdot D(\widetilde{y_2})
+    + r_5r_6
+    + r_5r_6 + r_7 + r_8
+  \end{pmatrix} \\
+  &\ \ \ +
+  \begin{pmatrix}
+    \alpha_lr_2 \cdot D(\widetilde{x_2}) + r_3 +
+    r_l         \cdot D(\widetilde{y_2}) + r_4 \\
+    r_2         \cdot D(\widetilde{x_1}) + r_7 +
+    r_5         \cdot D(\widetilde{y_1}) + r_8
+  \end{pmatrix} \\
+%
+  & \stackrel{*}{=}
+  \begin{pmatrix}
+    \alpha_l \cdot D(\widetilde{x_1}) \cdot D(\widetilde{y_1})
+    + r_1r_2 + r_3 + r_4 \\
+    \alpha_r \cdot D(\widetilde{x_2}) \cdot D(\widetilde{y_2})
+    + r_5r_6 + r_7 + r_8
+  \end{pmatrix} \\
+%
+  & \stackrel{*}{=}
+  \begin{pmatrix}
+    \alpha_l \cdot xy + (r_1r_2 + r_3 + r_4) \\
+    \alpha_r \cdot xy + (r_5r_6 + r_7 + r_8)
+  \end{pmatrix} \\
+%
+  &\text{* Because $E$ is well--formed: $x = D(\widetilde{x_1}) =
+D(\widetilde{x_2}) \neq \bot$ and $y = D(\widetilde{y_1}) = D(\widetilde{y_2})
+\neq \bot$ }
+%
 \end{align*}
 
 \noindent{}The resulting encryption keys of $e$ are $\alpha_l$, $\alpha_r$
