@@ -18,9 +18,42 @@ entities in the following chapters.
 
 % Field K
 \JWlthree*{Field $K$}
+\label{sec:field}
 
 \label{def:field} Throughout this thesis, $K$ represents an arbitrary large
 finite field, such as $\mathbb{F}_{2^{256}}$.
+
+\JWtodo{Irreduzibled Polynom hinschreiben}
+
+
+% OAFEs
+\JWlthree*{OAFEs}
+
+In this thesis the \JWdef{Oblivious Affine Function Evaluation}{OAFE}{s} are
+essentially one \emph{Sequential one--time OAFE} as defined by Döttling,
+Kraschewski and Müller-Quade \cite{davidgoliath}. The OAFEs can be used to
+obliviously evaluate affine functions $f_i$. The collectivity of all OAFEs (as
+defined in this thesis) maps to exactly one tamper--proof hardware token
+realizing one \emph{Sequential one--time OAFE} \cite{davidgoliath}:
+
+\begin{align*}
+  f_i(x_i) = &
+  a_ix_i + b_i \\
+%
+  = &
+\begin{pmatrix}a_{i,1}\\a_{i,2}\\a_{i,3}\\\vdots\end{pmatrix}x_i +
+\begin{pmatrix}b_{i,1}\\b_{i,2}\\b_{i,3}\\\vdots\end{pmatrix}
+\end{align*}
+
+\noindent{}Obviously, every function $f_i$ can only be evaluated only once and
+the functions $f_i$ have to be evaluated in order: $f_1$ being the first, $f_2$
+the second and so forth.
+
+In this thesis usually the term OAFEs is used to denote the fact that there are
+multiple affine functions ($f_i$) that can be evaluated obliviously. The term
+OAFE configuration is used to denote the vectors $a_i$ and $b_i$. One OAFE
+configuration is the same as the collectivity of the $(a_i, b_i, i)$ triples as
+used in the original definition \cite{davidgoliath}.
 
 
 %
@@ -33,12 +66,16 @@ finite field, such as $\mathbb{F}_{2^{256}}$.
 representing a scalar value of the field $K$. Each DRAV is encrypted by a pair
 of \emph{dual keys}. The first dual key, the \emph{static key}, remains the same
 in the whole DRAC (see chapter \ref{def:DRAC}) generation procedure and is
-usually written as $(\alpha_l, \alpha_r)$. The second dual key, the
+usually denoted as $(\alpha_l, \alpha_r)$. The second dual key, the
 \emph{dynamic key} is a short--lived key, usually represented as $(\beta,
 \beta')$. Two DRAVs only share the same dynamic key by hazard but always share
 the same static key. Encoding a regular value $v \in K$ as a DRAV
 $\widetilde{v} \in \mathcal{V}_K$ is straightforward, most of the time the
-universal encoding function $E(v)$ is used to describe DRAV encoding.
+universal encoding function $E(v)$ is used to describe DRAV encoding. For the
+sake of simplicity $E(v)$ is already parametrized by the static dual key
+$(\alpha_l, \alpha_r)$ and is able to generate a new dynamic dual key $(\beta,
+\beta')$ uniformly at random. $D(\widetilde{v})$ is assumed to know the correct
+decryption keys.
 
 \begin{align*}
   \widetilde{v} = E(v) = (\widetilde{v_l}, \widetilde{v_r}) =
@@ -225,13 +262,14 @@ parts of arithmetic circuits that fulfill several properties:
 \end{enumerate}
 
 \noindent{}A DRAE can be eventually evaluated to a final value, that is a DRAV
-(see chapter \ref{def:DRAV}). Intuitively, a DRAE is composed of two finite
-multi--sets. The first multi--set, called the \emph{additive terms} contains
-computations that can be evaluated to DRAVs. The second multi--set, called the
-\emph{multiplicative terms} contains tuples of computations. The component--wise
-multiplication of each of these tuples yields DRAVs, too. The addition of the
-DRAVs obtained from the additive terms and the DRAVs obtained from the
-multiplicative terms leads to a DRAV that is the evaluation of this DRAE.
+(see chapter \ref{def:DRAV}). Informally, a DRAE is composed of two finite
+multi--sets. The first multi--set, called the \emph{multiplicative terms}
+contains tuples of computations. The second multi--set, called the
+\emph{additive terms} contains computations that can be evaluated to DRAVs. The
+component--wise multiplication of each of the computation tuples (from the
+multiplicative terms) yields DRAVs, too. The addition of all the DRAVs obtained
+from the additive terms and all the DRAVs obtained from the multiplicative terms
+leads to a DRAV that is the evaluation of this DRAE.
 
 More formally, a DRAE can be described as follows where $\mathcal{E}$ represents
 the DRAEs, $\mathcal{C}$ the computations and $\mathcal{V}_\mathcal{C}$ the
@@ -327,6 +365,8 @@ multiplication.
 \JWtodo{Warum müssen sie gemixt werden: Das Argument mit gegen
 Null prüfen}
 
+\JWtodo{Das Mixen genauer erklären}
+
 
 \begin{align*}
   E & \in \mathcal{E}; \widetilde{x}, \widetilde{y} \in \mathcal{V};
@@ -420,6 +460,8 @@ D(\widetilde{x_2}) \neq \bot$ and $y = D(\widetilde{y_1}) = D(\widetilde{y_2})
 \noindent{}The resulting encryption keys of $e$ are $\alpha_l$, $\alpha_r$
 (static keys) and $\beta = r_1r_2 + r_3 + r_4$, $\beta' = r_5r_6 + r_7 + r_8$
 (dynamic keys).
+
+\JWtodo{Multiplication of non--well--formed DRAEs}
 
 
 %

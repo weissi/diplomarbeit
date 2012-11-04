@@ -95,4 +95,56 @@ on which \JWpTwo{} accepts the DRAE stream.
 
 \end{itemize}
 
+
+%
+% IMPLEMENTATION DETAILS
+%
+\JWltwo{Implementation Details}
+\label{sec:implementation-details}
+
+% Calculations in Finite Fields
+\JWlthree{Calculations in Finite Fields}
+
+For the calculation in the finite fields (chapter \ref{sec:field}) the
+\JWTcpp{} library \JWTLntl{} (\emph{Number Theory Library}) has been interfaced
+to \JWThaskell{} for the purpose of developing the implementation of this
+thesis. The interface has been developed using \JWThaskell{}'s \JWdef{Foreign
+Function Interface}{FFI} \cite{haskell2010} and \JWdef{C $\longrightarrow$
+Haskell}{C2Hs} \cite{c2hs}. Prior to interfacing the library to Haskell a very
+lightweight \JWTc{} wrapper has been developed because the library is written in
+\JWTcpp{} which cannot directly be interfaced using the FFI.
+
+
+% Testing Correctness
+\JWlthree{Testing the Correctness of the Implementation}
+
+The correctness of the implementation has not been proofed since that is not
+feasible for complex programs. Instead of a real proof, the implementation
+has been tested using the specification--driven automatic \JWThaskell{} testing
+tool \JWTquickcheck{} \cite{quickcheck} and the classic unit test approach of
+\JWTLhunit{}.
+
+
+% Randomness
+\JWlthree{Cryptographic Randomness}
+
+The random numbers needed for the implementation of this thesis are generated
+using \JWTLmonadcryptorandom{}.
+
+
+% Communication Layer
+\JWlthree{Communication Layer}
+
+The communication layer between the different binaries is driven by the
+schrieblesque \JWTXLprotobuf{}.
+
+
+% Other Libraries
+\JWlthree{Other Libraries}
+
+This thesis uses a lot of other libraries mainly from \JWTLhackage{}. The
+complete list of packages can be extracted from the file
+\JWpath{diplomarbeit.cabal} that comes with the source code of this thesis.
+
+
 % vim: set spell spelllang=en_us fileencoding=utf8 :

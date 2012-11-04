@@ -49,6 +49,7 @@
 \newcommand{\JWbinary}[1]{\texttt{#1}}
 \newcommand{\JWtodo}[1]{\fbox{TODO: #1}}
 \newcommand{\JWmsgTwo}[2]{(\texttt{#1}, \texttt{#2})}
+\newcommand{\JWpath}[1]{\texttt{#1}}
 
 \DeclareDocumentCommand\JWdef{mmg}{%
   {\label{def:#2}\emph{#1\IfNoValueF{#3}{#3}}%
@@ -124,6 +125,21 @@
 \newcommand{\JWTLhaskell}[0]{\JWnamedlink{http://haskell.org}{\JWThaskell}}
 \newcommand{\JWTXLghc}[0]{\JWnamedlink{http://www.haskell.org/ghc/}{\JWTXghc}}
 \newcommand{\JWTVghc}{7.6.1}
+\newcommand{\JWTntl}[0]{NTL}
+\newcommand{\JWTLntl}[0]{\JWnamedlink{http://www.shoup.net/ntl/}{\JWTntl}}
+\newcommand{\JWTcpp}[0]{C++}
+\newcommand{\JWTc}[0]{C}
+\newcommand{\JWTquickcheck}[0]{QuickCheck}
+\newcommand{\JWTLhunit}[0]{\JWnamedlink{http://hunit.sourceforge.net/}{HUnit}}
+\newcommand{\JWTLmonadcryptorandom}[0]%
+  {\JWnamedlink{http://hackage.haskell.org/package/monadcryptorandom}%
+  {\texttt{monadcryptorandom}}}
+\newcommand{\JWTXprotobuf}{Google\TTra{} Protocol Buffers}
+\newcommand{\JWTXLprotobuf}[0]%
+  {\JWnamedlink{http://code.google.com/apis/protocolbuffers/}{\JWTXprotobuf{}}}
+\newcommand{\JWTLhackage}[0]%
+  {\JWnamedlink{http://hackage.haskell.org/packages/hackage.html}{HackageDB}}
+
 
 %binaries
 \newcommand{\JWBpOne}[0]{\JWbinary{\JWpOne{}}}
@@ -132,3 +148,6 @@
 
 %misc
 \newcommand{\JWport}[1]{\texttt{#1}}
+\def\TReg{\textsuperscript{\textregistered}}
+\def\TCop{\textsuperscript{\textcopyright}}
+\def\TTra{\textsuperscript{\texttrademark}}
