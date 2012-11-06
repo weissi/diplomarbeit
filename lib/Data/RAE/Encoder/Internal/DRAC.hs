@@ -9,6 +9,7 @@ module Data.RAE.Encoder.Internal.DRAC
     , draeEncodeMul
     , draeEncodeAdd
     , draeEncodeDRAEAdd
+    , draeEncodePrimaryExpr
       -- * Internal, Uninteresting API
       -- ** @DRAE@ Encoding automatically getting random numbers
     , draeEncodeMulRnd
@@ -41,13 +42,17 @@ import Data.RAE.Evaluation ( _SPECIAL_VAR_OUT_, _SPECIAL_VAR_ADDED_PRE_OUT_
                            )
 import Data.RAE.Types ( VariableName, DRAE(..), DRAC
                       , PrimaryExpression(..)
-                      , Key, KeyPair, DualKey, DualKeyPair
+                      , Key, DualKey, DualKeyPair
                       , leftVar, rightVar
                       )
 import qualified Data.LinearExpression as LE
 
+-- | A dual encrypted primary expression.
+--
+-- Either an unencrypted constant or an encrypted variable along with the dual
+-- key (only the dynamic keys) needed to decrypt it.
 data DualEncPrimExpr el = DualConst el
-                        | DualVar (KeyPair el) VariableName
+                        | DualVar (DualKey el) VariableName
                         deriving Show
 
 getRandomElement :: (Monad m, CryptoRandomGen g, Field el, CRandom el)
@@ -194,8 +199,8 @@ decodeDualEncPrimExpr :: forall el. Field el
                     -> (DualKey el -> Key el)
                     -> DualEncPrimExpr el
                     -> LinearExpr el
-decodeDualEncPrimExpr skp prjVar prjKey bepc =
-    case bepc of
+decodeDualEncPrimExpr skp prjVar prjKey depe =
+    case depe of
       DualConst el -> ConstLinearExpr el
       DualVar dkp var ->
           let skInv :: Key el  -- the inverted static key

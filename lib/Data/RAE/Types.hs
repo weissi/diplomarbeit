@@ -5,7 +5,7 @@ module Data.RAE.Types
       RAE(..), DRAE(..), RAC, RACFragment, DRAC, DRACFragment
     , DualLinearExpr
       -- * Encryption Key Data Types
-    , Key, DualKey, DualKeyPair, KeyPair
+    , Key, DualKey, DualKeyPair
       -- * Helper Functions
     , leftVar, rightVar
       -- * Convenience Re-exports
@@ -25,11 +25,17 @@ import Data.OAFE (OAFEReference)
 data PrimaryExpression el = Variable VariableName
                           | Constant el
 
+-- | An encryption key.
 type Key el = el
+
+-- | A dual encryption key (e.g. the dynamic keys or the static keys)
 type DualKey el = (Key el, Key el)
-type KeyPair el = (Key el, Key el)
+
+-- | A dual linear expression.
 type DualLinearExpr el = (LinearExpr el, LinearExpr el)
 
+-- | A dual encryption key pair made of two dual keys. Usually the static dual
+-- key and the dynamic dual key.
 type DualKeyPair el = (DualKey el, DualKey el)
 
 -- | /D/ual /R/andomized /A/ffine /E/ncoding.

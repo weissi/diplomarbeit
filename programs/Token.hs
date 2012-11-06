@@ -24,9 +24,7 @@ import qualified Data.HashMap.Strict as HM
 import qualified Network.Socket as NS
 
 -- # LOCAL
-import Data.OAFE ( OAFEConfiguration, OAFEEvaluationRequest
-                 , OAFEEvaluationResponse
-                 )
+import Data.OAFE (OAFEConfiguration, OAFEEvaluationResponse)
 import Data.RAE.Conduit ( oafeConfigParseConduit
                         , oafeEvaluationRequestParseConduit
                         , oafeEvaluationResponseSerializeConduit
