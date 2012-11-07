@@ -37,16 +37,21 @@ $\mathcal{S}$).
 
 \begin{itemize}
 
-  \item Setup emulated honest \JWpTwo{}
+  \item Setup emulated honest \JWpOne{}, OAFE functionality and \JWpTwo{}, wired
+    as usual.
 
-  \item Feed emulated honest \JWpTwo{} with the same inputs the corrupted
-    \JWpTwo{} receives
+  \item Choose a random polynomial of the correct degree as the input for the
+    emulated \JWpOne{}
 
-  \item Compare the outputs of the emulated, honest \JWpTwo{} with the corrupted
-    one
+  \item At the start, as soon as the corrupted \JWpTwo{} transmits its first
+    output to the OAFE functionality (sets its variable), let the emulated
+    \JWpTwo{} make the same input.
+
+  \item From now on, compare all data from the corrupted \JWpTwo{} to the
+    outputs of the emulated \JWpTwo{}.
 
   \item Should the corrupted \JWpTwo{} behave different than the emulated
-    \JWpTwo{}, return uniform randomness as the final output to the environment
+    \JWpTwo{}, return uniform randomness as the final output
 
   \item Should the corrupted \JWpTwo{} behave honestly, pass it's input to the
     ideal functionality and output the return value to the environment
@@ -96,7 +101,11 @@ model.
 % CORRUPTED DAVID
 \JWlthree{Corrupted \JWpTwo{}}
 
-Use the simulator from chapter \ref{sec:simulator-david}. Perfectly secure.
+Use the simulator from chapter \ref{sec:simulator-david}. Since everything
+except the last value that gets transmitted to \JWpTwo{} is a DRAV, it's
+uniformly at random because of the ever--changing dynamic keys $(\beta,
+\beta')$. The last value is---depending on the honestness---either uniform
+random, too or the final value.
 
 
 % CORRUPTED GOLIATH
