@@ -35,26 +35,100 @@ $\mathcal{S}$).
 \JWlthree{Simulator $\mathcal{S}_{\text{\JWpTwo{}}}(\mathcal{A})$}
 \label{sec:simulator-david}
 
+\paragraph{Setup Phase}
+
+The setup phase is run as soon as the simulator starts.
+
+
+\subparagraph{Setup Reference System:}
+
+The reference system is used to review the honesty of the corrupted \JWpTwo{} in
+the real model. The messages send from the corrupted \JWpTwo{} are compared
+to the values the honest, emulated \JWpTwo{} sends in the reference system.
+
 \begin{itemize}
 
-  \item Setup emulated honest \JWpOne{}, OAFE functionality and \JWpTwo{}, wired
-    as usual.
+  \item Setup emulated, honest \JWpOne{} labeled $\mathcal{G}^R$.
 
-  \item Choose a random polynomial of the correct degree as the input for the
-    emulated \JWpOne{}
+  \item Setup emulated, honest OAFE functionality labeled
+    $\mathcal{F}^R_{OAFE}$.
 
-  \item At the start, as soon as the corrupted \JWpTwo{} transmits its first
-    output to the OAFE functionality (sets its variable), let the emulated
-    \JWpTwo{} make the same input.
+  \item Setup emulated, honest \JWpTwo{} labeled $\mathcal{D}^R$.
+    $\mathcal{D}^R$ should not send an initial message (its polynomial input)
+    until notified by the simulator.
 
-  \item From now on, compare all data from the corrupted \JWpTwo{} to the
-    outputs of the emulated \JWpTwo{}.
+  \item Wire $\mathcal{G}^R$, $\mathcal{F}^R_{OAFE}$, and $\mathcal{D}^R$ as
+    usual.
 
-  \item Should the corrupted \JWpTwo{} behave different than the emulated
-    \JWpTwo{}, return uniform randomness as the final output
+  \item Initialize $\mathcal{G}^R$ with a random polynomial of the parametrized
+    degree.
 
-  \item Should the corrupted \JWpTwo{} behave honestly, pass it's input to the
-    ideal functionality and output the return value to the environment
+\end{itemize}
+
+
+\subparagraph{Setup Test System:}
+
+The test system is wired to the corrupted \JWpTwo{} (labeled $\mathcal{D}^C$ in
+the real model.
+
+\begin{itemize}
+
+  \item Setup emulated, honest \JWpOne{} labeled $mathcal{G}^T$.
+
+  \item Setup emulated, honest OAFE functionality labeled
+    $\mathcal{F}^T_{OAFE}$.
+
+  \item Wire $\mathcal{G}^T$, $\mathcal{F}^T_{OAFE}$ and $\mathcal{D}^C$ as
+    usual. Every message that gets send from $\mathcal{D}^C$ should be
+    intercepted and checked by the simulator.
+
+  \item Initialize $\mathcal{G}^T$ with the same polynomial $\mathcal{G}^R$ got
+    initialized.
+
+\end{itemize}
+
+
+\subparagraph{General Setup:}
+
+\begin{itemize}
+
+  \item Setup a variable \JWcode{cheated $\leftarrow$ $false$}.
+
+\end{itemize}
+
+
+\paragraph{Regular Processing Phase:}
+
+The regular processing phase starts as soon as the setup phase is terminated.
+
+\begin{itemize}
+
+  \item Intercept \JWpTwo{}'s ($\mathcal{D}^C$) input. This is trivial: It's the
+    first message that \JWpTwo{} transmits to the OAFE functionality
+
+  \item Ask the reference \JWpTwo{} $\mathcal{D}^R$ to send the same input to
+    OAFE functionality wired to it.
+
+  \item Until evaluating the last OAFE the simulation has just to adapt the
+    scheduling of the reference system to match the test system.
+
+  \item As soon as a message from the corrupted \JWpTwo{} $\mathcal{D}^C$ is
+    received, compare it to the according message of the reference \JWpTwo{}
+    ($\mathcal{D}^R$). Should the message from the corrupted \JWpTwo{} differ
+    from the message from reference \JWpTwo{} or should the corrupted \JWpTwo{}
+    send an additional message, \JWpTwo{} is caught while trying to cheat. If
+    \JWpTwo{} was caught while trying to cheat set \JWcode{cheated $\leftarrow$
+    $true$} and continue normally.
+
+  \item As soon as the corrupted $\mathcal{D}^C$ has sent its last message to
+    the OAFE functionality check it as above and halt the test and the reference
+    system.
+
+  \item The final step analyzes the variable \JWcode{cheated}. If
+    \JWcode{cheated $=$ $true$} the emulated OAFE functionality sends uniform
+    random to the corrupted $\mathcal{D}^C$. If \JWcode{cheated $=$ $false$},
+    use the ideal functionality, evaluate it using \JWpTwo{}'s original input
+    and send the result to \JWpTwo{}.
 
 \end{itemize}
 
