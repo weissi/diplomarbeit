@@ -1,6 +1,11 @@
 \JWlone{Methods}
 \label{sec:methods}
 
+This chapter describes how arbitrary arithmetic functions can be expressed in
+terms of affine expressions. This is the most important part of this thesis
+because it is the key part of evaluating arbitrary arithmetic expressions
+using OAFEs \cite{davidgoliath}.
+
 \begin{JWtodoBox}
 
   Top--down Beschreibung was getan werden soll:
@@ -18,10 +23,79 @@
 
 \end{JWtodoBox}
 
-This chapter describes how arbitrary arithmetic functions can be expressed in
-terms of affine expressions. This is the most important part of this thesis
-because it is the key part of evaluating arbitrary arithmetic expressions
-using OAFEs \cite{davidgoliath}.
+\JWltwo{Illustration}
+
+This chapter illustrates the methods used in this thesis top--down. The
+following chapters describe it more formally and bottom--up which is rather
+cumbersome to understand without grasping the overall picture.
+
+The ultimate goal is to obliviously evaluate a polynomial by two mutual
+distrusting parties. Informally, that is evaluating $f(x) = \sum a_ix^i$ where
+the first party chooses $f(x)$ and the second party chooses $x$. But neither
+party should learn the choices of the other party. The naive and simple solution
+would be using a trusted third party to which the polynomial and the input get
+handed. Obviously, this solution as simple as insecure.
+
+Since this thesis uses Oblivious Affine Function Evaluation (OAFE) as the main
+building block, the general polynomial has to be split to affine functions
+evaluating parts of the complete function. To maintain the security property,
+neither party should be learn anything by intermediate results. The role both
+parties play differs a lot: The first party---usually named \JWpOne{}---is in
+possession of the function to evaluate and generates the tamper--proof hardware
+token that implements the OAFE functionality. The second party---usually named
+\JWpTwo{}---is less powerful: It does only evaluate entities issued by \JWpOne{}
+and uses the already configured OAFEs. \JWpTwo{} acts---if honest---completely
+deterministic and will receive the function's final evaluated value.
+
+The approach pursued here is to divide the circuit that equals the overall
+function to smaller sub--circuits. Each sub--circuit has to be evaluated to an
+intermediate value independently by \JWpTwo{}. Additionally \JWpTwo{} has to
+remember all intermediate value since they are used to compute the following
+sub--circuits. Obviously the intermediate values are at risk: A passively
+corrupted \JWpTwo{} could try to derive information from these intermediate
+results. An active \JWpTwo{} could additionally try to modify the intermediate
+values and gain supplemental information out of that. To not directly reveal the
+value of an evaluated sub--circuit the intermediate values have to be
+\emph{encrypted}. To be able to identify an illicit modification the overall
+evaluation has to fail when an attacker tries to illicitly modify an
+intermediate result. In this thesis, the intermediate values are a tuple of two
+values. The decryption of both values represents---when well--formed---the same
+value. The gain of this technique is that an attacker cannot simply change the
+value without knowing the encryption keys. Any chance to one (or both) tuple
+values causes the intermediate value to be destroyed (formally represented as
+$\bot$). For technical reasons both sides of the tuples are often syntactically
+divided in two intermediate values that semantically still represent the same
+intermediate value tuple.
+
+The overall process is very straightforward: \JWpOne{} analyzes the polynomial
+and transforms it to a circuit. This circuit is then divided to sub--circuits.
+Usually, the sub--circuits are of maximal size. The next step is to set up the
+tamper--proof hardware token implementing the OAFE functionality. Then, the
+sub--circuits along with the OAFEs are transferred to \JWpTwo{} that evaluates
+the sub--circuits one after the other and uses the OAFEs in that process. The
+final result will be the evaluation of the original polynomial.
+
+To simplify the analysis of the different parts and to demonstrate the
+modularity, special terms are used throughout in this thesis. A mapping from the
+informal terms used above and the terms used otherwise (and defined in the
+following chapters) follows:
+
+\begin{itemize}
+
+  \item The overall circuit representing exactly one function is named
+    \emph{Double Affine Randomized Circuit} (DRAC) and \emph{Affine Randomized
+    Circuit} (RAC)---when both tuple values travel separated from each
+    other---defined in chapter \ref{def:DRAC}
+
+  \item The sub--circuits are called \emph{Double Affine Randomized Encodings}
+    (DRAE) and \emph{Randomized Affine Encodings} (RAE) defined in chapter
+    \ref{def:DRAE}.
+
+  \item The intermediate values that are encrypted twofoldly are named
+    \emph{Double Randomized Affine Values} (DRAV), defined in chapter
+    \ref{def:DRAV}.
+
+\end{itemize}
 
 
 %
@@ -250,7 +324,9 @@ forged to $\widetilde{x'_1} = \widetilde{x_1} + \Delta_1$ and $\widetilde{x'_2}
 Because an attacker is not in possession of the static encryption keys
 $\alpha_l$ and $\alpha_r$, it cannot control the value of $\frac{\Delta_1 +
 \Delta_2}{\alpha_l + \alpha_r}$. Since $\alpha_l$ and $\alpha_r$ are chosen
-uniform at random, the result $x'$ becomes uniform at random, too.
+uniform at random, the result $x'$ becomes uniform at random, too. An attacker
+could choose $\Delta_l + \Delta_r = 0$ but that would not change the result at
+all.
 
 
 %
