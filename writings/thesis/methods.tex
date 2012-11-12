@@ -23,48 +23,61 @@ using OAFEs \cite{davidgoliath}.
 
 \end{JWtodoBox}
 
-\JWltwo{Illustration}
 
-This chapter illustrates the methods used in this thesis top--down. The
-following chapters describe it more formally and bottom--up which is rather
-cumbersome to understand without grasping the overall picture.
+%
+% ILLUSTRATION
+%
+\JWltwo{Illustration}
+\label{sec:illustration}
+
+This chapter informaly illustrates the key ideas and methods proposed by this
+thesis. The following chapters contain a more formal bottom--up description that
+is rather cumbersome to understand without grasping the overall picture.
 
 The ultimate goal is to obliviously evaluate a polynomial by two mutual
 distrusting parties. Informally, that is evaluating $f(x) = \sum a_ix^i$ where
 the first party chooses $f(x)$ and the second party chooses $x$. But neither
-party should learn the choices of the other party. The naive and simple solution
-would be using a trusted third party to which the polynomial and the input get
-handed. Obviously, this solution as simple as insecure.
+party should learn the choice of the other party. The naive and simple solution
+is to instruct a trusted third party to evaluate the polynomial---provided by
+the first party---at the grid point $x$ provided by the second party.
+Of course, this solution is just as simple as insecure.
 
 Since this thesis uses Oblivious Affine Function Evaluation (OAFE) as the main
 building block, the general polynomial has to be split to affine functions
 evaluating parts of the complete function. To maintain the security property,
-neither party should be learn anything by intermediate results. The role both
-parties play differs a lot: The first party---usually named \JWpOne{}---is in
-possession of the function to evaluate and generates the tamper--proof hardware
-token that implements the OAFE functionality. The second party---usually named
-\JWpTwo{}---is less powerful: It does only evaluate entities issued by \JWpOne{}
-and uses the already configured OAFEs. \JWpTwo{} acts---if honest---completely
-deterministic and will receive the function's final evaluated value.
+neither party should be able to learn anything by intermediate results. The role
+both parties play differs a lot: The first party---usually named \JWpOne{}---is
+in possession of the function to evaluate and generates and sets up the
+tamper--proof hardware token that implements the OAFE functionality. The second
+party---usually named \JWpTwo{}---is less powerful: It does only evaluate
+entities issued by \JWpOne{} and uses the already configured OAFEs. \JWpTwo{}
+acts---if honest---completely deterministic and will receive the function's
+final evaluated value.
 
 The approach pursued here is to divide the circuit that equals the overall
-function to smaller sub--circuits. Each sub--circuit has to be evaluated to an
-intermediate value independently by \JWpTwo{}. Additionally \JWpTwo{} has to
-remember all intermediate value since they are used to compute the following
-sub--circuits. Obviously the intermediate values are at risk: A passively
+function to smaller sub--circuits. Each sub--circuit can be composed of
+arithmetic gates and other sub--circuts. \JWpTwo{} has to evaluate each
+sub--circuit to an intermediate value. \JWpTwo{} has to remember all
+intermediate values since they are used to compute the following sub--circuits.
+Whenever one sub--circuit $A$ contains a node that is another sub--circuit $B$,
+this node gets replaced by the intermediate output value of $B$ before $A$ can
+be evaluated. Obviously the intermediate values are at risk: A passively
 corrupted \JWpTwo{} could try to derive information from these intermediate
 results. An active \JWpTwo{} could additionally try to modify the intermediate
 values and gain supplemental information out of that. To not directly reveal the
 value of an evaluated sub--circuit the intermediate values have to be
 \emph{encrypted}. To be able to identify an illicit modification the overall
 evaluation has to fail when an attacker tries to illicitly modify an
-intermediate result. In this thesis, the intermediate values are a tuple of two
+intermediate result. In this thesis, the intermediate values are tuples of two
 values. The decryption of both values represents---when well--formed---the same
 value. The gain of this technique is that an attacker cannot simply change the
-value without knowing the encryption keys. Any chance to one (or both) tuple
-values causes the intermediate value to be destroyed (formally represented as
-$\bot$). For technical reasons both sides of the tuples are often syntactically
-divided in two intermediate values that semantically still represent the same
+value and preserve the well--formedness without knowing the encryption keys. Any
+chance to one (or both) tuple values causes the intermediate value to be
+destroyed (formally represented as $\bot$). The value of the evaluated
+polynomial is a notable exception: It's not encrypted. To derive the final
+value, the output value of the last sub--circuit undergoes a special procedure.
+For technical reasons both sides of the tuples are often syntactically divided
+in two intermediate values that semantically still represent the same
 intermediate value tuple.
 
 The overall process is very straightforward: \JWpOne{} analyzes the polynomial
@@ -85,7 +98,7 @@ following chapters) follows:
   \item The overall circuit representing exactly one function is named
     \emph{Double Affine Randomized Circuit} (DRAC) and \emph{Affine Randomized
     Circuit} (RAC)---when both tuple values travel separated from each
-    other---defined in chapter \ref{def:DRAC}
+    other---defined in chapter \ref{def:DRAC}.
 
   \item The sub--circuits are called \emph{Double Affine Randomized Encodings}
     (DRAE) and \emph{Randomized Affine Encodings} (RAE) defined in chapter
