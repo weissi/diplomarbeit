@@ -6,23 +6,6 @@ terms of affine expressions. This is the most important part of this thesis
 because it is the key part of evaluating arbitrary arithmetic expressions
 using OAFEs \cite{davidgoliath}.
 
-\begin{JWtodoBox}
-
-  Top--down Beschreibung was getan werden soll:
-
-  \begin{itemize}
-
-    \item Halbtechnisch
-
-    \item Von einem Informatiker zu verstehen
-
-    \item Gewisse Art von Motivation von dem dann folgenden sehr detaillierten
-      bottom--up approach
-
-  \end{itemize}
-
-\end{JWtodoBox}
-
 
 %
 % ILLUSTRATION
@@ -201,6 +184,26 @@ time using the universal decoding function $D(\widetilde{v})$):
     \end{array}\right.
 \end{align*}
 
+\begin{lem}
+  \label{lem:DRAV-random}
+
+  A party that is not in posession of the encrytion (dual) keys will not learn
+  anything from a DRAV. A DRAV is a tuple consisting of two values uniformly at
+  random.
+
+\end{lem}
+
+\begin{proof}
+
+  In a finite field, the addition of some value $r$ uniformly at random to
+  another value $x \in K$ is uniformly at random. Therefore $\alpha_l \cdot v +
+  \beta$ and $\alpha_r \cdot v + \beta'$ are two values uniform at random if and
+  only if $\beta$ and $\beta'$ are uniformly at random. Per definition of a
+  DRAV, everytime a DRAV gets encoded, $\beta$ and $\beta'$ are fresh uniformly
+  distributed random values.
+
+\end{proof}
+
 
 % WELL-FORMED DRAVs
 \JWlthree{Well--Formed DRAVs}
@@ -218,40 +221,77 @@ arithmetic has to be used for other operations. The advantage of direct DRAV
 arithmetic is that it can be performed without the knowledge of a DRAV's
 encryption keys.
 
-\paragraph{Addition of Well--Formed DRAVs:} Two DRAVs $\widetilde{x} =
-(\widetilde{x_l}, \widetilde{x_r})$ and $\widetilde{y} = (\widetilde{y_l},
-\widetilde{y_r})$ can be added componentwise to $\widetilde{z} =
-\left(\widetilde{x_1} + \widetilde{y_1}, \widetilde{x_2} +
+\begin{lem}
+  \label{lem:DRAV-add}
+
+The addition of well--formed DRAVs leads to a well--formed DRAV:
+$\widetilde{x} = (\widetilde{x_l}, \widetilde{x_r})$ and $\widetilde{y} =
+(\widetilde{y_l}, \widetilde{y_r})$ can be added componentwise to $\widetilde{z}
+= \left(\widetilde{x_1} + \widetilde{y_1}, \widetilde{x_2} +
 \widetilde{y_2}\right)$. The encryption keys for $\widetilde{z}$ will be
 $(\alpha_l, \alpha_r)$ and $(\beta_1 + \beta_3, \beta_2 + \beta_4)$ assuming
 $\widetilde{x}$ was encrypted with $(\alpha_l, \alpha_r)$ and $(\beta_1,
 \beta_2)$ and $y$ was encrypted with $(\alpha_l, \alpha_r)$ and $(\beta_3,
 \beta_4)$.
 
-\subparagraph{Proof:} From ($\widetilde{x} = \left(\alpha_l \cdot x + \beta_1,
+\end{lem}
+
+\begin{proof}
+
+From ($\widetilde{x} = \left(\alpha_l \cdot x + \beta_1,
 \alpha_r \cdot x + \beta_2\right)$, $\widetilde{y} = \left(\alpha_l \cdot x +
 \beta_3, \alpha_r \cdot x + \beta_4\right)$) it's obvious that: $\widetilde{z} =
 \left(\alpha_l \cdot (x+y) + (\beta_1 + \beta_3), \alpha_r \cdot (x+y) +
 (\beta_2 + \beta_4)\right)$ and $\widetilde{z}$ is well--formed.
 
-\paragraph{Addition of Non--Well--Formed DRAVs:} It's of particular interest the
-following property holds: $\forall \widetilde{x}: \widetilde{x} + \bot = \bot
-+ \widetilde{x} = \bot$. Let $\widetilde{\chi}$ be a non--well--formed DRAV,
-so: $\widetilde{\chi} = (\alpha_l \cdot \chi + \beta_3 + \Delta_l, \alpha_r
-\cdot \chi + \beta_4 + \Delta_r)$. The component--wise addition
-$\widetilde{\nu}$ of $\widetilde{\chi}$ to any well--formed $\widetilde{x} =
-(\alpha_l \cdot x + \beta_1, \alpha_r \cdot x + \beta_2)$ is $\widetilde{\nu} =
-(\alpha_l \cdot (x+\chi) + (\beta_1+\beta_3) + \Delta_l, \alpha_r \cdot (x+\chi)
-+ (\beta_2+\beta_4) + \Delta_r)$. Using the universal decoding function $D$, the
-value of $\chi$ is $\chi = D(\widetilde{\chi}) = (x + \chi +
-\frac{\Delta_l}{\alpha_l}, x + \chi + \frac{\Delta_r}{\alpha_r})$. So: $\forall
-(\Delta_r, \Delta_l) \in K \setminus \{(0, 0)\} \wedge \frac{\Delta_l}{\alpha_l}
-\neq \frac{\Delta_r}{\alpha_r}: D(\widetilde{\chi}) = \bot$. Since the
-encryption keys are not known to an attacker, $\frac{\Delta_l}{\alpha_l} \neq 0
-\wedge \frac{\Delta_r}{\alpha_r}$ hold except for a negligible probability if
-$\Delta_r \neq 0 \vee \Delta_r \neq 0$ and that's the property for being forged
-(non--well--formed) which was the assumption. Trivially $\bot + \bot = \bot$ by
-a similar argument.
+\end{proof}
+
+\begin{lem}
+  \label{lem:DRAV-add-bad}
+
+The addition to a non--well--formed DRAV leads to a non--well--formed DRAV. It's
+of particular interest the following property holds: $\forall \widetilde{x}:
+\widetilde{x} + \bot = \bot + \widetilde{x} = \bot$.
+
+\end{lem}
+
+\begin{proof}
+
+Let $\widetilde{\chi}$ be a
+non--well--formed DRAV, so: $\widetilde{\chi} = (\alpha_l \cdot \chi + \beta_3 +
+\Delta_l, \alpha_r \cdot \chi + \beta_4 + \Delta_r)$. The component--wise
+addition $\widetilde{\nu}$ of $\widetilde{\chi}$ to any well--formed
+$\widetilde{x} = (\alpha_l \cdot x + \beta_1, \alpha_r \cdot x + \beta_2)$ is
+$\widetilde{\nu} = (\alpha_l \cdot (x+\chi) + (\beta_1+\beta_3) + \Delta_l,
+\alpha_r \cdot (x+\chi) + (\beta_2+\beta_4) + \Delta_r)$. Using the universal
+decoding function $D$, the value of $\chi$ is $\chi = D(\widetilde{\chi}) = (x +
+\chi + \frac{\Delta_l}{\alpha_l}, x + \chi + \frac{\Delta_r}{\alpha_r})$. So:
+$\forall (\Delta_r, \Delta_l) \in K \setminus \{(0, 0)\} \wedge
+\frac{\Delta_l}{\alpha_l} \neq \frac{\Delta_r}{\alpha_r}: D(\widetilde{\chi}) =
+\bot$. Since the encryption keys are not known to an attacker,
+$\frac{\Delta_l}{\alpha_l} \neq 0 \wedge \frac{\Delta_r}{\alpha_r}$ hold except
+for a negligible probability if $\Delta_r \neq 0 \vee \Delta_r \neq 0$ and
+that's the property for being forged (non--well--formed) which was the
+assumption. Trivially $\bot + \bot = \bot$ by a similar argument.
+
+\end{proof}
+
+\begin{lem}
+
+  Without knowing the encryption keys, a non--well--formed DRAV is
+  indistiguishable from a well--formed DRAV.
+
+\end{lem}
+
+\begin{proof}
+
+  From Lemma \ref{lem:DRAV-random} we learn, that a well--formed DRAV only
+  consists of two values uniformly at random. From Lemma \ref{lem:DRAV-add-bad}
+  we learn that a non--well--formed DRAV only consists of uniform random, too.
+
+  \JWtodo{Hier nochmal überarbeiten, die Argumentation is nicht ganz richtig.}
+
+\end{proof}
 
 
 % INDIRECT DRAV ARITHMETIC
