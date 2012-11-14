@@ -19,7 +19,7 @@ is rather cumbersome to understand without grasping the overall picture.
 
 The ultimate goal is to obliviously evaluate a polynomial by two mutual
 distrusting parties. Informally, that is evaluating $f(x) = \sum a_ix^i$ where
-the first party chooses $f(x)$ and the second party chooses $x$. But neither
+the first party chooses $f$ and the second party chooses $x$. But neither
 party should learn the choice of the other party. The naive and simple solution
 is to instruct a trusted third party to evaluate the polynomial---provided by
 the first party---at the grid point $x$ provided by the second party.
@@ -40,7 +40,7 @@ final evaluated value.
 The approach pursued here is to divide the circuit that equals the overall
 function to smaller sub--circuits. Each sub--circuit can be composed of
 arithmetic gates and other sub--circuts. \JWpTwo{} has to evaluate each
-sub--circuit to an intermediate value. \JWpTwo{} has to remember all
+sub--circuit to an intermediate value. \JWpTwo{} has to store all
 intermediate values since they are used to compute the following sub--circuits.
 Whenever one sub--circuit $A$ contains a node that is another sub--circuit $B$,
 this node gets replaced by the intermediate output value of $B$ before $A$ can
@@ -60,11 +60,11 @@ destroyed (formally represented as $\bot$). The value of the evaluated
 polynomial is a notable exception: It's not encrypted. To derive the final
 value, the output value of the last sub--circuit undergoes a special procedure.
 For technical reasons both sides of the tuples are often syntactically divided
-in two intermediate values that semantically still represent the same
+to two intermediate values that semantically still represent the same
 intermediate value tuple.
 
 The overall process is very straightforward: \JWpOne{} analyzes the polynomial
-and transforms it to a circuit. This circuit is then divided to sub--circuits.
+and transforms it into a circuit. This circuit is then divided to sub--circuits.
 Usually, the sub--circuits are of maximal size. The next step is to set up the
 tamper--proof hardware token implementing the OAFE functionality. Then, the
 sub--circuits along with the OAFEs are transferred to \JWpTwo{} that evaluates
@@ -75,6 +75,8 @@ To simplify the analysis of the different parts and to demonstrate the
 modularity, special terms are used throughout in this thesis. A mapping from the
 informal terms used above and the terms used otherwise (and defined in the
 following chapters) follows:
+
+\JWtodo{Double- und Single-Dinger besser erklären}
 
 \begin{itemize}
 
@@ -641,10 +643,10 @@ at random (meaning $\bot$).
 
 This section describes the \JWdef{Oblivious Polynomial Evaluation}{OPE} of a
 univariate polynomial $f(x) = \sum_{i=1}^k a_ix^i$. First of all, the first
-party (\JWpOne{}) fixes the polynomial coefficients and transforms $f(x)$ to a
+party (\JWpOne{}) fixes the polynomial coefficients and transforms $f$ into a
 DRAC consisting of many DRAEs assigned to variables. The number of DRAEs will be
 in $O(n)$, $n$ being the number of arithmetic operations needed by evaluate
-$f(x)$ as usual. To securely evaluate the DRAC, the OAFE setup is calculated by
+$f$ as usual. To securely evaluate the DRAC, the OAFE setup is calculated by
 the first party. It's important that the first party accumulates all OAFE calls
 using the same variable to one OAFE call resulting in a vector. If the first
 party would provide more than one OAFE that is evaluated using some variable
