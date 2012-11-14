@@ -28,7 +28,20 @@ if [ "$1" = "-n" ]; then
     DIRECT=1
     shift
 fi
+if [ $# -lt 2 ]; then
+    echo "Usage: $0 POLY-FILE INPUT-ELEMENT"
+    exit 1
+fi
+POLYFILE="$1"
+INPUTELEM="$2"
+shift
+shift
+if [ ! -r "$POLYFILE" ]; then
+    echo "ERROR: Cannot read polynomial file '$POLYFILE'"
+    exit 1
+fi
 
+echo "Polynomial in file '$POLYFILE', input='$INPUTELEM'"
 function unbuffer() {
     stdbuf -i0 -o0 -e0 "$@"
 }
@@ -39,7 +52,7 @@ function run_component() {
     shift
     echo "$NAME: Starting"
     if [ $DIRECT -eq 1 ]; then
-        unbuffer dist/build/$NAME/$NAME
+        unbuffer dist/build/$NAME/$NAME "$@"
     else
         while read line; do
             echo "$NAME: $line"
@@ -56,13 +69,13 @@ set +e
 killall David Goliath Token &> /dev/null
 set -e
 
-run_component_bg Goliath "$@"
+run_component_bg Goliath "$POLYFILE" "$@"
 GPID=$!
 sleep 0.2
 run_component_bg Token "$@"
 TPID=$!
 sleep 0.5
-run_component_bg David "$@"
+run_component_bg David "$INPUTELEM" "$@"
 DPID=$!
 
 echo $DPID

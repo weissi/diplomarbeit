@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 module Main where
 
 -- # STDLIB
@@ -9,6 +10,7 @@ import Control.Exception.Base (finally, catch, IOException)
 import Control.Monad (liftM, when, void)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.STM (atomically)
+import System.Environment (getArgs)
 
 -- # SITE PACKAGES
 import Control.Concurrent.STM.TBMChan (TBMChan, newTBMChan, closeTBMChan)
@@ -159,7 +161,14 @@ type DieCommand = String -> IO ()
 main :: IO ()
 main =
     do putStrLn "DAVID START"
-       let varMap = M.fromList [(T.pack "x", 1)]
+       args <- getArgs
+       let inputArg =
+             case args of
+               [x] -> x
+               _ -> error $ "Usage: David INPUT-ELEMENT    # found: " ++
+                            show args
+       let !inputElement = read inputArg
+       let varMap = M.fromList [(T.pack "x", inputElement)]
        cRequests <- atomically $ newTBMChan _ARE_EVAL_CHAN_SIZE_
        cResponses <- atomically $ newTBMChan _ARE_EVAL_CHAN_SIZE_
        vResult <- atomically newEmptyTMVar
