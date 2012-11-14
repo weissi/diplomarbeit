@@ -82,7 +82,7 @@ extern "C" {
     OpaqueElement ff_element_from_string(const char *s) {
         check_init();
         GF2E *e = allocGF2E();
-        stringstream ss(s);
+        std::istringstream ss(s);
         ss >> *e;
         return (OpaqueElement)e;
     }
@@ -90,7 +90,7 @@ extern "C" {
     const char *ff_element_to_string(OpaqueElement opaque_e) {
         check_init();
         GF2E *e = (GF2E *)opaque_e;
-        stringstream ss("");
+        std::ostringstream ss("");
         ss << *e;
         ss.clear();
 

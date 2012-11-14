@@ -112,6 +112,40 @@ test_representation2Pow256Minus1 =
            exp = "[1" ++ (concat $ replicate 254 " 1") ++ " 1]"
        assertEqual exp act
 
+test_readsPrecEmpty :: IO ()
+test_readsPrecEmpty =
+    do let exp = [] :: [(Element, String)]
+       assertEqual exp (readsPrec 5 "")
+
+test_readsPrecTrailing :: IO ()
+test_readsPrecTrailing =
+    do let exp1 = [(zero, "[]")] :: [(Element, String)]
+           exp2 = [(one, "[]")] :: [(Element, String)]
+           exp3 = [(one, "HELLO WORLD!")] :: [(Element, String)]
+           exp4 = [(one, "")] :: [(Element, String)]
+       assertEqual exp1 (readsPrec 5 "[][]")
+       assertEqual exp2 (readsPrec 5 "[1][]")
+       assertEqual exp3 (readsPrec 5 "[1]HELLO WORLD!")
+       assertEqual exp4 (readsPrec 5 "[1]")
+
+test_readsPrecBad :: IO ()
+test_readsPrecBad =
+    do let exp = [] :: [(Element, String)]
+           tooLong = "[1" ++ (concat $ replicate 255 " 1") ++ " 1]"
+       assertEqual exp (readsPrec 5 "[")
+       assertEqual exp (readsPrec 5 "[0")
+       assertEqual exp (readsPrec 5 "[1")
+       assertEqual exp (readsPrec 5 "[2]")
+       assertEqual exp (readsPrec 5 "[ 0 1]")
+       assertEqual exp (readsPrec 5 "[0 1 ]")
+       assertEqual exp (readsPrec 5 "[0  1]")
+       assertEqual exp (readsPrec 5 "0 1]")
+       assertEqual exp (readsPrec 5 "][")
+       assertEqual exp (readsPrec 5 "][]")
+       assertEqual exp (readsPrec 5 "[[]")
+       assertEqual exp (readsPrec 5 "")
+       assertEqual exp (readsPrec 5 tooLong)
+
 prop_readParsesShow :: Element -> Bool
 prop_readParsesShow e = e == (f2Pow256FromString (show e))
 

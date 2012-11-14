@@ -13,6 +13,7 @@ import Foreign.Storable (Storable(..))
 import Foreign.Ptr (Ptr, castPtr)
 import Control.Monad.CryptoRandom (CRandom(..))
 import Crypto.Random (CryptoRandomGen(..))
+import Text.Regex (Regex, mkRegex, matchRegex)
 
 import qualified Math.FiniteFields.Foreign.FFInterface as FFI
 
@@ -24,6 +25,9 @@ binaryOp op (F2Pow256 !l) (F2Pow256 !r) =
    let result = l `op` r
     in result `seq` F2Pow256 result
 
+_READ_REGEX_ :: Regex
+_READ_REGEX_ = mkRegex "^(\\[([01]( [01]){0,255})?\\])"
+
 instance Field F2Pow256 where
     invert = F2Pow256 . FFI.ffInvertElement . unF2Pow256
     one = fromIntegerF2Pow256 1
@@ -33,7 +37,15 @@ instance Show F2Pow256 where
     show = FFI.ffElementToString . unF2Pow256
 
 instance Read F2Pow256 where
-    readsPrec _ value = [((F2Pow256 . FFI.ffElementFromString) value, "")]
+    readsPrec _ str =
+        case matchRegex _READ_REGEX_ str of
+          Nothing -> []
+          Just xs ->
+             case xs of
+              [] -> []
+              (value:_) ->
+                 let rest = drop (length value) str
+                  in [((F2Pow256 . FFI.ffElementFromString) value, rest)]
 
 instance Num F2Pow256 where
     (+) = binaryOp FFI.ffAddElements
