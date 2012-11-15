@@ -89,7 +89,7 @@ prettyPrintRAE (RAE muls adds c) =
      in "RAE\n" ++
             showSubList "M: " muls ++
             showSubList "A: " adds ++
-            show c ++ "\n"
+            showSubList "C: " [c]  ++ "\n"
 
 -- | /R/andomized /A/ffine /C/ircuit fragment.
 type RACFragment el = (VariableName, RAE OAFEReference el)
