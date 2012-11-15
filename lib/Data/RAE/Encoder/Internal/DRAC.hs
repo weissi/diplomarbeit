@@ -295,12 +295,12 @@ freshVar =
        lift $ put (n+1)
        return $ "t" `T.append` T.pack (show n)
 
-exprToDRAC' :: (CryptoRandomGen g, Field el, CRandom el)
-          => DualKey el
-          -> Map VariableName (DualKey el)
-          -> Expr el
-          -> (DRACGenMonad g el) (DRAE el)
-exprToDRAC' skp initDkps expr =
+exprToDRAE :: (CryptoRandomGen g, Field el, CRandom el)
+           => DualKey el
+           -> Map VariableName (DualKey el)
+           -> Expr el
+           -> (DRACGenMonad g el) (DRAE el)
+exprToDRAE skp initDkps expr =
     case expr of
       Op op exprL exprR ->
           case op of
@@ -310,8 +310,8 @@ exprToDRAC' skp initDkps expr =
                      ) of
                   (Just peL, Just peR) ->
                       draeEncodeAddRnd skp peL peR
-                  _ -> do l <- exprToDRAC' skp initDkps exprL
-                          r <- exprToDRAC' skp initDkps exprR
+                  _ -> do l <- exprToDRAE skp initDkps exprL
+                          r <- exprToDRAE skp initDkps exprR
                           draeEncodeDRAEAddRnd skp l r
             Minus -> error "DRAE compiler: minus not implemented"
             Times ->
@@ -320,8 +320,8 @@ exprToDRAC' skp initDkps expr =
                      ) of
                   (Just peL, Just peR) ->
                       draeEncodeMulRnd skp peL peR
-                  _ -> do l <- exprToDRAC' skp initDkps exprL
-                          r <- exprToDRAC' skp initDkps exprR
+                  _ -> do l <- exprToDRAE skp initDkps exprL
+                          r <- exprToDRAE skp initDkps exprR
                           varL <- freshVar
                           varR <- freshVar
                           encVarL <- putDRAE l varL
@@ -400,9 +400,7 @@ exprToDRAC g expr =
                 dkps <- mapM genDynamicKey initVars
                 let initialKeys = M.fromList dkps
                 mapM_ (initialVarDRAE skp) dkps
-                zDRAE <- exprToDRAC' skp
-                                   initialKeys
-                                   expr
+                zDRAE <- exprToDRAE skp initialKeys expr
                 lift $ tell $ DL.singleton (_SPECIAL_VAR_PRE_OUT_, zDRAE)
                 let (DRAE (_, dkp) _ _) = zDRAE
                 finalDRAE skp dkp _SPECIAL_VAR_ADDED_PRE_OUT_
