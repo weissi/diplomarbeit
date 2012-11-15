@@ -293,7 +293,7 @@ freshVar :: (CryptoRandomGen g, Field el)
 freshVar =
     do n <- lift get
        lift $ put (n+1)
-       return $ "t" `T.append` T.pack (show n)
+       return $ "_t" `T.append` T.pack (show n)
 
 exprToDRAE :: (CryptoRandomGen g, Field el, CRandom el)
            => DualKey el
