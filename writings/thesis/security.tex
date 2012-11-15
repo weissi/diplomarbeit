@@ -131,15 +131,18 @@ The regular processing phase starts as soon as the setup phase is terminated.
 
 \begin{itemize}
 
+  \item The ideal functionality is used to evaluate the polynomial using
+    \JWpTwo{}'s intercepted input. The evaluated result is named $y$ in the
+    following steps.
+
   \item The final step analyzes the variable \JWcode{cheated} and modifies the
     final OAFE accordingly. If \JWcode{cheated $=$ $true$} modify the final OAFE
-    to evaluate to uniform randomness (e.g. an affine function $0 \cdot x + r$
-    where $r$ is fresh, uniform randomness).  If \JWcode{cheated $=$ $false$},
-    the ideal functionality is used to evaluate the polynomial using \JWpTwo{}'s
-    intercepted input. Afterwards, the final OAFE gets modifies such
-    that evaluating the next step honestly evaluates to the evaluated
-    polynomial's result (e.g. by an affine function $0 \cdot x + y$ where $y$ is
-    the evaluated polynomial's value.
+    to evaluate to a value at random but unequal to the real result. (e.g. an
+    affine function $0 \cdot x + y + r$ where $r \in K \setminus \{0\}$ is
+    fresh, uniform randomness). If \JWcode{cheated $=$ $false$}, the final OAFE
+    gets modified such that evaluating the next step honestly evaluates to the
+    evaluated polynomial's result (e.g. by an affine function $0 \cdot x + y$
+    where $y$ is the evaluated polynomial's value.
 
   \item Unhalt the reference system to allow $\mathcal{D}^C$ to fetch the final
     result.
@@ -193,7 +196,8 @@ Use the simulator from chapter \ref{sec:simulator-david}. Since everything
 except the last value that gets transmitted to \JWpTwo{} is a DRAV, it's
 uniformly at random because of the ever--changing dynamic keys $(\beta, \beta')$
 (see Lemma \ref{lem:DRAV-random}). The last value is---depending on the
-honestness---either uniform random, too or the final value.
+honesty---either the desired evaluated value or a value certainly unequal to
+that.
 
 
 % CORRUPTED GOLIATH
