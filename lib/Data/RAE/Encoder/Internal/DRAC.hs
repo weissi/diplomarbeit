@@ -107,11 +107,11 @@ draeEncodeMul :: forall el. Field el
 draeEncodeMul skp@(!skL, !skR) !x1 !x2 !r1 !r2 !r3 !r4 !r5 !r6 !r7 !r8 =
     let !le1L = decodeAndApplyL skp skL      x1 (-r1)
         !le2L = decodeAndApplyR skp (skL*r2) x1 r3
-        !le3L = decodeAndApplyL skp 1        x2 (-r2)
+        !le3L = decodeAndApplyL skp one      x2 (-r2)
         !le4L = decodeAndApplyR skp r1       x2 r4
         !le1R = decodeAndApplyR skp skR      x1 (-r5)
         !le2R = decodeAndApplyL skp (skR*r6) x1 r7
-        !le3R = decodeAndApplyR skp 1        x2 (-r6)
+        !le3R = decodeAndApplyR skp one      x2 (-r6)
         !le4R = decodeAndApplyL skp r5       x2 r8
         !dkpL = r1*r2+r3+r4
         !dkpR = r5*r6+r7+r8
@@ -259,8 +259,8 @@ draeEncodePrimaryExpr skp@(!skpL, !skpR) e !r1 !r2 =
       DualVar dkp v ->
           DRAE (skp, dkp)
                DL.empty
-               (DL.singleton ( LinearExpr 1 (leftVar v) 0
-                             , LinearExpr 1 (rightVar v) 0
+               (DL.singleton ( LinearExpr one (leftVar v) zero
+                             , LinearExpr one (rightVar v) zero
                              )
                )
 
@@ -347,7 +347,7 @@ finalDRAE (skpL, skpR) (dkpL, dkpR) varName =
            finalDK = dkpL + dkpR
            finalSKinv = invert finalSK
            decodedLE = LinearExpr finalSKinv varName (-finalDK * finalSKinv)
-       return $ DRAE ((1,1), (0,0))
+       return $ DRAE ((one, one), (zero, zero))
                      DL.empty
                      (DL.singleton (decodedLE, decodedLE))
 
@@ -384,7 +384,7 @@ genSkp :: (CryptoRandomGen g, Field el, CRandom el)
 genSkp =
     do skpL <- getRandomInvertibleElement
        skpR <- getRandomInvertibleElement
-       if skpL + skpR == 0 -- the sum has to be invertible, too
+       if skpL + skpR == zero -- the sum has to be invertible, too
           then genSkp
           else return (skpL, skpR)
 
