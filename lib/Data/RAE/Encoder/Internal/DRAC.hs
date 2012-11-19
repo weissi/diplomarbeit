@@ -117,13 +117,10 @@ draeEncodeMul skp@(!skL, !skR) !x1 !x2 !r1 !r2 !r3 !r4 !r5 !r6 !r7 !r8 =
         !dkpR = r5*r6+r7+r8
         bkp :: DualKeyPair el
         !bkp = (skp, (dkpL, dkpR))
-        in DRAE bkp                               -- < the DualKeyPair
-                (DL.fromList [ ((le1L, le1R)      -- / the multiplcative
-                             , (le3L, le3R))      -- \   terms
-                             ]
-                )
-                (DL.fromList [ (le2L, le2R)       -- / the additive
-                             , (le4L, le4R)       -- \    terms
+        in DRAE bkp                                         -- < the DualKeyPair
+                (DL.singleton ((le1L, le1R), (le3L, le3R))) -- < multiplc. term
+                (DL.fromList [ (le2L, le2R)                 -- / the additive
+                             , (le4L, le4R)                 -- \    terms
                              ]
                 )
 
