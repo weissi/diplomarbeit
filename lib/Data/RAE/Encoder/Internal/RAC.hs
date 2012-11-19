@@ -130,21 +130,27 @@ singularizeDRAE (DRAE _ draeMuls draeAdds) !oafeCfg =
                     -> (LinearExpr el, LinearExpr el)
                     -> (RAE OAFEReference el, OAFEConfigGen el)
         processMuls (rae, oac) !les =
-            case les of
-              (ConstLinearExpr clel, ConstLinearExpr cler) ->
-                  processAdds (rae, oac) (ConstLinearExpr (clel * cler))
-              (ConstLinearExpr clel, ler@(LinearExpr {})) ->
-                  let ler' = scalarMul ler clel
-                      (oaref, oac') = oafeReference oac ler'
-                   in (raeAddAddTerm rae oaref, oac')
-              (lel@(LinearExpr {}), ConstLinearExpr cler) ->
-                  let lel' = scalarMul lel cler
-                      (oaref, oac') = oafeReference oac lel'
-                   in (raeAddAddTerm rae oaref, oac')
-              (lel, ler) ->
-                  let (oarefl, oac')  = oafeReference oac  lel
-                      (oarefr, oac'') = oafeReference oac' ler
-                   in (raeAddMulTerm rae (oarefl, oarefr), oac'')
+            let -- | Turn a multiplication involving a scalar to an addition
+                -- because that's an ordinary linear expression.
+                processScalarMul :: Field el
+                                 => LinearExpr el
+                                 -> el
+                                 -> (RAE OAFEReference el, OAFEConfigGen el)
+                processScalarMul le el =
+                    let le' = scalarMul le el
+                        (oaref, oac') = oafeReference oac le'
+                     in (raeAddAddTerm rae oaref, oac')
+             in case les of
+                  (ConstLinearExpr clel, ConstLinearExpr cler) ->
+                      processAdds (rae, oac) (ConstLinearExpr (clel * cler))
+                  (ConstLinearExpr clel, ler@(LinearExpr {})) ->
+                      processScalarMul ler clel
+                  (lel@(LinearExpr {}), ConstLinearExpr cler) ->
+                      processScalarMul lel cler
+                  (lel, ler) ->
+                      let (oarefl, oac')  = oafeReference oac  lel
+                          (oarefr, oac'') = oafeReference oac' ler
+                       in (raeAddMulTerm rae (oarefl, oarefr), oac'')
         draeMulsList = DL.toList draeMuls
         draeAddsList = DL.toList draeAdds
         fstMul :: ((a, b), (c, d)) -> (a, c)
