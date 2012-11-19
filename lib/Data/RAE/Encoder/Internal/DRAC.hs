@@ -216,8 +216,11 @@ draeEncodeDRAEAdd skp
     let (dlDkpL, dlDkpR) = dlDkp
         (drDkpL, drDkpR) = drDkp
         dkp = (dlDkpL + drDkpL, dlDkpR + drDkpR)
-        _ = if (skp /= dlSkp) || (skp /= drSkp) then error "skps differ" else ()
-     in DRAE (skp, dkp) (dlMuls `DL.append` drMuls) (dlAdds `DL.append` drAdds)
+     in if (skp /= dlSkp) || (skp /= drSkp)
+           then error "skps differ"
+           else DRAE (skp, dkp)
+                     (dlMuls `DL.append` drMuls)
+                     (dlAdds `DL.append` drAdds)
 
 -- |@DRAE@ for a @DRAE@ addition getting randoms from generator
 draeEncodeDRAEAddRnd :: (Monad m, CryptoRandomGen g, Field el)
