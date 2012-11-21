@@ -652,7 +652,7 @@ $\widetilde{e} \in \mathcal{V}$ leads to:
 
 \noindent{}That leads to two possibilities: Either $E$ is well--formed or not.
 
-\paragraph{The DRAV $E$ is well--formed}
+\paragraph{The DRAVs $\widetilde{x}$ and $\widetilde{y}$ are well--formed}
 
 This leads to a DRAV encoding the desired result $E(x \cdot y)$. The resulting
 encryption keys for $\widetilde{e}$ are $\alpha_l$, $\alpha_r$ (static keys) and
@@ -668,10 +668,17 @@ $\beta = r_1r_2 + r_3 + r_4$, $\beta' = r_5r_6 + r_7 + r_8$ (dynamic keys).
   \end{pmatrix} \\
 \end{align*}
 
-\paragraph{The DRAV $E$ is non--well--formed} This leads to a non--well--formed
-DRAV whose both components are uniformly at random.
+\paragraph{At least one of the DRAVs $\widetilde{x}$ and $\widetilde{y}$ is
+non--well--formed} This leads to a non--well--formed DRAV $\widetilde{e}$ whose
+both components are uniformly at random.
 
 \begin{align*}
+  &
+  \Delta_1 \neq 0 \vee \Delta_2 \neq 0 \vee
+  \Delta_3 \neq 0 \vee \Delta_4 \neq 0
+  \Rightarrow \\
+  %
+  &
   \widetilde{e} =
   \begin{pmatrix}
     \alpha_l(xy) + (r_1r_2 + r_3 + r_4)
