@@ -194,12 +194,18 @@ tuple $\widetilde{v}$ are uniformly at random, too. Decoding is (most of the
 time using the universal decoding function $D(\widetilde{v})$):
 
 \begin{align*}
-  v = D(\widetilde{v}) =
+  %
+\begin{pmatrix}v_l\\v_r\end{pmatrix} &=
+\begin{pmatrix}D_l(\widetilde{v})\\D_r(\widetilde{v})\end{pmatrix} =
+  \begin{pmatrix}
+    \frac{\widetilde{v_l} - \beta}{\alpha_l}\\
+    \frac{\widetilde{v_r} - \beta'}{\alpha_r}
+  \end{pmatrix}\\
+  %
+  v &= D(\widetilde{v}) =
   \left\{
     \begin{array}{l l}
-      \frac{\widetilde{v_l} - \beta}{\alpha_l} & \quad
-      \text{if}~\frac{\widetilde{v_l} - \beta}{\alpha_l} =
-      \frac{\widetilde{v_r} - \beta'}{\alpha_r}\\
+      v_l & \quad \text{if}~v_l = v_r\\
       \bot & \quad \text{otherwise ($\widetilde{v}$ is non--well--formed)}\\
     \end{array}\right.
 \end{align*}
@@ -509,8 +515,8 @@ not. Obviously, the same argument holds for pre--evaluated DRAEs.
 
 The indirect addition of $\widetilde{z} = \widetilde{x_1} + \widetilde{x_2}$ is
 $\widetilde{z} =
-\left( E\left(D(\widetilde{x_1}) + D(\widetilde{y_1})\right),
-       E\left(D(\widetilde{x_2}) + D(\widetilde{y_2})\right)
+\left( E\left(D_l(\widetilde{x}) + D_l(\widetilde{y})\right),
+       E\left(D_r(\widetilde{x}) + D_r(\widetilde{y})\right)
 \right)$
 (see chapter \ref{sec:indirect-DRAV-arithmetic}).
 Since $E(x)$ and $D(x)$ are both linear functions, $E\left(D(\ldots)
@@ -543,92 +549,148 @@ Null prüfen}
   %
   E & = \Bigg(\left\{\left(
             \begin{pmatrix}
-              \alpha_l \cdot D(\widetilde{x_1}) - r_1 \\
-              \alpha_r \cdot D(\widetilde{x_2}) - r_5
+              \alpha_l \cdot D_l(\widetilde{x}) - r_1 \\
+              \alpha_r \cdot D_r(\widetilde{x}) - r_5
             \end{pmatrix},
             \begin{pmatrix}
-              1        \cdot D(\widetilde{y_1}) - r_2 \\
-              1        \cdot D(\widetilde{y_2}) - r_6
+              1        \cdot D_l(\widetilde{y}) - r_2 \\
+              1        \cdot D_r(\widetilde{y}) - r_6
             \end{pmatrix}
         \right)\right\}, \\
     &   \qquad\bigg\{
         \begin{pmatrix}
-            \alpha_lr_2 \cdot D(\widetilde{x_2}) + r_3 \\
-            \alpha_rr_6 \cdot D(\widetilde{x_1}) + r_7
+            \alpha_lr_2 \cdot D_r(\widetilde{x}) + r_3 \\
+            \alpha_rr_6 \cdot D_l(\widetilde{x}) + r_7
           \end{pmatrix} \\
     &  \qquad,
         \ \begin{pmatrix}
-            r_1        \cdot D(\widetilde{y_2}) + r_4 \\
-            r_5        \cdot D(\widetilde{y_1}) + r_8
+            r_1        \cdot D_r(\widetilde{y}) + r_4 \\
+            r_5        \cdot D_l(\widetilde{y}) + r_8
           \end{pmatrix}
         \bigg\}\Bigg) \\
 \end{align*}
 
-Decoding (see chapter \ref{def:DRAE}) a well--formed $E$ to
+Decoding (see chapter \ref{def:DRAE}) a possibly non--well--formed $E$ to
 $\widetilde{e} \in \mathcal{V}$ leads to:
 
 \begin{align*}
   \widetilde{e} & =
   \begin{pmatrix}
-    (\alpha_l \cdot D(\widetilde{x_1})-r_1) \cdot
-    (1        \cdot D(\widetilde{y_1})-r_2) \\
-    (\alpha_r \cdot D(\widetilde{x_2})-r_5) \cdot
-    (1        \cdot D(\widetilde{y_2})-r_6)
+    (\alpha_l D_l(\widetilde{x})-r_1)
+    (         D_l(\widetilde{y})-r_2) \\
+    (\alpha_r D_r(\widetilde{x})-r_5)
+    (         D_r(\widetilde{y})-r_6)
   \end{pmatrix}
   +
   \begin{pmatrix}
-    \alpha_lr_2 \cdot D(\widetilde{x_2}) + r_3 +
-    r_l         \cdot D(\widetilde{y_2}) + r_4 \\
-    r_2         \cdot D(\widetilde{x_1}) + r_7 +
-    r_5         \cdot D(\widetilde{y_1}) + r_8
+    \alpha_lr_2 D_r(\widetilde{x}) + r_3 +
+    r_1         D_r(\widetilde{y}) + r_4 \\
+    \alpha_rr_6 D_l(\widetilde{x}) + r_7 +
+    r_5         D_l(\widetilde{y}) + r_8
   \end{pmatrix} \\
 %
   & =
   \begin{pmatrix}
-    \alpha_l \cdot D(\widetilde{x_1}) \cdot D(\widetilde{y_1})
-    -\alpha_lr_2 \cdot D(\widetilde{x_1})
-    -r_1 \cdot D(\widetilde{y_1})
+    \alpha_l     D_l(\widetilde{x}) D_l(\widetilde{y})
+    -\alpha_lr_2 D_l(\widetilde{x})
+    -r_1         D_l(\widetilde{y})
     +r_1r_2 \\
-    \alpha_r \cdot D(\widetilde{x_2}) \cdot D(\widetilde{y_2})
-    -\alpha_rr_6 \cdot D(\widetilde{x_2})
-    -r_5 \cdot D(\widetilde{y_2})
-    + r_5r_6
-    + r_5r_6 + r_7 + r_8
+    \alpha_r     D_r(\widetilde{x}) D_r(\widetilde{y})
+    -\alpha_rr_6 D_r(\widetilde{x})
+    -r_5         D_r(\widetilde{y})
+    +r_5r_6
   \end{pmatrix} \\
   &\ \ \ +
   \begin{pmatrix}
-    \alpha_lr_2 \cdot D(\widetilde{x_2}) + r_3 +
-    r_l         \cdot D(\widetilde{y_2}) + r_4 \\
-    r_2         \cdot D(\widetilde{x_1}) + r_7 +
-    r_5         \cdot D(\widetilde{y_1}) + r_8
+    \alpha_lr_2 D_r(\widetilde{x}) + r_3 +
+    r_1         D_r(\widetilde{y}) + r_4 \\
+    \alpha_rr_6 D_l(\widetilde{x}) + r_7 +
+    r_5         D_l(\widetilde{y}) + r_8
   \end{pmatrix} \\
 %
-  & \stackrel{*}{=}
+  & =
   \begin{pmatrix}
-    \alpha_l \cdot D(\widetilde{x_1}) \cdot D(\widetilde{y_1})
-    + r_1r_2 + r_3 + r_4 \\
-    \alpha_r \cdot D(\widetilde{x_2}) \cdot D(\widetilde{y_2})
-    + r_5r_6 + r_7 + r_8
+    \alpha_l     \left(x + \frac{\Delta_1}{\alpha_l}\right)
+                 \left(y + \frac{\Delta_3}{\alpha_l}\right)
+    -\alpha_lr_2 \left(x + \frac{\Delta_1}{\alpha_l}\right)
+    -r_1         \left(y + \frac{\Delta_3}{\alpha_l}\right)
+    +r_1r_2 \\
+    \alpha_r     \left(x + \frac{\Delta_2}{\alpha_r}\right)
+                 \left(y + \frac{\Delta_4}{\alpha_r}\right)
+    -\alpha_rr_6 \left(x + \frac{\Delta_2}{\alpha_r}\right)
+    -r_5         \left(y + \frac{\Delta_4}{\alpha_r}\right)
+    + r_5r_6
   \end{pmatrix} \\
-%
-  & \stackrel{*}{=}
+  &\ \ \ +
   \begin{pmatrix}
-    \alpha_l \cdot xy + (r_1r_2 + r_3 + r_4) \\
-    \alpha_r \cdot xy + (r_5r_6 + r_7 + r_8)
+    \alpha_lr_2  \left(x + \frac{\Delta_2}{\alpha_r}\right) + r_3 +
+    r_1          \left(y + \frac{\Delta_4}{\alpha_r}\right) + r_4 \\
+    \alpha_rr_6  \left(x + \frac{\Delta_1}{\alpha_l}\right) + r_7 +
+    r_5          \left(y + \frac{\Delta_3}{\alpha_l}\right) + r_8
   \end{pmatrix} \\
 %
-  &\text{* Because $E$ is well--formed: $x = D(\widetilde{x_1}) =
-D(\widetilde{x_2}) \neq \bot$ and $y = D(\widetilde{y_1}) = D(\widetilde{y_2})
-\neq \bot$ }
+  & =
+  \begin{pmatrix}
+    \alpha_l(xy) + (r_1r_2 + r_3 + r_4)
+    + \Delta_3x + \Delta_1y
+    + \frac{\Delta_1\Delta_3}{\alpha_l}
+    - \Delta_1r_2
+    + \frac{\Delta_2\alpha_lr_2}{\alpha_r}
+    - \frac{\Delta_3r_1}{\alpha_l}
+    + \frac{\Delta_4r_1}{\alpha_r}
+    \\
+    \alpha_r(xy) + (r_5r_6 + r_7 + r_8)
+    + \Delta_4x + \Delta_2y
+    + \frac{\Delta_2\Delta_4}{\alpha_l}
+    + \frac{\Delta_1\alpha_lr_6}{\alpha_r}
+    - \Delta_2r_6
+    + \frac{\Delta_3r_5}{\alpha_r}
+    - \frac{\Delta_4r_5}{\alpha_l}
+  \end{pmatrix} \\
 %
 \end{align*}
 
-\noindent{}The resulting encryption keys of $e$ are $\alpha_l$, $\alpha_r$
-(static keys) and $\beta = r_1r_2 + r_3 + r_4$, $\beta' = r_5r_6 + r_7 + r_8$
-(dynamic keys).
+\noindent{}That leads to two possibilities: Either $E$ is well--formed or not.
 
-\JWtodo{Multiplication of non--well--formed DRAEs}
+\paragraph{The DRAV $E$ is well--formed}
 
+This leads to a DRAV encoding the desired result $E(x \cdot y)$. The resulting
+encryption keys for $\widetilde{e}$ are $\alpha_l$, $\alpha_r$ (static keys) and
+$\beta = r_1r_2 + r_3 + r_4$, $\beta' = r_5r_6 + r_7 + r_8$ (dynamic keys).
+
+\begin{align*}
+  %
+  \Delta_1=\Delta_2=\Delta_3=\Delta_4=0 \Rightarrow
+  \widetilde{e} =
+  \begin{pmatrix}
+    \alpha_l(xy) + (r_1r_2 + r_3 + r_4) \\
+    \alpha_r(xy) + (r_5r_6 + r_7 + r_8)
+  \end{pmatrix} \\
+\end{align*}
+
+\paragraph{The DRAV $E$ is non--well--formed} This leads to a non--well--formed
+DRAV whose both components are uniformly at random.
+
+\begin{align*}
+  \widetilde{e} =
+  \begin{pmatrix}
+    \alpha_l(xy) + (r_1r_2 + r_3 + r_4)
+    + \Delta_3x + \Delta_1y
+    + \frac{\Delta_1\Delta_3}{\alpha_l}
+    - \Delta_1r_2
+    + \frac{\Delta_2\alpha_lr_2}{\alpha_r}
+    - \frac{\Delta_3r_1}{\alpha_l}
+    + \frac{\Delta_4r_1}{\alpha_r}
+    \\
+    \alpha_r(xy) + (r_5r_6 + r_7 + r_8)
+    + \Delta_4x + \Delta_2y
+    + \frac{\Delta_2\Delta_4}{\alpha_l}
+    + \frac{\Delta_1\alpha_lr_6}{\alpha_r}
+    - \Delta_2r_6
+    + \frac{\Delta_3r_5}{\alpha_r}
+    - \frac{\Delta_4r_5}{\alpha_l}
+  \end{pmatrix} \\
+\end{align*}
 
 %
 % DUAL RANDOMIZED AFFINE CIRCUITS
