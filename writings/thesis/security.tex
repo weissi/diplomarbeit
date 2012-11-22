@@ -192,12 +192,71 @@ model.
 % CORRUPTED DAVID
 \JWlthree{Corrupted \JWpTwo{}}
 
-Use the simulator from chapter \ref{sec:simulator-david}. Since everything
-except the last value that gets transmitted to \JWpTwo{} is a DRAV, it's
-uniformly at random because of the ever--changing dynamic keys $(\beta, \beta')$
-(see Lemma \ref{lem:DRAV-random}). The last value is---depending on the
-honesty---either the desired evaluated value or a value certainly unequal to
-that.
+Using the simulator from chapter \ref{sec:simulator-david}, \JWpTwo{} will only
+ever see uniform randomness except for the result of the final OAFE which is the
+result of the overall evaluation. The final OAFE will either
+return the correctly calculated output or uniform randomness.
+
+In the real model this is not different because a DRAV only consists of uniform
+randomness that is uncorrelated to any other DRAV (Lemma \ref{lem:DRAV-random}).
+Additionally a well--formed DRAV is indistinguishable from any non--well--formed
+DRAV (Lemma \ref{lem:DRAV-indistinguishable}). This proofs that the proposed
+protocol is perfectly secure against every passively corrupted \JWpTwo{}.
+
+An actively corrupted \JWpTwo{} has only the following five additional attack
+possibilities:
+
+\begin{enumerate}
+
+\item \label{av-ad:input} Forge the input value.
+
+\item \label{av-ad:DRAV} Forge one or more DRAVs.
+
+\item \label{av-ad:other-ops} Perform additional additions.
+
+\item \label{av-ad:less-ops} Perform less arithmetic operations
+  (additions/multiplications).
+
+\item \label{av-ad:last-OAFE} Forge the input to the last OAFE.
+
+\end{enumerate}
+
+
+The proposed protocol is secure against point \ref{av-ad:input} because this is
+the same as simply changing the input value. That is by definition not an attack
+but a free choice every \JWpTwo{} can take.
+
+The protocol is secure against point \ref{av-ad:DRAV} because an polynomial is a
+circuit with exactly one root, the output value. The value of every node take
+part in the calculation of the final result. Since DRAV forging is equivalent to
+calculation involving a wrong DRAV (Lemma \ref{lem:well-formed-fun-of-dec-fun})
+we only consider DRAV forging (non--well--formed DRAVs). The propagation of
+every non--well--formed DRAV to the final result is guaranteed because only two
+operations are defined: Multiplications and additions and both propagate
+non--well--formed operands: If one non--well--formed DRAV is an operand of a
+multiplication, the multiplication result is again a non--well--formed DRAV (see
+chapter \ref{sec:DRAE-multiplication}). The same argument holds for additions,
+additionally performed additions and additions not performed as requested
+(Lemmas \ref{lem:DRAV-add}, \ref{lem:DRAV-add-bad} and \ref{lem:wrong-add}).
+Therefore an attack attempt on a DRAV is equivalent to replacing the output
+value of the DRAE that has the DRAV as one of its inputs by uniform randomness.
+Since this has to propagate until the root of the tree (the result!), any
+attempt to forge a DRAV will result in uniform randomness.
+
+Since additionally performed additions are equivalent to additions involving
+unintended operands, every attempt to do so (point \ref{av-ad:other-ops}) is
+caught (see Lemma \ref{lem:wrong-add}).
+
+Since DRAV well--formedness is a function of the decryption function
+(\ref{lem:well-formed-fun-of-dec-fun}) performing less operations is not
+feasible without knowing the encryption keys. Since \JWpTwo{} is not in
+possession of the keys, point \ref{av-ad:less-ops} does not break the protocol.
+
+Finally, the protocol is perfectly secure against point \ref{av-ad:last-OAFE}
+because an attempt to cheat results in uniform randomness. In the case of
+the final OAFE it results in uniform randomness unequal the real result (see
+chapter \ref{sec:drav-final-decoding}).
+
 
 % CORRUPTED GOLIATH
 \JWlthree{Corrupted \JWpOne{}}

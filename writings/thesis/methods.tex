@@ -215,10 +215,9 @@ time using the universal decoding function $D(\widetilde{v})$):
 
   A party that is not in posession of the encrytion (dual) keys will not learn
   anything from a DRAV. A DRAV is a tuple consisting of two values uniformly at
-  random.
+  random that is uncorrelated to any other DRAV.
 
 \end{lem}
-
 \begin{proof}
 
   In a finite field, the addition of some value $r$ uniformly at random to
@@ -226,7 +225,8 @@ time using the universal decoding function $D(\widetilde{v})$):
   \beta$ and $\alpha_r \cdot v + \beta'$ are two values uniform at random if and
   only if $\beta$ and $\beta'$ are uniformly at random. Per definition of a
   DRAV, everytime a DRAV gets encoded, $\beta$ and $\beta'$ are fresh uniformly
-  distributed random values.
+  distributed random values. Trivially, a DRAV is uncorrelated to any other
+  DRAV.
 
 \end{proof}
 
@@ -315,9 +315,10 @@ non--well--formed to the other decoding function.
 
 
 \begin{lem}
+  \label{lem:DRAV-indistinguishable}
 
   Without knowing the encryption keys, a non--well--formed DRAV is
-  indistiguishable from a well--formed DRAV.
+  indistinguishable from a well--formed DRAV.
 
 \end{lem}
 \begin{proof}
@@ -328,7 +329,7 @@ non--well--formed to the other decoding function.
   function of the encryption keys used to eventually decrypt the DRAV. Since a
   party that is not in posession of the encryption keys cannot know the
   decryption function, well--formed and non--well--formed DRAVs are
-  indistiguishable for a party not in posession of the keys.
+  indistinguishable for a party not in posession of the keys.
 \end{proof}
 
 
@@ -358,7 +359,6 @@ $\widetilde{x}$ was encrypted with $(\alpha_l, \alpha_r)$ and $(\beta_1,
 \beta_4)$.
 
 \end{lem}
-
 \begin{proof}
 
 From ($\widetilde{x} = \left(\alpha_l \cdot x + \beta_1,
@@ -377,7 +377,6 @@ of particular interest the following property holds: $\forall \widetilde{x}:
 \widetilde{x} + \bot = \bot + \widetilde{x} = \bot$.
 
 \end{lem}
-
 \begin{proof}
 
 Let $\widetilde{\chi}$ be a
@@ -711,6 +710,7 @@ party in possession of the encryption keys.
 
 %Multiplication
 \JWlfour{Multiplication}
+\label{sec:DRAE-multiplication}
 
 As described in chapter \ref{def:DRAV}, DRAV cannot be multiplied directly.
 Therefore DRAVs have to be multiplied indirectly requiring additional OAFE
