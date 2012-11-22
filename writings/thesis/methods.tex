@@ -236,6 +236,100 @@ time using the universal decoding function $D(\widetilde{v})$):
 
 A DRAV $\widetilde{v}$ is well--formed iff $D(\widetilde{v}) \neq \bot$.
 Therefore, if $D(\widetilde{\chi}) = \bot$, $\chi$ is non--well-formed.
+Obviously the well--formedness of a DRAV depends on the encryption keys using
+which it gets decrypted. Decoding a well--formed DRAVs using any other decoding
+function will lead to $\bot$ because the well--formed DRAV looks
+non--well--formed to the other decoding function.
+
+\begin{lem}
+  \label{lem:well-formed-fun-of-dec-fun}
+
+  DRAV well--formedness is a function of the decryption function used to decrypt
+  it.
+
+\end{lem}
+\begin{proof}
+
+  Assuming two well--formed DRAVs $\widetilde{a}$ and $\widetilde{b}$. Both
+  DRAVs have their respective decoding function $D^a$ and $D^b$ and their
+  dynamic dual key (say $\beta_1$ and $\beta_2$ for $\widetilde{a}$ and
+  $\beta_3$ and $\beta_4$ for $\widetilde{b}$).
+
+  \begin{align*}
+    %
+    D^a(\widetilde{a}) &= D(\widetilde{a}) \qquad\text{(using $\widetilde{a}$'s
+    keys)}\\
+    %
+    D^b(\widetilde{b}) &= D(\widetilde{b}) \qquad\text{(using $\widetilde{b}$'s
+    keys)}\\
+    %
+    a &= D^a(\widetilde{a}) \hat{=}
+    \begin{pmatrix}
+      \frac{(\alpha_l \cdot a + \beta_1) - \beta_1}{\alpha_l}\\
+      \frac{(\alpha_r \cdot a + \beta_2) - \beta_2}{\alpha_r}\\
+    \end{pmatrix}
+    = a\\
+    %
+    a' &= D^a(\widetilde{b}')
+    \hat{=}
+    \begin{pmatrix}
+      \frac{(\alpha_l \cdot b + \beta_3) - \beta_1}{\alpha_l}\\
+      \frac{(\alpha_r \cdot b + \beta_4) - \beta_2}{\alpha_r}\\
+    \end{pmatrix}
+    \hat{=}
+    \begin{pmatrix}
+      b +
+      \frac{\beta_3 - \beta_1}{\alpha_l}\\
+      b +
+      \frac{\beta_4 - \beta_2}{\alpha_r}\\
+    \end{pmatrix}
+    = \bot\\
+    %
+    b &= D^b(\widetilde{b}) \hat{=}
+    \begin{pmatrix}
+      \frac{(\alpha_l \cdot b + \beta_3) - \beta_3}{\alpha_l}\\
+      \frac{(\alpha_r \cdot b + \beta_4) - \beta_4}{\alpha_r}\\
+    \end{pmatrix}
+    = b\\
+    %
+    b' &= D^b(\widetilde{a}')
+    \hat{=}
+    \begin{pmatrix}
+      \frac{(\alpha_l \cdot a + \beta_1) - \beta_3}{\alpha_l}\\
+      \frac{(\alpha_r \cdot a + \beta_2) - \beta_4}{\alpha_r}\\
+    \end{pmatrix}
+    \hat{=}
+    \begin{pmatrix}
+      a +
+      \frac{\beta_1 - \beta_3}{\alpha_l}\\
+      a +
+      \frac{\beta_2 - \beta_4}{\alpha_r}\\
+    \end{pmatrix}
+    = \bot\\
+    %
+  \end{align*}
+
+  As one can see decoding a well--formed DRAV using the wrong decoding function
+  leads to $\bot$.
+\end{proof}
+
+
+\begin{lem}
+
+  Without knowing the encryption keys, a non--well--formed DRAV is
+  indistiguishable from a well--formed DRAV.
+
+\end{lem}
+\begin{proof}
+
+  From Lemma \ref{lem:DRAV-random} we learn, that a well--formed DRAV only
+  consists of two values uniformly at random. From Lemma
+  \ref{lem:well-formed-fun-of-dec-fun} we learn, that well--formedness is a
+  function of the encryption keys used to eventually decrypt the DRAV. Since a
+  party that is not in posession of the encryption keys cannot know the
+  decryption function, well--formed and non--well--formed DRAVs are
+  indistiguishable for a party not in posession of the keys.
+\end{proof}
 
 
 % DIRECT DRAV ARITHMETIC
@@ -245,15 +339,18 @@ Therefore, if $D(\widetilde{\chi}) = \bot$, $\chi$ is non--well-formed.
 Direct DRAV arithmetic only supports addition ($+$) of two DRAVs. Indirect DRAV
 arithmetic has to be used for other operations. The advantage of direct DRAV
 arithmetic is that it can be performed without the knowledge of a DRAV's
-encryption keys.
+encryption keys. But (see Lemma \ref{lem:wrong-add}) the addition of DRAVs does
+not lead to additional information except when intented by a party in possession
+of the encryption keys.
 
 \begin{lem}
   \label{lem:DRAV-add}
 
-The addition of well--formed DRAVs leads to a well--formed DRAV:
-$\widetilde{x} = (\widetilde{x_l}, \widetilde{x_r})$ and $\widetilde{y} =
-(\widetilde{y_l}, \widetilde{y_r})$ can be added componentwise to $\widetilde{z}
-= \left(\widetilde{x_1} + \widetilde{y_1}, \widetilde{x_2} +
+Additions commissioned by a party in possession of the encryption keys of
+well--formed DRAVs lead to well--formed DRAV: $\widetilde{x} =
+(\widetilde{x_l}, \widetilde{x_r})$ and $\widetilde{y} = (\widetilde{y_l},
+\widetilde{y_r})$ can be added componentwise to $\widetilde{z} =
+\left(\widetilde{x_1} + \widetilde{y_1}, \widetilde{x_2} +
 \widetilde{y_2}\right)$. The encryption keys for $\widetilde{z}$ will be
 $(\alpha_l, \alpha_r)$ and $(\beta_1 + \beta_3, \beta_2 + \beta_4)$ assuming
 $\widetilde{x}$ was encrypted with $(\alpha_l, \alpha_r)$ and $(\beta_1,
@@ -302,21 +399,108 @@ assumption. Trivially $\bot + \bot = \bot$ by a similar argument.
 
 \end{proof}
 
-\begin{lem}
 
-  Without knowing the encryption keys, a non--well--formed DRAV is
-  indistiguishable from a well--formed DRAV.
+\begin{lem}
+  \label{lem:wrong-add}
+
+  The addition that was unintended by a party in possession of the encryption
+  keys will not reveal additional informaion. A party that is not in possession
+  of the keys but knows three well--formed DRAVs $\widetilde{a}$,
+  $\widetilde{b}$ and $\widetilde{c}$ that is commissioned to execute the
+  addition $\widetilde{y} = \widetilde{a} + \widetilde{b}$ cannot generate a
+  well--formed DRAV $\widetilde{y}' = \widetilde{a} + \widetilde{c}$.
 
 \end{lem}
 
 \begin{proof}
 
-  From Lemma \ref{lem:DRAV-random} we learn, that a well--formed DRAV only
-  consists of two values uniformly at random. From Lemma \ref{lem:DRAV-add-bad}
-  we learn that a non--well--formed DRAV only consists of uniform random, too.
+  Since every DRAV has per definition different dynamic keys the
+  component--wise addition of two DRAVs leads to a new dynamic key that is
+  characteristic for the addition intended by a party in possession of the
+  encruption keys.
 
-  \JWtodo{Hier nochmal überarbeiten, die Argumentation is nicht ganz richtig.}
+  Assuming there are three well--formed DRAVs $\widetilde{a}$, $\widetilde{b}$
+  and $\widetilde{c}$ and the party in possession of the keys commissiones any
+  other party to execute $\widetilde{y} = \widetilde{a} + \widetilde{b}$ but the
+  other party tries to illicitly execute $\widetilde{y}' = \widetilde{a} +
+  \widetilde{c}$:
 
+  \begin{align*}
+    %
+    \widetilde{a} &=
+    \begin{pmatrix}
+      \alpha_l \cdot a + \beta_1\\
+      \alpha_r \cdot a + \beta_2
+    \end{pmatrix}\\
+    %
+    \widetilde{b} &=
+    \begin{pmatrix}
+      \alpha_l \cdot b + \beta_3\\
+      \alpha_r \cdot b + \beta_4
+    \end{pmatrix}\\
+    %
+    \widetilde{c} &=
+    \begin{pmatrix}
+      \alpha_l \cdot c + \beta_5\\
+      \alpha_r \cdot c + \beta_6
+    \end{pmatrix}\\
+    %
+    \widetilde{y} &=
+    \begin{pmatrix}
+      \alpha_l \cdot a + \beta_1 + \alpha_l \cdot b + \beta_3\\
+      \alpha_r \cdot a + \beta_2 + \alpha_r \cdot b + \beta_4\\
+    \end{pmatrix} =
+    \begin{pmatrix}
+      \alpha_l \cdot (a+b) + (\beta_1 + \beta_3)\\
+      \alpha_r \cdot (a+b) + (\beta_2 + \beta_4)\\
+    \end{pmatrix}\\
+    %
+    \widetilde{y}' &=
+    \begin{pmatrix}
+      \alpha_l \cdot a + \beta_1 + \alpha_l \cdot c + \beta_5\\
+      \alpha_r \cdot a + \beta_2 + \alpha_r \cdot c + \beta_6\\
+    \end{pmatrix} =
+    \begin{pmatrix}
+      \alpha_l \cdot (a+c) + (\beta_1 + \beta_5)\\
+      \alpha_r \cdot (a+c) + (\beta_2 + \beta_6)\\
+    \end{pmatrix}\\
+    %
+  \end{align*}
+
+  As soon as the party in possession of the keys tries to decode using the
+  encryption keys for $\widetilde{y}$ the result (either $\widetilde{y}$ or
+  $\widetilde{y}'$) the other party will get caught if it tried to cheat:
+
+  \begin{align*}
+    %
+    D^y(\widetilde{y}) &= D(y) \qquad\text{(using $y$'s encryption keys)}\\
+    %
+    y &= D^y(\widetilde{y}) \hat{=}
+    \begin{pmatrix}
+      \frac{(\alpha_l \cdot (a+b) + (\beta_1 + \beta_3)) - (\beta_1+\beta_3)}
+           {\alpha_l}\\
+      \frac{(\alpha_r \cdot (a+b) + (\beta_2 + \beta_4)) - (\beta_2+\beta_4)}
+           {\alpha_r}\\
+    \end{pmatrix}
+    = a+b\\
+    %
+    y' &= D^y(\widetilde{y}')
+    \hat{=}
+    \begin{pmatrix}
+      \frac{(\alpha_l \cdot (a+b) + (\beta_1 + \beta_5)) - (\beta_1+\beta_3)}
+           {\alpha_l}\\
+      \frac{(\alpha_r \cdot (a+b) + (\beta_2 + \beta_6)) - (\beta_2+\beta_4)}
+           {\alpha_r}\\
+    \end{pmatrix}
+    \hat{=}
+    \begin{pmatrix}
+      (a+b) +
+      \frac{\beta_5 - \beta_3}{\alpha_l}\\
+      (a+b) +
+      \frac{\beta_6 - \beta_4}{\alpha_r}\\
+    \end{pmatrix}
+    = \bot\\
+  \end{align*}
 \end{proof}
 
 
