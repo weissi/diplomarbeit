@@ -181,20 +181,21 @@ $\widetilde{v} \in \mathcal{V}_K$ is straightforward, most of the time the
 universal encoding function $E(v)$ is used to describe DRAV encoding. For the
 sake of simplicity $E(v)$ is already parametrized by the static dual key
 $(\alpha_l, \alpha_r)$ and is able to generate a new dynamic dual key $(\beta,
-\beta')$ uniformly at random. $D(\widetilde{v})$ is assumed to know the correct
-decryption keys.
+\beta')$ uniformly at random. $D(\widetilde{v})$ is assumed to know the keys
+that are expected to decode the DRAV.
 
 \begin{align*}
   \widetilde{v} = E(v) = (\widetilde{v_l}, \widetilde{v_r}) =
     (\alpha_l \cdot v + \beta, \alpha_r \cdot v + \beta')
 \end{align*}
 
-\noindent{}So, if the keys are uniformly at random, the two components of the
-tuple $\widetilde{v}$ are uniformly at random, too. Decoding is (most of the
-time using the universal decoding function $D(\widetilde{v})$):
+\noindent{}So, because the keys are uniformly at random, the two components of
+the tuple $\widetilde{v}$ are uniformly at random, too. Decoding is (most of the
+time done using the universal decoding function $D(\widetilde{v})$):
 
-\begin{align*}
+\begin{align}
   %
+  \label{eqn:keys-assumed}
 \begin{pmatrix}v_l\\v_r\end{pmatrix} &=
 \begin{pmatrix}D_l(\widetilde{v})\\D_r(\widetilde{v})\end{pmatrix} =
   \begin{pmatrix}
@@ -208,7 +209,14 @@ time using the universal decoding function $D(\widetilde{v})$):
       v_l & \quad \text{if}~v_l = v_r\\
       \bot & \quad \text{otherwise ($\widetilde{v}$ is non--well--formed)}\\
     \end{array}\right.
-\end{align*}
+\end{align}
+
+\noindent{}In equation \ref{eqn:keys-assumed} one can see that the universal
+decoding function $D$ assumes the dual keys $(\alpha_l, \alpha_r)$ and $(\beta,
+\beta')$. If an attacker at some point passes a DRAV that is not expected to be
+decoded at this point, the decoding will fail and evaluate to $\bot$. This is
+evident because $D$ will decode using the dual keys of the DRAV that was
+expected to be decoded (see also Lemma \ref{lem:well-formed-fun-of-dec-fun}).
 
 \begin{lem}
   \label{lem:DRAV-random}
@@ -222,11 +230,11 @@ time using the universal decoding function $D(\widetilde{v})$):
 
   In a finite field, the addition of some value $r$ uniformly at random to
   another value $x \in K$ is uniformly at random. Therefore $\alpha_l \cdot v +
-  \beta$ and $\alpha_r \cdot v + \beta'$ are two values uniform at random if and
-  only if $\beta$ and $\beta'$ are uniformly at random. Per definition of a
-  DRAV, everytime a DRAV gets encoded, $\beta$ and $\beta'$ are fresh uniformly
-  distributed random values. Trivially, a DRAV is uncorrelated to any other
-  DRAV.
+  \beta$ and $\alpha_r \cdot v + \beta'$ are two values uniformly at random if
+  and only if $\beta$ and $\beta'$ are uniformly at random. Per definition,
+  everytime a DRAV gets encoded, $\beta$ and $\beta'$ are fresh uniformly
+  distributed random values. Trivially, a DRAV is therefore uncorrelated to any
+  other DRAV.
 
 \end{proof}
 
@@ -236,10 +244,10 @@ time using the universal decoding function $D(\widetilde{v})$):
 
 A DRAV $\widetilde{v}$ is well--formed iff $D(\widetilde{v}) \neq \bot$.
 Therefore, if $D(\widetilde{\chi}) = \bot$, $\chi$ is non--well-formed.
-Obviously the well--formedness of a DRAV depends on the encryption keys using
-which it gets decrypted. Decoding a well--formed DRAVs using any other decoding
-function will lead to $\bot$ because the well--formed DRAV looks
-non--well--formed to the other decoding function.
+Obviously the well--formedness of a DRAV depends on the encryption keys used to
+decrypt. Decoding well--formed DRAVs using any other decoding function will
+lead to $\bot$ because the well--formed DRAV looks non--well--formed to the
+other decoding function.
 
 \begin{lem}
   \label{lem:well-formed-fun-of-dec-fun}
@@ -252,8 +260,10 @@ non--well--formed to the other decoding function.
 
   Assuming two well--formed DRAVs $\widetilde{a}$ and $\widetilde{b}$. Both
   DRAVs have their respective decoding function $D^a$ and $D^b$ and their
-  dynamic dual key (say $\beta_1$ and $\beta_2$ for $\widetilde{a}$ and
-  $\beta_3$ and $\beta_4$ for $\widetilde{b}$).
+  dynamic dual key (say $(\beta_1, \beta_2)$ for $\widetilde{a}$ and
+  $(\beta_3, \beta_4)$ for $\widetilde{b}$). The following equations demonstrate
+  the decoding of the DRAVs $\widetilde{a}$ and $\widetilde{b}$ with the correct
+  keys and the wrong keys respectively.
 
   \begin{align*}
     %
@@ -283,7 +293,7 @@ non--well--formed to the other decoding function.
       b +
       \frac{\beta_4 - \beta_2}{\alpha_r}\\
     \end{pmatrix}
-    = \bot\\
+    \stackrel{*}{=} \bot\\
     %
     b &= D^b(\widetilde{b}) \hat{=}
     \begin{pmatrix}
@@ -305,12 +315,14 @@ non--well--formed to the other decoding function.
       a +
       \frac{\beta_2 - \beta_4}{\alpha_r}\\
     \end{pmatrix}
-    = \bot\\
+    \stackrel{*}{=} \bot\\
     %
+    &\JWnegl{}
   \end{align*}
 
-  As one can see decoding a well--formed DRAV using the wrong decoding function
-  leads to $\bot$.
+  \noindent{}As one can see decoding a well--formed DRAV using the wrong
+  decoding function leads to $\bot$.
+
 \end{proof}
 
 
@@ -341,8 +353,12 @@ Direct DRAV arithmetic only supports addition ($+$) of two DRAVs. Indirect DRAV
 arithmetic has to be used for other operations. The advantage of direct DRAV
 arithmetic is that it can be performed without the knowledge of a DRAV's
 encryption keys. But (see Lemma \ref{lem:wrong-add}) the addition of DRAVs does
-not lead to additional information except when intented by a party in possession
-of the encryption keys.
+not lead to additional information. Altough direct DRAV addition can be
+performed without the knowledge of a party in possession of the keys, this will
+not reveal addional information or cheating options. Since direct DRAV
+additions do automatically generate new encryption keys, the result will only be
+well--formed iff the addition was intended by the party in possession of the
+keys (see Lemma \ref{lem:well-formed-fun-of-dec-fun}).
 
 \begin{lem}
   \label{lem:DRAV-add}
@@ -379,22 +395,23 @@ of particular interest the following property holds: $\forall \widetilde{x}:
 \end{lem}
 \begin{proof}
 
-Let $\widetilde{\chi}$ be a
-non--well--formed DRAV, so: $\widetilde{\chi} = (\alpha_l \cdot \chi + \beta_3 +
-\Delta_l, \alpha_r \cdot \chi + \beta_4 + \Delta_r)$. The component--wise
-addition $\widetilde{\nu}$ of $\widetilde{\chi}$ to any well--formed
-$\widetilde{x} = (\alpha_l \cdot x + \beta_1, \alpha_r \cdot x + \beta_2)$ is
-$\widetilde{\nu} = (\alpha_l \cdot (x+\chi) + (\beta_1+\beta_3) + \Delta_l,
-\alpha_r \cdot (x+\chi) + (\beta_2+\beta_4) + \Delta_r)$. Using the universal
-decoding function $D$, the value of $\chi$ is $\chi = D(\widetilde{\chi}) = (x +
-\chi + \frac{\Delta_l}{\alpha_l}, x + \chi + \frac{\Delta_r}{\alpha_r})$. So:
-$\forall (\Delta_r, \Delta_l) \in K \setminus \{(0, 0)\} \wedge
-\frac{\Delta_l}{\alpha_l} \neq \frac{\Delta_r}{\alpha_r}: D(\widetilde{\chi}) =
-\bot$. Since the encryption keys are not known to an attacker,
-$\frac{\Delta_l}{\alpha_l} \neq 0 \wedge \frac{\Delta_r}{\alpha_r}$ hold except
-for a negligible probability if $\Delta_r \neq 0 \vee \Delta_r \neq 0$ and
-that's the property for being forged (non--well--formed) which was the
-assumption. Trivially $\bot + \bot = \bot$ by a similar argument.
+Let $\widetilde{\chi}$ be a non--well--formed DRAV, so: $\widetilde{\chi} =
+(\alpha_l \cdot \chi + \beta_3 + \Delta_l, \alpha_r \cdot \chi + \beta_4 +
+\Delta_r)$. The component--wise addition $\widetilde{\nu}$ of $\widetilde{\chi}$
+to any well--formed $\widetilde{x} = (\alpha_l \cdot x + \beta_1, \alpha_r \cdot
+x + \beta_2)$ is $\widetilde{\nu} = (\alpha_l \cdot (x+\chi) + (\beta_1+\beta_3)
++ \Delta_l, \alpha_r \cdot (x+\chi) + (\beta_2+\beta_4) + \Delta_r)$.  Using the
+component--wise universal decoding functions $D_l(\widetilde{v})$ and
+$D_r(\widetilde{v})$ (see chapter \ref{def:DRAV}), the value of $\chi$ is $\chi
+= (D_l(\widetilde{\chi_l}), D_r(\widetilde{\chi_r})) = (x + \chi +
+\frac{\Delta_l}{\alpha_l}, x + \chi + \frac{\Delta_r}{\alpha_r})$. So: $\forall
+(\Delta_r, \Delta_l) \in K \setminus \{(0, 0)\} \wedge \frac{\Delta_l}{\alpha_l}
+\neq \frac{\Delta_r}{\alpha_r}: D(\widetilde{\chi}) = \bot$. Since the
+encryption keys are not known to an attacker, $\frac{\Delta_l}{\alpha_l} \neq
+\frac{\Delta_r}{\alpha_r}$ holds except for a negligible probability if
+$\Delta_r \neq 0 \vee \Delta_r \neq 0$ and that's the property for being forged
+(non--well--formed) which was the assumption. Trivially $\bot + \bot = \bot$ by
+a similar argument.
 
 \end{proof}
 
@@ -404,7 +421,7 @@ assumption. Trivially $\bot + \bot = \bot$ by a similar argument.
 
   The addition that was unintended by a party in possession of the encryption
   keys will not reveal additional informaion. A party that is not in possession
-  of the keys but knows three well--formed DRAVs $\widetilde{a}$,
+  of the keys but that knows three well--formed DRAVs $\widetilde{a}$,
   $\widetilde{b}$ and $\widetilde{c}$ that is commissioned to execute the
   addition $\widetilde{y} = \widetilde{a} + \widetilde{b}$ cannot generate a
   well--formed DRAV $\widetilde{y}' = \widetilde{a} + \widetilde{c}$.
@@ -498,7 +515,9 @@ assumption. Trivially $\bot + \bot = \bot$ by a similar argument.
       (a+b) +
       \frac{\beta_6 - \beta_4}{\alpha_r}\\
     \end{pmatrix}
-    = \bot\\
+    \stackrel{*}{=} \bot\\
+    %
+    &\JWnegl{}
   \end{align*}
 \end{proof}
 
@@ -516,7 +535,7 @@ Indirect DRAV arithmetic is straightforward but can only be performed by a party
 in possession of the encryption keys. For any operator $\odot$, $\widetilde{a}
 \odot \widetilde{b} = E(D(\widetilde{a}) \odot D(\widetilde{b}))$. Obviously
 it's important that $\forall x: \bot \odot x = x \odot \bot = \bot$. $\bot$ can
-be represented as a DRAV as a tuple that is made up of two values uniform at
+be represented as a DRAV as a tuple that is made up of two values uniformly at
 random.
 
 
@@ -586,9 +605,9 @@ forged to $\widetilde{x'_1} = \widetilde{x_1} + \Delta_1$ and $\widetilde{x'_2}
 Because an attacker is not in possession of the static encryption keys
 $\alpha_l$ and $\alpha_r$, it cannot control the value of $\frac{\Delta_1 +
 \Delta_2}{\alpha_l + \alpha_r}$. Since $\alpha_l$ and $\alpha_r$ are chosen
-uniform at random, the result $x'$ becomes uniform at random, too. An attacker
-could choose $\Delta_l + \Delta_r = 0$ but that would not change the result at
-all.
+uniformly at random, the result $x'$ becomes uniformly at random, too. An
+attacker could choose $\Delta_l + \Delta_r = 0$ but that would not change the
+result at all because it added both components before using the final OAFE.
 
 
 %
@@ -598,7 +617,10 @@ all.
 \label{sec:drae}
 
 \JWdef{Dual Randomized Affine Encoding}{DRAE}{s} are affine representations of
-parts of arithmetic circuits that fulfill several properties:
+parts of arithmetic circuits. Additional DRAEs are used if direct DRAV
+arithmetic (addition) is not enough. As soon as a (non--trivial) multiplication
+is part of the original circuit, additional DRAEs have to be build. DRAEs
+fulfill several properties:
 
 \begin{enumerate}
 
@@ -608,6 +630,10 @@ parts of arithmetic circuits that fulfill several properties:
   \item \label{prop:drae-signed} DRAEs are signed: If someone tries to forge a
     DRAE, it will become non--well--formed and operations with that DRAE result
     in non--well--formed DRAEs.
+
+  \item DRAEs are not exchangable with other DRAEs. If an attacker tries to
+    provide a DRAE that was not intended by the party in posession of the keys,
+    all following DRAEs will evaluate to uniform randomness.
 
   \item \label{prop:drae-oafe} DRAEs can be securely evaluated using OAFEs.
 
@@ -690,7 +716,11 @@ Since two DRAVs can directly be added as explained in chapter
 multiplicative ($M$ in relations \ref{rel:DRAE} and \ref{rel:pre-eval-DRAE}) and
 additive ($A$) terms. Notably, although the encryption keys change, this
 operation can be performed by any party, in possession of the encryption keys or
-not. Obviously, the same argument holds for pre--evaluated DRAEs.
+not. But as for DRAVs no operations that were not intended by the party in
+possession of the keys can be performed. If one would perform an unintended
+operation, the encryption keys would change and the resulting DRAE (that
+evaluates to a DRAV) becomes unusable (non--well--formed). Obviously, the same
+argument holds for pre--evaluated DRAEs.
 
 
 %Indirect Addition
@@ -882,6 +912,12 @@ both components are uniformly at random.
     - \frac{\Delta_4r_5}{\alpha_l}
   \end{pmatrix} \\
 \end{align*}
+
+\noindent{}As one can easily see, if at least one $\Delta \neq 0$ the result
+will comprise at least one term that depends on fresh, uniform randomness (the
+$r$s). In a finite field this means that both components are uniformly at random
+and uncorrelated to any other value in the process.
+
 
 %
 % DUAL RANDOMIZED AFFINE CIRCUITS

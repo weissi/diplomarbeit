@@ -147,4 +147,30 @@ complete list of packages can be extracted from the file
 \JWpath{diplomarbeit.cabal} that comes with the source code of this thesis.
 
 
+% Build System
+\JWlthree{Build System and Building}
+
+The implementation can be easily built using \JWTLcabal{} by typing:
+
+\begin{lstlisting}
+
+cd diplomarbeit/
+cabal install --only-dependencies
+cabal configure
+cabal build
+
+\end{lstlisting}
+
+
+%
+% DOCUMENTATION
+%
+\JWltwo{Documentation}
+\label{sec:implementation-doc}
+
+The implementation is documented using \JWTLhaddock{}.
+
+\JWtodo{Add link to Haddock doc}
+
+
 % vim: set spell spelllang=en_us fileencoding=utf8 :
