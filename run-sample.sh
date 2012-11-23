@@ -43,7 +43,11 @@ fi
 
 echo "Polynomial in file '$POLYFILE', input='$INPUTELEM'"
 function unbuffer() {
-    stdbuf -i0 -o0 -e0 "$@"
+    if [ -x /usr/bin/stdbuf ]; then
+        stdbuf -i0 -o0 -e0 "$@"
+    else
+        "$@"
+    fi
 }
 
 # NAME
