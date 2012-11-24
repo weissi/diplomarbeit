@@ -61,7 +61,10 @@ case "$(uname -s)" in
         ;;
     Linux)
         if pgrep -f 'evince (.+\/)?thesis.pdf' > /dev/null; then
+            export PATH="$PATH:/home/weissi/local/bin/"
             evince thesis.pdf
+            pgrep grive && echo "NOTICE: grive already uploading" || \
+                { ( cd ~/gdrive/ && date && grive )&>>/tmp/grive.log & }
         fi
         ;;
     *)
