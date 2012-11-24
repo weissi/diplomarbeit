@@ -1,4 +1,4 @@
-\JWlone{Methods}
+\JWlone{Methodology}
 \label{sec:methods}
 
 This chapter describes how arbitrary arithmetic functions can be expressed in
@@ -13,7 +13,7 @@ using OAFEs \cite{davidgoliath}.
 \JWltwo{Illustration}
 \label{sec:illustration}
 
-This chapter informaly illustrates the key ideas and methods proposed by this
+This chapter informally illustrates the key ideas and methods proposed by this
 thesis. The following chapters contain a more formal bottom--up description that
 is rather cumbersome to understand without grasping the overall picture.
 
@@ -27,41 +27,63 @@ Of course, this solution is just as simple as insecure.
 
 Since this thesis uses Oblivious Affine Function Evaluation
 (OAFE)\cite{davidgoliath} as the main building block, the general polynomial has
-to be split to affine functions evaluating parts of the complete function. To
+to be split to affine functions evaluating parts of the complete function. The
+entirety of the affine functions exactly represents the original polynomial. To
 maintain the security property, neither party should be able to learn anything
-by intermediate results. The role both parties play differs a lot: The first
-party---usually named \JWpOne{}---is in possession of the function to evaluate
-and generates and sets up the tamper--proof hardware token that implements the
-OAFE functionality. The second party---usually named \JWpTwo{}---is less
-powerful: It does only evaluate entities issued by \JWpOne{} and uses the
-already configured OAFEs. \JWpTwo{} acts---if honest---completely deterministic
-and will receive the function's final evaluated value $f(x)$.
+by intermediate results.
 
-The approach pursued here is to divide the circuit that equals the overall
-function to smaller sub--circuits. Each sub--circuit can be composed of
-arithmetic gates and other sub--circuts. \JWpTwo{} has to evaluate each
-sub--circuit to an intermediate value. \JWpTwo{} has to store all
-intermediate values since they are used to compute the following sub--circuits.
-Whenever one sub--circuit $A$ contains a node that is another sub--circuit $B$,
-this node gets replaced by the intermediate output value of $B$ before $A$ can
-be evaluated. Obviously the intermediate values are at risk: A passively
-corrupted \JWpTwo{} could try to derive information from these intermediate
-results. An active \JWpTwo{} could additionally try to modify the intermediate
-values and gain supplemental information out of that. To not directly reveal the
-value of an evaluated sub--circuit the intermediate values have to be
-\emph{encrypted}. To be able to identify an illicit modification the overall
-evaluation has to fail when an attacker tries to illicitly modify an
+The role both parties play differs a lot: The first party---usually named
+\JWpOne{}---is in possession of the function to evaluate and generates and sets
+up the tamper--proof hardware token that implements the OAFE functionality. The
+second party---usually named \JWpTwo{}---is less powerful: It does only evaluate
+entities issued by \JWpOne{} and uses the already configured OAFEs. But in the
+end, only \JWpTwo{} obtains the result.  Since the OAFEs play an important role,
+it's crucial to envision that if \JWpOne{} has generated one OAFE, \JWpTwo{}
+will be able to evaluate exactly one affine function at exactly one grid point.
+It's very important, that \JWpTwo{} \emph{does not learn the affine function}
+itself, only its evaluation at one grid point. To prevent a corrupted \JWpOne{}
+from intercepting information when \JWpTwo{} evaluates one of the OAFEs,
+\JWpOne{} is forced to commit itself to a finite number of OAFEs a priori.
+\JWpOne{} is also forced to commit itself to all parameters for the OAFEs and
+program this configuration onto a tamper--proof hardware token. \JWpOne{}
+programs and physically sends the token to \JWpTwo{} before \JWpTwo{} even
+starts the process.
+
+All following steps will be performed by \JWpTwo{} alone, no further interaction
+with \JWpOne{} is necessary. The tamper--proof hardware token implements the
+OAFE functionality and allows the party that receives this token to evaluate
+every OAFE exactly once. After having evaluated the last OAFE, the tamper--proof
+hardware token can be physically destroyed. An honest \JWpTwo{} acts completely
+deterministic and will receive the function's final evaluated value $f(x)$. The
+following process dividing the function in smaller parts usually uses the term
+(arithmetic) circuit. The term circuit means the evaluation tree (e.g. figure
+\ref{fig:sample-poly}) of the function where the (arithmetic) gates are the
+nodes that perform arithmetic operations.
+
+The approach pursued here is to divide the arithmetic circuit that equals the
+overall function to smaller sub--circuits. Each sub--circuit can be composed of
+arithmetic gates and other sub--circuits. \JWpTwo{} has to evaluate each
+sub--circuit to an intermediate value. \JWpTwo{} has to store all intermediate
+values since they are used to compute the following sub--circuits.  Whenever one
+sub--circuit $A$ contains a node that is another sub--circuit $B$, this node
+gets replaced by the intermediate output value of $B$ before $A$ can be
+evaluated. Obviously the intermediate values are a potential security threat: A
+passively corrupted \JWpTwo{} could try to derive information from these
+intermediate results. An active \JWpTwo{} could additionally try to modify the
+intermediate values and gain supplemental information out of that. To not
+directly reveal the value of an evaluated sub--circuit the intermediate values
+have to be \emph{encrypted}.  To be able to identify an illicit modification the
+overall evaluation has to fail when an attacker tries to illicitly modify an
 intermediate result. In this thesis, the intermediate values are tuples of two
 values. The decryption of both values represents---when well--formed---the same
 value. The gain of this technique is that an attacker cannot simply change the
 value and preserve the well--formedness without knowing the encryption keys. Any
-chance to one (or both) tuple values causes the intermediate value to be
-destroyed (formally represented as $\bot$). The value of the evaluated
-polynomial is a notable exception: It's not encrypted. To derive the final
-value, the output value of the last sub--circuit undergoes a special procedure.
-For technical reasons both sides of the tuples are often syntactically divided
-to two intermediate values that semantically still represent the same
-intermediate value tuple.
+change to one (or both) tuple values causes the intermediate value to be
+destroyed (formally represented as $\bot$). After having evaluated the last
+sub--circuit, its resulting encrypted tuple undergoes a special procedure
+revealing the unencrypted scalar result value. Details and the formal
+description of the procedures mentioned above can be found in the following
+chapters.
 
 \begin{figure}[htb]
   \centering
@@ -74,43 +96,64 @@ intermediate value tuple.
 The overall process is very straightforward: \JWpOne{} analyzes the polynomial
 and transforms it into a circuit (the entire figure \ref{fig:sample-poly}). This
 circuit is then divided to sub--circuits (every box bounded by dashes lines
-except the biggest box). The evaluation order for the sample polynomial $1 + 2x
-+ 3x^2$ (see figure \ref{fig:sample-poly}) is: First of all evaluate the
-sub--circuit only containg $x$. This is in fact only one sub--circuit that
-appears three times in the figure. The next step would be to evaluate the
-sub--circuit only encoding $3$, then the sub--circuit encoding $x^2 (= x \cdot
-x)$ and finally the overall circuit that encodes $1 + 2x + 3x^2$. Usually and as
-in the example above, the sub--circuits are of maximal size. A sub--circuit of
-maximal size is a sub--circuit into which no additional arithmetic gates can be
-included. Notably, a sub--circuit can only contain multiplications that only
-depend on either constants or stored intermediate values. The next step is to
-set up the tamper--proof hardware token implementing the OAFE functionality.
-Then, the sub--circuits along with the OAFEs are transferred to \JWpTwo{} that
-evaluates the sub--circuits one after the other and uses the OAFEs in that
-process. The final result will be the evaluation of the original polynomial.
+except the biggest box). All the sub--circuits are then encoded in a way that
+\JWpTwo{} cannot learn anything private to \JWpOne{}. To achieve that, \JWpOne{}
+programs a tamper--proof hardware token with an OAFE configuration and
+physically sends the token and a description of the sub--circuits to \JWpTwo{}.
+After sending the circuits and the token, \JWpOne{} can shut down, it's not
+needed any more.  As soon as \JWpTwo{} receives the sub--circuit description and
+the token, it starts the evaluation, one sub--circuit after the other. The
+evaluation order for the sample polynomial $1 + 2x + 3x^2$ (see figure
+\ref{fig:sample-poly}) follows. At this point it is really important that
+\JWpTwo{} does know the order of the polynomial $a_0 + a_1x + a_2x^2$ but does
+not known the coefficients ($a_0$, $a_1$ and $a_2$; $1$, $2$ and $3$ in the
+sample). The first step for \JWpTwo{} is to evaluate the sub--circuit only
+containg $x$. This is in fact only one sub--circuit that appears three times in
+the figure. The next step would be to evaluate the sub--circuit only encoding
+$3$ (remember, not learning the value $3$!), then the sub--circuit encoding $x^2
+(= x \cdot x)$ and finally the overall circuit that encodes $1 + 2x + 3x^2$.
+Usually and as in the example above, the sub--circuits are of maximal size. A
+sub--circuit of maximal size is a sub--circuit into which no additional
+arithmetic gates can be included. Notably, a sub--circuit can only contain
+multiplications that only depend on either constants or stored intermediate
+values.
 
 To simplify the analysis of the different parts and to demonstrate the
 modularity, special terms are used throughout in this thesis. A mapping from the
 informal terms used above and the terms used otherwise (and defined in the
 following chapters) follows:
 
-\JWtodo{Double- und Single-Dinger besser erklären}
+In the informal illustration above, the encoded tuples played an important role.
+They represented values and the sub--circuits evaluated to these encrypted
+tuples. In fact, the sub--circuits are also twofold, they have a left and a
+right side that eventually evaluate to two values: Both sides of the encrypted
+tuple. For technical reasons, the two sides of the circuits and the tuples often
+travel alone. They still represent the same value encrypted with different keys
+that are often transmitted separately. For this reason the terms below all exist
+in two forms, the \emph{Double} form (such as \emph{Double Randomized Affine
+Encoding}) and the regular form (such as \emph{Randomized Affine Encoding}). At
+some point in the processing, they are split syntactically, two regular entities
+are just the same as one Double entity. The exact difference is not important to
+grasp the procedure but it's as simple as naming tuple $\widetilde{a} =
+(\widetilde{a_l}, \widetilde{a_r})$ \emph{Double Value} and $\widetilde{a_l}$
+and $\widetilde{a_r}$ \emph{Value}s respectively.
 
 \begin{itemize}
 
   \item The overall circuit representing exactly one function is named
-    \emph{Double Affine Randomized Circuit} (DRAC) and \emph{Affine Randomized
-    Circuit} (RAC)---when both tuple values travel separated from each
-    other---defined in chapter \ref{def:DRAC}. A DRAC is the collectivity of
-    DRAEs (see next bullet point) assigned each to intermediate variables.
+    \emph{Double Affine Randomized Circuit} (DRAC) or \emph{Affine Randomized
+    Circuit} (RAC)---when both sides travel separated from each other---defined
+    in chapter \ref{def:DRAC}. A DRAC is the collectivity of DRAEs (see next
+    bullet point) each assigned to intermediate variables storing their result
+    values.
 
   \item The sub--circuits are called \emph{Double Affine Randomized Encodings}
     (DRAE) and \emph{Randomized Affine Encodings} (RAE) defined in chapter
     \ref{def:DRAE}. Each (D)RAE is assigned to an intermediate variable that
-    incurs in the subsequent (D)RAEs. A (D)RAE is a specification of calculation
-    that have to be performed until obtaining the (D)RAEs result value. In terms
-    of the (D)RAC the result value is just an intermediate value that an
-    sub--circuit evaluated to.
+    incurs in the subsequent (D)RAEs. A (D)RAE is a specification of
+    calculations that have to be performed until obtaining the (D)RAEs result
+    value. In terms of the (D)RAC, the result value is just an intermediate
+    value that an sub--circuit evaluated to.
 
   \item The intermediate values that are encrypted twofoldly are named
     \emph{Double Randomized Affine Values} (DRAV), defined in chapter
