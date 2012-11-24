@@ -48,6 +48,7 @@ done < <(find . \(     -name '*.h' \
                              -or -path './gen-src/*' \
                              -or -path './diplomarbeit-web/*' \
                              -or -path './syncheck.sh' \
+                             -or -path './writings/thesis/res/*' \
                           \) \
                 -type f \
         )

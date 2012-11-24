@@ -38,6 +38,8 @@ function try_pdflatex() {
 ./clean.sh
 
 set -e
+STEP="texification of ressources"
+./texify-git-state.sh > res/git-state.tex
 STEP="pdflatex run 1"
 echo == pdfLaTeX 1 =============================================================
 try_pdflatex $TEXOPTS thesis
