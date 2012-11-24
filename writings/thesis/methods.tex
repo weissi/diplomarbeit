@@ -69,21 +69,21 @@ sub--circuit $A$ contains a node that is another sub--circuit $B$, this node
 gets replaced by the intermediate output value of $B$ before $A$ can be
 evaluated. Obviously the intermediate values are a potential security threat: A
 passively corrupted \JWpTwo{} could try to derive information from these
-intermediate results. An active \JWpTwo{} could additionally try to modify the
-intermediate values and gain supplemental information out of that. To not
-directly reveal the value of an evaluated sub--circuit the intermediate values
-have to be \emph{encrypted}.  To be able to identify an illicit modification the
-overall evaluation has to fail when an attacker tries to illicitly modify an
-intermediate result. In this thesis, the intermediate values are tuples of two
-values. The decryption of both values represents---when well--formed---the same
-value. The gain of this technique is that an attacker cannot simply change the
-value and preserve the well--formedness without knowing the encryption keys. Any
-change to one (or both) tuple values causes the intermediate value to be
-destroyed (formally represented as $\bot$). After having evaluated the last
-sub--circuit, its resulting encrypted tuple undergoes a special procedure
-revealing the unencrypted scalar result value. Details and the formal
-description of the procedures mentioned above can be found in the following
-chapters.
+intermediate results. An actively corrupted \JWpTwo{} could additionally try to
+modify the intermediate values and gain supplemental information out of that. To
+not directly reveal the value of an evaluated sub--circuit the intermediate
+values have to be \emph{encrypted}.  To be able to identify an illicit
+modification the overall evaluation has to fail when an attacker tries to
+illicitly modify an intermediate result. In this thesis, the intermediate values
+are tuples of two values. The decryption of both values represents---when
+well--formed---the same value. The gain of this technique is that an attacker
+cannot simply change the value and preserve the well--formedness without knowing
+the encryption keys. Any change to one (or both) tuple values causes the
+intermediate value to be destroyed (formally represented as $\bot$). After
+having evaluated the last sub--circuit, its resulting encrypted tuple undergoes
+a special procedure revealing the unencrypted scalar result value. Details and
+the formal description of the procedures mentioned above can be found in the
+following chapters.
 
 \begin{figure}[htb]
   \centering
@@ -102,21 +102,21 @@ programs a tamper--proof hardware token with an OAFE configuration and
 physically sends the token and a description of the sub--circuits to \JWpTwo{}.
 After sending the circuits and the token, \JWpOne{} can shut down, it's not
 needed any more.  As soon as \JWpTwo{} receives the sub--circuit description and
-the token, it starts the evaluation, one sub--circuit after the other. The
-evaluation order for the sample polynomial $1 + 2x + 3x^2$ (see figure
-\ref{fig:sample-poly}) follows. At this point it is really important that
-\JWpTwo{} does know the order of the polynomial $a_0 + a_1x + a_2x^2$ but does
-not known the coefficients ($a_0$, $a_1$ and $a_2$; $1$, $2$ and $3$ in the
-sample). The first step for \JWpTwo{} is to evaluate the sub--circuit only
-containg $x$. This is in fact only one sub--circuit that appears three times in
-the figure. The next step would be to evaluate the sub--circuit only encoding
-$3$ (remember, not learning the value $3$!), then the sub--circuit encoding $x^2
-(= x \cdot x)$ and finally the overall circuit that encodes $1 + 2x + 3x^2$.
-Usually and as in the example above, the sub--circuits are of maximal size. A
-sub--circuit of maximal size is a sub--circuit into which no additional
-arithmetic gates can be included. Notably, a sub--circuit can only contain
-multiplications that only depend on either constants or stored intermediate
-values.
+the token, it starts the evaluation, one sub--circuit after the other. To
+discuss the evaluation the sample polynomial $1 + 2x + 3x^2$ (see figure
+\ref{fig:sample-poly}) is used in the following. At this point it is
+important that \JWpTwo{} does learn the degree of the polynomial $a_0 + a_1x +
+a_2x^2$ but will not learn the coefficients ($a_0$, $a_1$ and $a_2$; $1$, $2$
+and $3$ in the example). The first step for \JWpTwo{} is to evaluate the
+sub--circuit only containg $x$. This is in fact only one sub--circuit that
+appears three times in the figure. The next step would be to evaluate the
+sub--circuit only encoding $3$ (remember, not learning the value $3$!), then the
+sub--circuit encoding $x^2 (= x \cdot x)$ and finally the overall circuit that
+encodes $1 + 2x + 3x^2$.  Usually and as in the example above, the sub--circuits
+are of maximal size. A sub--circuit of maximal size is a sub--circuit into which
+no additional arithmetic gates can be included. Notably, a sub--circuit can only
+contain multiplications that only depend on either constants or stored
+intermediate values.
 
 To simplify the analysis of the different parts and to demonstrate the
 modularity, special terms are used throughout in this thesis. A mapping from the
@@ -128,24 +128,24 @@ They represented values and the sub--circuits evaluated to these encrypted
 tuples. In fact, the sub--circuits are also twofold, they have a left and a
 right side that eventually evaluate to two values: Both sides of the encrypted
 tuple. For technical reasons, the two sides of the circuits and the tuples often
-travel alone. They still represent the same value encrypted with different keys
-that are often transmitted separately. For this reason the terms below all exist
-in two forms, the \emph{Double} form (such as \emph{Double Randomized Affine
-Encoding}) and the regular form (such as \emph{Randomized Affine Encoding}). At
-some point in the processing, they are split syntactically, two regular entities
-are just the same as one Double entity. The exact difference is not important to
-grasp the procedure but it's as simple as naming tuple $\widetilde{a} =
-(\widetilde{a_l}, \widetilde{a_r})$ \emph{Double Value} and $\widetilde{a_l}$
-and $\widetilde{a_r}$ \emph{Value}s respectively.
+handeled apart. They still represent the same two values encrypted with
+different keys. For this reason the terms below all exist in two forms, the
+\emph{Double} form (such as \emph{Double Randomized Affine Encoding}) and the
+regular form (such as \emph{Randomized Affine Encoding}). At some point in the
+processing, they are split syntactically, two regular entities are just the same
+as one Double entity. The exact difference is not important to grasp the
+procedure but it's as simple as naming tuple $\widetilde{a} = (\widetilde{a_l},
+\widetilde{a_r})$ \emph{Double Value} and $\widetilde{a_l}$ and
+$\widetilde{a_r}$ \emph{Value}s respectively.
 
 \begin{itemize}
 
   \item The overall circuit representing exactly one function is named
     \emph{Double Affine Randomized Circuit} (DRAC) or \emph{Affine Randomized
-    Circuit} (RAC)---when both sides travel separated from each other---defined
-    in chapter \ref{def:DRAC}. A DRAC is the collectivity of DRAEs (see next
-    bullet point) each assigned to intermediate variables storing their result
-    values.
+    Circuit} (RAC)---when both sides are handeled separated from each
+    other---defined in chapter \ref{def:DRAC}. A DRAC is the collectivity of
+    DRAEs (see next bullet point) each assigned to intermediate variables
+    storing their result values.
 
   \item The sub--circuits are called \emph{Double Affine Randomized Encodings}
     (DRAE) and \emph{Randomized Affine Encodings} (RAE) defined in chapter
