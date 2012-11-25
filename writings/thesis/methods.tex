@@ -108,7 +108,7 @@ discuss the evaluation the sample polynomial $1 + 2x + 3x^2$ (see figure
 important that \JWpTwo{} does learn the degree of the polynomial $a_0 + a_1x +
 a_2x^2$ but will not learn the coefficients ($a_0$, $a_1$ and $a_2$; $1$, $2$
 and $3$ in the example). The first step for \JWpTwo{} is to evaluate the
-sub--circuit only containg $x$. This is in fact only one sub--circuit that
+sub--circuit only containing $x$. This is in fact only one sub--circuit that
 appears three times in the figure. The next step would be to evaluate the
 sub--circuit only encoding $3$ (remember, not learning the value $3$!), then the
 sub--circuit encoding $x^2 (= x \cdot x)$ and finally the overall circuit that
@@ -128,7 +128,7 @@ They represented values and the sub--circuits evaluated to these encrypted
 tuples. In fact, the sub--circuits are also twofold, they have a left and a
 right side that eventually evaluate to two values: Both sides of the encrypted
 tuple. For technical reasons, the two sides of the circuits and the tuples often
-handeled apart. They still represent the same two values encrypted with
+handled apart. They still represent the same two values encrypted with
 different keys. For this reason the terms below all exist in two forms, the
 \emph{Double} form (such as \emph{Double Randomized Affine Encoding}) and the
 regular form (such as \emph{Randomized Affine Encoding}). At some point in the
@@ -142,7 +142,7 @@ $\widetilde{a_r}$ \emph{Value}s respectively.
 
   \item The overall circuit representing exactly one function is named
     \emph{Double Affine Randomized Circuit} (DRAC) or \emph{Affine Randomized
-    Circuit} (RAC)---when both sides are handeled separated from each
+    Circuit} (RAC)---when both sides are handled separated from each
     other---defined in chapter \ref{def:DRAC}. A DRAC is the collectivity of
     DRAEs (see next bullet point) each assigned to intermediate variables
     storing their result values.
@@ -178,11 +178,13 @@ entities in the following chapters.
 \label{def:field} Throughout this thesis, $K$ represents an arbitrary large
 finite field, such as $\mathbb{F}_{2^{256}}$.
 
-\JWtodo{Irreduzibled Polynom hinschreiben}
+\JWtodo{Mention the irreducible polynomial}
 
 
 % OAFEs
 \JWlthree*{OAFEs}
+
+\JWtodo{Dominiks Verbesserungen einbringen (Mail "Thesis 2.2")}
 
 In this thesis the \JWdef{Oblivious Affine Function Evaluation}{OAFE}{s} are
 essentially one \emph{Sequential one--time OAFE} as defined by Döttling,
@@ -223,53 +225,95 @@ of \emph{dual keys}. The first dual key, the \emph{static key}, remains the same
 in the whole DRAC (see chapter \ref{def:DRAC}) generation procedure and is
 usually denoted as $(\alpha_l, \alpha_r)$. The second dual key, the
 \emph{dynamic key} is a short--lived key, usually represented as $(\beta,
-\beta')$. Two DRAVs only share the same dynamic key by hazard but always share
+\beta')$. Two DRAVs only share the same dynamic key by chance but always share
 the same static key. Encoding a regular value $v \in K$ as a DRAV
-$\widetilde{v} \in \mathcal{V}_K$ is straightforward, most of the time the
-universal encoding function $E(v)$ is used to describe DRAV encoding. For the
-sake of simplicity $E(v)$ is already parametrized by the static dual key
-$(\alpha_l, \alpha_r)$ and is able to generate a new dynamic dual key $(\beta,
-\beta')$ uniformly at random. $D(\widetilde{v})$ is assumed to know the keys
-that are expected to decode the DRAV.
+$\widetilde{v}$ is straightforward: For the sake of simplicity this thesis
+assumes a function $E(v)$ (also named \emph{universal encoding function}) that
+is implicitly parametrized by the static dual key $(\alpha_l, \alpha_r)$ and is
+able to generate a new dynamic dual key $(\beta, \beta')$ uniformly at random.
+Just like $E(v)$, this thesis also assumes $D(\widetilde{v})$, named the
+\emph{universal decoding function}. The universal decoding function is assumed
+to be implicitly parametrized by the encryption keys from the context it is
+used. Both functions are defined below.  The universal encoding and decoding
+functions only serve the purpose of describing the methodology. In the reality
+especially the function $D$ is never called by anyone. That would not even be
+possible since only the party in possession of the keys (\JWpOne{}) has the
+information to do so but because of the non--interactivity of the protocol,
+\JWpOne{} is not active anymore when the second party (not in possession of the
+keys, usually named \JWpTwo{}) starts the evaluation. The real protocol encodes
+the encryption and decryption into the OAFEs in a way that as soon as \JWpTwo{}
+tries to cheat everything eventually becomes uniform randomness. This is done
+using carefully chosen linear functions realized as OAFEs. The setup of these
+linear functions assures the addition of uncorrelated uniform randomness as soon
+as \JWpTwo{} tries to cheat. One can envision the process as applying a
+one--time pad encryption that is only correctly removed if the other party did
+not try to cheat. As soon as the second party tries to cheat this resembles the
+attempt to undo a one--time pad encryption using another one--time pad. This
+clearly leads to a one--time pad encryption which can only be undone using an
+unknown one--time pad. The unknown one--time pad is a composition of the
+encrypting one--time pad and the one--time pad using which the decryption was
+attempted.
 
-\begin{align*}
-  \widetilde{v} = E(v) = (\widetilde{v_l}, \widetilde{v_r}) =
-    (\alpha_l \cdot v + \beta, \alpha_r \cdot v + \beta')
-\end{align*}
+\begin{align}
+  \label{eqn:one-time-pad}
+  \hat{E}(v; \alpha_l, \alpha_r, \beta, \beta') &=
+  (\alpha_l \cdot v + \beta, \alpha_r \cdot v + \beta')\\
+  %
+  E(v) &= \hat{E}(v; \alpha_l, \alpha_r, \beta, \beta') \qquad
+  \text{(implicitly knowing the keys)}\nonumber
+  %
+\end{align}
 
-\noindent{}So, because the keys are uniformly at random, the two components of
-the tuple $\widetilde{v}$ are uniformly at random, too. Decoding is (most of the
-time done using the universal decoding function $D(\widetilde{v})$):
+\noindent{}The values $\beta$ and $\beta'$ are as mentioned above fresh values
+uniformly at random. In finite fields $\beta$ and $\beta'$ therefore one--time
+encrypt both tuple components. As such a DRAV is one--time pad encrypted.
+$\alpha_l$ and $\alpha_r$ are also values uniformly at random but are in
+contrast to $\beta$ and $\beta'$ used in for DRAVs throughout the whole
+process. The purpose they serve will be discussed in the following chapters.
+
+Notationally, the DRAV encoding a scalar value $v$ is usually denoted as
+$\widetilde{v}$. $\widetilde{v}$'s tuple components are usually referred to as
+$\widetilde{v_l}$ and $\widetilde{v_r}$: $(\widetilde{v_l}, \widetilde{v_r}) =
+\widetilde{v} = E(v)$. Where appropriate, DRAVs are also denoted in a vector
+notation $\begin{pmatrix}\widetilde{v_l}\\\widetilde{v_r}\end{pmatrix} \hat{=}
+(\widetilde{v_l}, \widetilde{v_r}) = E(v)$. The universal decoding function
+$D(\widetilde{v})$ is defined as:
 
 \begin{align}
   %
-  \label{eqn:keys-assumed}
-\begin{pmatrix}v_l\\v_r\end{pmatrix} &=
-\begin{pmatrix}D_l(\widetilde{v})\\D_r(\widetilde{v})\end{pmatrix} =
+  \hat{D}(\widetilde{v}; \alpha_l, \alpha_r, \beta, \beta') &=
   \begin{pmatrix}
     \frac{\widetilde{v_l} - \beta}{\alpha_l}\\
     \frac{\widetilde{v_r} - \beta'}{\alpha_r}
-  \end{pmatrix}\\
+  \end{pmatrix} \nonumber\\
   %
-  v &= D(\widetilde{v}) =
+  \label{eqn:keys-assumed}
+\begin{pmatrix}D_l(\widetilde{v})\\D_r(\widetilde{v})\end{pmatrix} &=
+  \hat{D}(\widetilde{v}; \alpha_l, \alpha_r, \beta, \beta') \qquad
+  \text{(implicitly knowing the keys)}\\
+  %
+  D(\widetilde{v}) &=
   \left\{
     \begin{array}{l l}
-      v_l & \quad \text{if}~v_l = v_r\\
+      D_l(\widetilde{v}) & \quad
+      \text{if}~D_l(\widetilde{v}) = D_r(\widetilde{v})\\
       \bot & \quad \text{otherwise ($\widetilde{v}$ is non--well--formed)}\\
-    \end{array}\right.
+    \end{array}\right.\nonumber
+    %
 \end{align}
 
 \noindent{}In equation \ref{eqn:keys-assumed} one can see that the universal
-decoding function $D$ assumes the dual keys $(\alpha_l, \alpha_r)$ and $(\beta,
-\beta')$. If an attacker at some point passes a DRAV that is not expected to be
-decoded at this point, the decoding will fail and evaluate to $\bot$. This is
-evident because $D$ will decode using the dual keys of the DRAV that was
-expected to be decoded (see also Lemma \ref{lem:well-formed-fun-of-dec-fun}).
+decoding function $D$ assumes context--specific  dual keys $(\alpha_l,
+\alpha_r)$ and $(\beta, \beta')$. If an attacker at some point passes a DRAV
+that is not expected to be decoded at this point, the decoding will fail and
+evaluate to $\bot$. This is evident because $D$ will decode using the dual keys
+of the DRAV that was expected to be decoded (see also Lemma
+\ref{lem:well-formed-fun-of-dec-fun}).
 
 \begin{lem}
   \label{lem:DRAV-random}
 
-  A party that is not in posession of the encrytion (dual) keys will not learn
+  A party that is not in possession of the encryption (dual) keys will not learn
   anything from a DRAV. A DRAV is a tuple consisting of two values uniformly at
   random that is uncorrelated to any other DRAV.
 
@@ -280,7 +324,7 @@ expected to be decoded (see also Lemma \ref{lem:well-formed-fun-of-dec-fun}).
   another value $x \in K$ is uniformly at random. Therefore $\alpha_l \cdot v +
   \beta$ and $\alpha_r \cdot v + \beta'$ are two values uniformly at random if
   and only if $\beta$ and $\beta'$ are uniformly at random. Per definition,
-  everytime a DRAV gets encoded, $\beta$ and $\beta'$ are fresh uniformly
+  every time a DRAV gets encoded, $\beta$ and $\beta'$ are fresh uniformly
   distributed random values. Trivially, a DRAV is therefore uncorrelated to any
   other DRAV.
 
@@ -386,9 +430,9 @@ other decoding function.
   consists of two values uniformly at random. From Lemma
   \ref{lem:well-formed-fun-of-dec-fun} we learn, that well--formedness is a
   function of the encryption keys used to eventually decrypt the DRAV. Since a
-  party that is not in posession of the encryption keys cannot know the
+  party that is not in possession of the encryption keys cannot know the
   decryption function, well--formed and non--well--formed DRAVs are
-  indistinguishable for a party not in posession of the keys.
+  indistinguishable for a party not in possession of the keys.
 \end{proof}
 
 
@@ -400,9 +444,9 @@ Direct DRAV arithmetic only supports addition ($+$) of two DRAVs. Indirect DRAV
 arithmetic has to be used for other operations. The advantage of direct DRAV
 arithmetic is that it can be performed without the knowledge of a DRAV's
 encryption keys. But (see Lemma \ref{lem:wrong-add}) the addition of DRAVs does
-not lead to additional information. Altough direct DRAV addition can be
+not lead to additional information. Although direct DRAV addition can be
 performed without the knowledge of a party in possession of the keys, this will
-not reveal addional information or cheating options. Since direct DRAV
+not reveal additional information or cheating options. Since direct DRAV
 additions do automatically generate new encryption keys, the result will only be
 well--formed iff the addition was intended by the party in possession of the
 keys (see Lemma \ref{lem:well-formed-fun-of-dec-fun}).
@@ -413,7 +457,7 @@ keys (see Lemma \ref{lem:well-formed-fun-of-dec-fun}).
 Additions commissioned by a party in possession of the encryption keys of
 well--formed DRAVs lead to well--formed DRAV: $\widetilde{x} =
 (\widetilde{x_l}, \widetilde{x_r})$ and $\widetilde{y} = (\widetilde{y_l},
-\widetilde{y_r})$ can be added componentwise to $\widetilde{z} =
+\widetilde{y_r})$ can be added component--wise to $\widetilde{z} =
 \left(\widetilde{x_1} + \widetilde{y_1}, \widetilde{x_2} +
 \widetilde{y_2}\right)$. The encryption keys for $\widetilde{z}$ will be
 $(\alpha_l, \alpha_r)$ and $(\beta_1 + \beta_3, \beta_2 + \beta_4)$ assuming
@@ -467,7 +511,7 @@ a similar argument.
   \label{lem:wrong-add}
 
   The addition that was unintended by a party in possession of the encryption
-  keys will not reveal additional informaion. A party that is not in possession
+  keys will not reveal additional information. A party that is not in possession
   of the keys but that knows three well--formed DRAVs $\widetilde{a}$,
   $\widetilde{b}$ and $\widetilde{c}$ that is commissioned to execute the
   addition $\widetilde{y} = \widetilde{a} + \widetilde{b}$ cannot generate a
@@ -480,10 +524,10 @@ a similar argument.
   Since every DRAV has per definition different dynamic keys the
   component--wise addition of two DRAVs leads to a new dynamic key that is
   characteristic for the addition intended by a party in possession of the
-  encruption keys.
+  encryption keys.
 
   Assuming there are three well--formed DRAVs $\widetilde{a}$, $\widetilde{b}$
-  and $\widetilde{c}$ and the party in possession of the keys commissiones any
+  and $\widetilde{c}$ and the party in possession of the keys commissions any
   other party to execute $\widetilde{y} = \widetilde{a} + \widetilde{b}$ but the
   other party tries to illicitly execute $\widetilde{y}' = \widetilde{a} +
   \widetilde{c}$:
@@ -690,7 +734,7 @@ Summing up, DRAE evaluation is partitioning calculations between the two
 parties: The first that built the DRAE and set up the OAFEs and the second that
 provides the input and does the evaluation. In fact, the first party isn't
 directly involved in the evaluation process, it provided its calculations
-apriori hidden inside OAFEs.  As a rule of thumb: As soon as a (non--trivial)
+a priori hidden inside OAFEs.  As a rule of thumb: As soon as a (non--trivial)
 multiplication is part of the original circuit, additional DRAEs have to be
 build.
 
@@ -705,8 +749,8 @@ Because DRAEs are tightly related to DRAVs, they fulfill similar properties:
     DRAE, it will become non--well--formed and operations with that DRAE result
     in non--well--formed DRAEs.
 
-  \item DRAEs are not exchangable with other DRAEs. If an attacker tries to
-    provide a DRAE that was not intended by the party in posession of the keys,
+  \item DRAEs are not exchangeable with other DRAEs. If an attacker tries to
+    provide a DRAE that was not intended by the party in possession of the keys,
     all following DRAEs will evaluate to uniform randomness.
 
   \item \label{prop:drae-oafe} DRAEs can be securely evaluated using OAFEs.
