@@ -440,13 +440,12 @@ other decoding function.
 \JWlthree{Direct DRAV Arithmetic}
 \label{sec:direct-DRAV-arithmetic}
 
-Direct DRAV arithmetic only supports addition ($+$) of two DRAVs. Indirect DRAV
-arithmetic has to be used for other operations. The advantage of direct DRAV
-arithmetic is that it can be performed without the knowledge of a DRAV's
-encryption keys. But (see Lemma \ref{lem:wrong-add}) the addition of DRAVs does
-not lead to additional information. Although direct DRAV addition can be
-performed without the knowledge of a party in possession of the keys, this will
-not reveal additional information or cheating options. Since direct DRAV
+Direct DRAV arithmetic only supports addition ($+$) of two DRAVs. The advantage
+of direct DRAV arithmetic is that it can be performed without the knowledge of a
+DRAV's encryption keys. But (see Lemma \ref{lem:wrong-add}) the addition of
+DRAVs does not lead to additional information. Although direct DRAV addition can
+be performed without the knowledge of a party in possession of the keys, this
+will not reveal additional information or cheating options. Since direct DRAV
 additions do automatically generate new encryption keys, the result will only be
 well--formed iff the addition was intended by the party in possession of the
 keys (see Lemma \ref{lem:well-formed-fun-of-dec-fun}).
@@ -611,26 +610,6 @@ a similar argument.
     &\JWnegl{}
   \end{align*}
 \end{proof}
-
-
-% INDIRECT DRAV ARITHMETIC
-\JWlthree{Indirect DRAV Arithmetic}
-\label{sec:indirect-DRAV-arithmetic}
-
-Indirect DRAV arithmetic assumes the universal encoding and decoding functions
-$E(v)$ and $D(\widetilde{v})$ and therefore the knowledge of the encryption
-keys. Another possibility is to map indirect DRAV arithmetic to OAFE calls that
-are set up by a party that knows the encryption keys.
-
-Indirect DRAV arithmetic is straightforward but can only be performed by a party
-in possession of the encryption keys. For any operator $\odot$, $\widetilde{a}
-\odot \widetilde{b} = E(D(\widetilde{a}) \odot D(\widetilde{b}))$. Obviously
-it's important that $\forall x: \bot \odot x = x \odot \bot = \bot$. $\bot$ can
-be represented as a DRAV as a tuple that is made up of two values uniformly at
-random.
-
-\JWtodo{Brauche ich das wirklich, kann glaube ich raus. Müsste man beweisen und
-ist auch einfach unnötig}
 
 
 % FINAL DRAV DECODING
@@ -850,24 +829,6 @@ possession of the keys can be performed. If one would perform an unintended
 operation, the encryption keys would change and the resulting DRAE (that
 evaluates to a DRAV) becomes unusable (non--well--formed). Obviously, the same
 argument holds for pre--evaluated DRAEs.
-
-
-%Indirect Addition
-\JWlfour{Indirect Addition via OAFEs}
-
-The indirect addition of $\widetilde{z} = \widetilde{x_1} + \widetilde{x_2}$ is
-$\widetilde{z} =
-\left( E\left(D_l(\widetilde{x}) + D_l(\widetilde{y})\right),
-       E\left(D_r(\widetilde{x}) + D_r(\widetilde{y})\right)
-\right)$
-(see chapter \ref{sec:indirect-DRAV-arithmetic}).
-Since $E(x)$ and $D(x)$ are both linear functions, $E\left(D(\ldots)
-+D(\ldots)\right)$ are linear functions, too that can be evaluated using two
-OAFE calls.  Obviously the OAFEs have to be configured appropriately by the
-party in possession of the encryption keys.
-
-\JWtodo{Auch hier (wie section \ref{sec:indirect-DRAV-arithmetic}):
-wahrscheinlich unnötig}
 
 
 %Multiplication
