@@ -5,7 +5,7 @@ This chapter states and proofs the security of the protocol in the
 \JWdef{Universal--Composability}{UC} framework by Ran Canetti \cite{canetti05}.
 In the UC framework security is defined by comparing an \emph{ideal model} to a
 \emph{real model}. The ideal model implements the intended functionality
-\JWfuncSym{}{} safely by design.  The protocol under examination runs in the
+\JWfuncSym{}{} safely by definition. The protocol under examination runs in the
 real model. In the real model, there is an attacker $\mathcal{A}$ that controls
 all corrupted parties.  In the ideal model, there is a simulator $\mathcal{S}$
 that tries to mimic $\mathcal{A}$. An environment $\mathcal{Z}$ is plugged to
@@ -154,14 +154,37 @@ The regular processing phase starts as soon as the setup phase is terminated.
 \JWlthree{Simulator $\mathcal{S}_{\text{Goliath}}(\mathcal{A})$}
 \label{sec:simulator-goliath}
 
+The setup phase is run as soon as the simulator starts.
+
+\paragraph{Setup Phase:}
+
 \begin{itemize}
 
-  \item Setup an emulated, honest \JWpOne{}
+  \item Setup emulated, honest \JWpTwo{} and OAFE functionality.
 
-  \item Feed the emulated \JWpOne{} with the same inputs the corrupted \JWpOne{}
-    receives
+  \item Wire the possibly corrupted \JWpOne{}, the emulated \JWpTwo{} and the
+    emulated OAFE functionality as usual.
 
-  \item
+\end{itemize}
+
+\paragraph{Processing Phase:}
+
+\begin{itemize}
+
+  \item Upon the emulated OAFE functionality received the OAFE configuration and
+    the emulated \JWpTwo{} received the DRAC, symbolically evaluate the
+    polynomial \JWpOne{} described. During the symbolic evaluation, the OAFE
+    functionality configuration could proof as unfitting: \JWpOne{} could have
+    sent a configuration that allows too few OAFE evaluations or the returned
+    vectors could be of the wrong shape. In both cases, modify the configuration
+    to return all zero vectors of the correct shape whenever the DRAC evaluation
+    would fail otherwise.
+  \item After having symbolically evaluated the polynomial encoded by \JWpOne{},
+    verify, that the polynomial has a degree that is less or equal than the
+    parametrized degree $k$. If \JWpOne{} submitted a polynomial of valid
+    degree, upload that polynomial to the ideal functionality \JWfuncSymOPE{}.
+    If the polynomial was illegal, restart the simulator in the setup phase.
+    This restart is equivalent to simply ignoring \JWpOne{}'s inputs.
 
 \end{itemize}
 
@@ -261,6 +284,41 @@ chapter \ref{sec:drav-final-decoding}).
 % CORRUPTED GOLIATH
 \JWlthree{Corrupted \JWpOne{}}
 
-Use the simulator from chapter \ref{sec:simulator-goliath}. Perfectly secure.
+A corrupted \JWpOne{} has the following possibilities to cheat:
+
+\begin{enumerate}
+
+  \item Describe a polynomial with a degree greater that the parametrized
+    maximal degree.
+
+  \item Configure the OAFE functionality in a way that the DRAC evaluation would
+    fail because it assumes additional evaluation possibilities or vectors of
+    other shapes.
+
+  \item Send messages that do not describe a valid DRAC.
+
+\end{enumerate}
+
+Both, the ideal model (running \JWfuncSymOPE{} and the simulator from chapter
+\ref{sec:simulator-goliath}) as well as in the real model (running
+\JWprotoSymOPE{}) handle these possibilities indistinguishably for any
+environment:
+
+\begin{enumerate}
+
+  \item Both, the protocol and the simulator verify the polynomial's degree.
+    Both ignore the input when the degree is greater than parametrized.
+
+  \item If the OAFE functionality is configured in a wrong way, both handle this
+    case similarly: Vectors of wrong shapes are turned to the all zero vector of
+    the correct shape. Missing OAFE evaluations are assumed to return the all
+    zero vector of the expected shape.
+
+  \item Messages that do not validly describe a DRAC are ignored.
+
+\end{enumerate}
+
+This assures any environment will not be able to distinguish between the real
+and the ideal model.
 
 % vim: set spell spelllang=en_us fileencoding=utf8 :

@@ -29,9 +29,10 @@
   \end{JWfuncSteps}
 \end{JWfunc}
 
-\begin{JWboxed}%
-  {Graphical Representation of \JWfuncSymOPE}%
-  {fig:graph-ope}
+\begin{figure}[ht]
+
+  \label{fig:graph-ope}
+  \centering
 
   \begin{tikzpicture}[>=stealth]
 
@@ -49,7 +50,10 @@
     node [anchor=west] {$y$};
 
   \end{tikzpicture}
-\end{JWboxed}
+
+  \caption{Graphical Representation of \JWfuncSymOPE}
+
+\end{figure}
 
 \begin{JWprotocol}%
   {\JWprotoSymOPE}%
@@ -60,9 +64,10 @@
 
   \begin{JWprotoSteps}
 
-  \item \JWpOne{} generates OAFEs and the DRAC (see section \ref{sec:OPE})
+  \item \JWpOne{} generates the DRAC and sets up the OAFE functionality (see
+    section \ref{sec:OPE}).
 
-  \item \JWpOne{} sends the OAFEs and DRAC to \JWpTwo{}
+  \item \JWpOne{} sends DRAC to \JWpTwo{}.
 
   \end{JWprotoSteps}
 
@@ -71,9 +76,19 @@
 
   \begin{JWprotoSteps}
 
-  \item Upon receiving the OAFEs and the DRAC, \JWpTwo{} evaluates the DRAC,
-    one DRAE after the other. Each DRAE evaluation leads to a DRAV that
-    \JWpTwo{} saves as a variable that is used for further computations
+  \item Upon receiving the DRAC, \JWpTwo{} verifies the received input really it
+    a DRAC, else ignore that input. Additionally it verifies that the DRAC
+    encodes a function whose degree is less or equal than the parametrized
+    degree (see chapter \ref{sec:max-poly-degree}), else ignore the input.
+
+  \item After a successful verification, \JWpTwo{} evaluates the DRAC, one DRAE
+    after the other. Each DRAE evaluation leads to a DRAV that \JWpTwo{} stores
+    as a variable that is used for further computations. Because the OAFE
+    functionality is set up by \JWpOne{}, during the evaluation it is possible
+    that the OAFE functionality turns out to behave unexpectedly: It could
+    decline needed evaluations and it could return vectors of unexpected shapes.
+    In both cases always assume it would have returned all zero vectors of the
+    expected shape.
 
   \item After the Evaluation, \JWpTwo{} adds both components of the last DRAV
     and queries a special final OAFE with that value. The then received new
@@ -82,3 +97,5 @@
   \end{JWprotoSteps}
 
 \end{JWprotocol}
+
+% vim: set spell spelllang=en_us fileencoding=utf8 :

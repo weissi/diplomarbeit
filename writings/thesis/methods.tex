@@ -437,15 +437,15 @@ other decoding function.
 
 
 % DIRECT DRAV ARITHMETIC
-\JWlthree{Direct DRAV Arithmetic}
-\label{sec:direct-DRAV-arithmetic}
+\JWlthree{Direct DRAV Addition}
+\label{sec:DRAV-addition}
 
-Direct DRAV arithmetic only supports addition ($+$) of two DRAVs. The advantage
-of direct DRAV arithmetic is that it can be performed without the knowledge of a
-DRAV's encryption keys. But (see Lemma \ref{lem:wrong-add}) the addition of
-DRAVs does not lead to additional information. Although direct DRAV addition can
-be performed without the knowledge of a party in possession of the keys, this
-will not reveal additional information or cheating options. Since direct DRAV
+This thesis referres to DRAV addition as \emph{direct DRAV addition} because is
+has the property that it can be performed without knowledge of a DRAV's
+encryption keys. But (see Lemma \ref{lem:wrong-add}) the addition of DRAVs does
+not lead to additional information. Although direct DRAV addition can be
+performed without the knowledge of a party in possession of the keys, this will
+not reveal additional information or cheating options. Since direct DRAV
 additions do automatically generate new encryption keys, the result will only be
 well--formed iff the addition was intended by the party in possession of the
 keys (see Lemma \ref{lem:well-formed-fun-of-dec-fun}).
@@ -509,7 +509,7 @@ a similar argument.
 \begin{lem}
   \label{lem:wrong-add}
 
-  The addition that was unintended by a party in possession of the encryption
+  An addition that was unintended by a party in possession of the encryption
   keys will not reveal additional information. A party that is not in possession
   of the keys but that knows three well--formed DRAVs $\widetilde{a}$,
   $\widetilde{b}$ and $\widetilde{c}$ that is commissioned to execute the
@@ -630,12 +630,12 @@ encryption keys. The setup of this OAFE can be seen as the authorization to
 decode exactly one specific DRAV. The procedure will decode a DRAV to a final
 scalar value although $D$ is a partial function. The special value $\bot$ that
 $D$ evaluates to if the DRAV is non--well--formed is simply mapped to uniform
-randomness. As a result of Lemma \ref{lem:}, a DRAV is also non--well--formed if
-the encryption keys differ from the keys of the DRAV whose decoding was
-intended. Therefore, no other DRAVs can be decoded illegitimately. In the
-following, the DRAV to be decoded is named $\widetilde{v} = (\widetilde{v_1},
-\widetilde{v_2})$ and the OAFE permitting the decoding is called the \emph{final
-OAFE}.
+randomness. As a result of Lemma \ref{lem:well-formed-fun-of-dec-fun}, a DRAV is
+also non--well--formed if the encryption keys differ from the keys of the DRAV
+whose decoding was intended. Therefore, no other DRAVs can be decoded
+illegitimately. In the following, the DRAV to be decoded is named $\widetilde{v}
+= (\widetilde{v_1}, \widetilde{v_2})$ and the OAFE permitting the decoding is
+called the \emph{final OAFE}.
 
 The second party's input to the final OAFE is $\widehat{v} = \widetilde{v_1} +
 \widetilde{v_2}$, the addition of both components of the DRAV to decode.  The
@@ -700,14 +700,23 @@ result at all because it added both components before using the final OAFE.
 \label{sec:drae}
 
 \JWdef{Dual Randomized Affine Encoding}{DRAE}{s} are affine representations of
-parts of arithmetic circuits. A DRAE is a specification of calculations that
-need to be performed to obtain the evaluated value of the partial arithmetic
-circuit that the DRAE represents. Since no intermediate information should be
-revealed throughout the process the evaluated value is a DRAV. The calculations
-that are specified by a DRAE involve both OAFEs and DRAVs. The DRAVs are the
-input values and the OAFEs are used to perform partial affine calculations. The
-last step to evaluate a single DRAE is to perform calculations on the values
-from the OAFEs.
+parts of arithmetic circuits. So, a DRAE is an entity that corresponds to
+arithmetic expressions but one single DRAE is not powerful enough to model
+arbitry arithmetic expressions. Technically, a DRAE is a specification of
+calculations that need to be performed to obtain the evaluated value arithmetic
+expression this DRAE stands models. Just the same way ususal arithmetic
+expressions evaluate to scalar values, DRAEs evalute to DRAVs. The calculations
+that are specified by a DRAE are solely affine functions. The definition of
+these functions is not known by the party that eventually evaluates these
+calulations. Because the definition of an affine function is known as soon as it
+has been evaluated the second time, the calculations may only be evaluated once.
+To solution to hiding and assuring only one evaluation are OAFEs (see chapter
+\ref{def:OAFE}). The values used to evaluate the OAFEs are DRAVs, more precisely
+both tuple components of a DRAV which are scalar values of the finite field $K$.
+The DRAVs are the input values for the OAFEs which perform partial affine
+calculations. The results obtained from the OAFE evaluation only need a simple
+final combining step that yields th the evaluated output value (a DRAV) of a
+single DRAE.
 
 Summing up, DRAE evaluation is partitioning calculations between the two
 parties: The first that built the DRAE and set up the OAFEs and the second that
@@ -749,9 +758,9 @@ multiplicative terms) yields DRAVs, too. The addition of all the DRAVs obtained
 from the additive terms and all the DRAVs obtained from the multiplicative terms
 leads to a DRAV that is the evaluation of this DRAE.
 
-More formally, a DRAE can be described as follows where $\mathcal{E}$ represents
-the DRAEs, $\mathcal{C}$ the computations and $\mathcal{V}_\mathcal{C}$ the
-computations that lead to DRAVs.
+More formally, a DRAE can be described as follows where
+$\mathcal{E}_\mathcal{C}$ represents the DRAEs, $\mathcal{C}$ the computations
+and $\mathcal{V}_\mathcal{C}$ the computations that lead to DRAVs.
 
 \begin{align}
 %
@@ -768,10 +777,11 @@ computations that lead to DRAVs.
                     \mid f, f' \in \mathcal{C} \} \nonumber\\
 %
   \label{rel:DRAE}
-  \mathcal{E}_\mathcal{C} = & \{ (M, A) \mid
+  \mathcal{E}_\mathcal{C} = & \{ (M, A, (k_l, k_r)) \mid
       M \subseteq \mathcal{V}_\mathcal{C} \times
-      \mathcal{V}_\mathcal{C}, A \subseteq, \mathcal{V}_\mathcal{C};
-  A, M~\text{finite multi--sets} \}
+      \mathcal{V}_\mathcal{C}; A \subseteq \mathcal{V}_\mathcal{C};
+      k_l, k_r \in K;
+      A, M~\text{finite multi--sets} \}
 %
 \end{align}
 
@@ -783,22 +793,24 @@ each variable $x$. This leads to pre--evaluated DRAEs of the form
 
 \begin{align}
   \mathcal{V} = & \{ (v_l, v_r) \mid v_l, v_r \in K \}
-  \text{, the DRAVs (chapter \ref{def:DRAV})} \nonumber\\
+  &\text{, the DRAVs (chapter \ref{def:DRAV})} \nonumber\\
 %
   \label{rel:pre-eval-DRAE}
-  \mathcal{E} = & \{ (M, A) \mid
-      M \subseteq \mathcal{V} \times \mathcal{V}, A \subseteq, \mathcal{V} \}
-      \text{, the pre--evaluated DRAEs}
+  \mathcal{E} = & \{ (M, A, k) \mid
+      M \subseteq \mathcal{V} \times \mathcal{V};
+      A \subseteq \mathcal{V};
+      k \in \mathcal{V} \}
+      &\text{, the pre--evaluated DRAEs}
 \end{align}
 
 Evaluating a pre--evaluated DRAE is straightforward: A DRAE $e \in \mathcal{E} =
-(M,A)$ can be evaluated to its single resulting DRAV $r \in \mathcal{V}$ as
+(M,A, k)$ can be evaluated to its single resulting DRAV $r \in \mathcal{V}$ as
 follows (all additions performed component--wise):
 
 \begin{align*}
 M' &= \Bigg\{ m_1 \cdot m_2\ \Bigg|\ \begin{pmatrix}m_1\\m_2\end{pmatrix}
 \in M \Bigg\} \\
-r & = \sum_{a \in A}a + \sum_{m \in M'}m
+r & = \sum_{a \in A}a + \sum_{m \in M'}m + k
 \end{align*}
 
 
@@ -807,7 +819,7 @@ r & = \sum_{a \in A}a + \sum_{m \in M'}m
 
 DRAE arithmetic is used to combine multiple DRAEs to one DRAE that performs
 complexer computations. Since DRAEs evaluate to DRAVs are DRAVs can be easily
-added (see chapter \ref{sec:direct-DRAV-arithmetic}), an arbitrary number of
+added (see chapter \ref{sec:DRAV-addition}), an arbitrary number of
 DRAEs can be added to one resulting DRAE. But two arbitrary DRAEs cannot be
 multiplied to one DRAE. To multiply two arbitrary DRAEs, both DRAEs get assigned
 to a temporary variable that will hold the DRAV obtained as soon as the DRAV is
@@ -820,7 +832,7 @@ DRAVs a name as soon as they are evaluated.
 \JWlfour{Addition}
 
 Since two DRAVs can directly be added as explained in chapter
-\ref{sec:direct-DRAV-arithmetic}, two DRAEs can be added by concatenating the
+\ref{sec:DRAV-addition}, two DRAEs can be added by concatenating the
 multiplicative ($M$ in relations \ref{rel:DRAE} and \ref{rel:pre-eval-DRAE}) and
 additive ($A$) terms. Notably, although the encryption keys change, this
 operation can be performed by any party, in possession of the encryption keys or
@@ -949,11 +961,11 @@ $\widetilde{e} \in \mathcal{V}$ leads to:
     \\
     \alpha_r(xy) + (r_5r_6 + r_7 + r_8)
     + \Delta_4x + \Delta_2y
-    + \frac{\Delta_2\Delta_4}{\alpha_l}
-    + \frac{\Delta_1\alpha_lr_6}{\alpha_r}
+    + \frac{\Delta_2\Delta_4}{\alpha_r}
+    + \frac{\Delta_1\alpha_lr_6}{\alpha_l}
     - \Delta_2r_6
-    + \frac{\Delta_3r_5}{\alpha_r}
-    - \frac{\Delta_4r_5}{\alpha_l}
+    + \frac{\Delta_3r_5}{\alpha_l}
+    - \frac{\Delta_4r_5}{\alpha_r}
   \end{pmatrix} \\
 %
 \end{align*}
@@ -1013,6 +1025,41 @@ $r$s). In a finite field this means that both components are uniformly at random
 and uncorrelated to any other value in the process.
 
 
+% MAXIMAL POLYNOMIAL DEGREE
+\JWlthree{Maximal Polynomial Degree}
+\label{sec:max-poly-degree}
+
+From a given DRAE it is easily possible to calculate the maximal polynomial
+degree of the function the DRAE encodes. Since multiplications of DRAEs are
+performed by the party that evaluates the DRAEs, it is able to keep book of the
+maximal degree of the overall function. The bookkeeping is very straightforward:
+
+\begin{itemize}
+
+  \item Constant terms are annotated with maximal degree $0$.
+
+  \item Terms that refer to the function parameters are annotated with maximal
+    degree $1$.
+
+  \item Terms that refer to other DRAEs evaluated before are annotated with the
+    maximal degree of the DRAE they refer to.
+
+  \item The multiplicative DRAE terms are annotated with the sum of both terms
+    they multiply.
+
+  \item The additive DRAE terms are annotated with the maximal degree of the
+    DRAE they refer to.
+
+  \item As the last step: The DRAE gets annotated with the maximum of the
+    annotated degrees of all multiplicative terms and all additive terms.
+
+\end{itemize}
+
+Since there is always a final DRAE that yields the function's result, the
+annotated maximal degree of this DRAE is the maximal degree the function can be
+of.
+
+
 %
 % DUAL RANDOMIZED AFFINE CIRCUITS
 %
@@ -1020,11 +1067,21 @@ and uncorrelated to any other value in the process.
 \label{sec:drac}
 
 \JWdef{Dual Randomized Affine Circuit}{DRAC}{s} are representations of entire
-arbitrary arithmetic circuits. DRACs are sequences of DRAEs, each assigned to a
-variable. Because DRAEs evaluate to DRAVs, the variables will hold a DRAV as
-soon as the DRAE was evaluated. Naturally the DRAC evaluation has to be
-performed in the correct order, otherwise some variables may not have their
-values assigned yet when needed.
+arbitrary arithmetic circuits. A DRAC can be envisioned as an encoding for an
+entire arithmetic function. As discussed in the previous chapters, not every
+arithmetic function can be expressed as one DRAE. Therefore, the overall
+function is divided in as many DRAEs as needed. In the situation that one DRAE
+alone is not sufficient, extra DRAEs are used that evaluate to temporary
+intermediate variable. Every DRAE can use the evaluated intermediate variables
+of preceding DRAEs when the computation was too complex for a single DRAE. This
+resembles to evaluate the simple function $f(x) = (a \cdot b) + (c \cdot d)$ as
+a sequence of sub--expressions, each assigned to a intermediate variable: $t_0
+\leftarrow a \cdot b; t_1 \leftarrow c \cdot d; y \leftarrow t_0 + t_1$.  In
+just the same way, DRACs are sequences of DRAEs, each assigned to a variable.
+Because DRAEs evaluate to DRAVs, the variables will hold a DRAV as soon as the
+DRAE was evaluated. Naturally the DRAC evaluation has to be performed in the
+correct order, otherwise some variables may not have their values assigned yet
+when needed.
 
 
 % EVALUATION
@@ -1077,6 +1134,13 @@ DRAV to the variable as described in the DRAC. As explained in chapters
 \ref{sec:drav-final-decoding} and \ref{sec:DRAC-eval} both components of the
 final DRAV have then to be added and passed to the final OAFE which yields the
 unencrypted evaluated value of the polynomial.
+
+
+% CHECKING THE POLYNOMIAL DEGREE
+\JWlthree{Checking the Polynomial Degree}
+\label{sec:checking-poly-degree}
+
+\JWtodo{Wie kann David den Polynomgrad überprüfen}
 
 
 %
