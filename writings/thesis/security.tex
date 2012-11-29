@@ -50,7 +50,7 @@ to the values the honest, emulated \JWpTwo{} sends in the reference system.
 
   \item Setup emulated, honest \JWpOne{} labeled $\mathcal{G}^R$.
 
-  \item Setup emulated, honest OAFE functionality \JWfuncSym{seq-ot}{OAFE}
+  \item Setup emulated, honest OAFE functionality \JWfuncSymOAFE{}
     labeled $\mathcal{F}^R_{OAFE}$.
 
   \item Setup emulated, honest \JWpTwo{} labeled $\mathcal{D}^R$.
@@ -75,7 +75,7 @@ the real model.
 
   \item Setup emulated, honest \JWpOne{} labeled $\mathcal{G}^T$.
 
-  \item Setup emulated, honest OAFE functionality \JWfuncSym{seq-ot}{OAFE}
+  \item Setup emulated, honest OAFE functionality \JWfuncSymOAFE{}
     labeled $\mathcal{F}^T_{OAFE}$.
 
   \item Wire $\mathcal{G}^T$, $\mathcal{F}^T_{OAFE}$ and $\mathcal{D}^C$ as
@@ -104,17 +104,20 @@ The regular processing phase starts as soon as the setup phase is terminated.
 \begin{itemize}
 
   \item Intercept \JWpTwo{}'s ($\mathcal{D}^C$) polynomial input. This is
-    trivial: It's the first message that \JWpTwo{} transmits to the OAFE
-    functionality
+    trivial because it is the first message that \JWpTwo{} transmits to the OAFE
+    functionality \JWfuncSymOAFE{}. Now verify the input $x$ fulfills $x \in
+    F_{2^k}$ and store $x$, else ignore that input.
 
-  \item Ask the reference \JWpTwo{} $\mathcal{D}^R$ to send the same output to
-    OAFE functionality wired to it.
+  \item Upon an verified $x$ is stored, send \JWmsgTP{Evaluate}{$x$} to the
+    reference \JWpTwo{} $\mathcal{D}^R$. This will start the evaluation process
+    for $\mathcal{D}^R$.
 
-  \item Until evaluating the last OAFE the simulation has just to adapt the
-    scheduling of the reference system to match the test system.
+  \item Until evaluating the last OAFE the simulation has to intercept all
+    messages from the corrupted \JWpTwo{} and adapt the scheduling of the
+    reference system to match the test system.
 
   \item As soon as a message from the corrupted \JWpTwo{} $\mathcal{D}^C$ is
-    received, compare it to the according message of the reference \JWpTwo{}
+    intercepted, compare it to the according message of the reference \JWpTwo{}
     ($\mathcal{D}^R$). Should the message from the corrupted \JWpTwo{} differ
     from the message from reference \JWpTwo{} or should the corrupted \JWpTwo{}
     send an additional message, \JWpTwo{} is caught while trying to cheat. If
@@ -123,7 +126,7 @@ The regular processing phase starts as soon as the setup phase is terminated.
 
   \item As soon as the corrupted $\mathcal{D}^C$ has sent its last message to
     the OAFE functionality check it as above and halt the test and the reference
-    system.
+    systems.
 
 \end{itemize}
 
@@ -131,15 +134,18 @@ The regular processing phase starts as soon as the setup phase is terminated.
 
 \begin{itemize}
 
-  \item The ideal functionality is used to evaluate the polynomial using
-    \JWpTwo{}'s intercepted input. The evaluated result is named $y$ in the
-    following steps.
+  \item Output \JWmsgTP{Evaluate}{$x$} to \JWfuncSymOPEnp{}, this evaluates the
+    polynomial using the ideal OPE functionality using \JWpTwo{}'s intercepted
+    input $x$.
+
+  \item Upon receiving \JWmsgTP{Evaluated}{$y$} from \JWfuncSymOPEnp{}, store
+    the polynomial's evaluated result $y$.
 
   \item The final step analyzes the variable \JWcode{cheated} and modifies the
-    final OAFE accordingly. If \JWcode{cheated $=$ $true$} modify the final OAFE
+    final OAFE accordingly. If \JWcode{cheated $= true$} modify the final OAFE
     to evaluate to a value at random but unequal to the real result. (e.g. an
     affine function $0 \cdot x + y + r$ where $r \in K \setminus \{0\}$ is
-    fresh, uniform randomness). If \JWcode{cheated $=$ $false$}, the final OAFE
+    fresh, uniform randomness). If \JWcode{cheated $= false$}, the final OAFE
     gets modified such that evaluating the next step honestly evaluates to the
     evaluated polynomial's result (e.g. by an affine function $0 \cdot x + y$
     where $y$ is the evaluated polynomial's value.
@@ -160,10 +166,11 @@ The setup phase is run as soon as the simulator starts.
 
 \begin{itemize}
 
-  \item Setup emulated, honest \JWpTwo{} and OAFE functionality.
+  \item Setup emulated, honest \JWpTwo{} and OAFE functionality
+    \JWfuncSymOAFE{}.
 
-  \item Wire the possibly corrupted \JWpOne{}, the emulated \JWpTwo{} and the
-    emulated OAFE functionality as usual.
+  \item Wire the possibly corrupted \JWpOne{}, the emulated \JWpTwo{} and
+    \JWfuncSymOAFE{} as usual.
 
 \end{itemize}
 
@@ -174,17 +181,20 @@ The setup phase is run as soon as the simulator starts.
   \item Upon the emulated OAFE functionality received the OAFE configuration and
     the emulated \JWpTwo{} received the DRAC, symbolically evaluate the
     polynomial \JWpOne{} described. During the symbolic evaluation, the OAFE
-    functionality configuration could proof as unfitting: \JWpOne{} could have
-    sent a configuration that allows too few OAFE evaluations or the returned
-    vectors could be of the wrong shape. In both cases, modify the configuration
-    to return all zero vectors of the correct shape whenever the DRAC evaluation
-    would fail otherwise.
+    functionality configuration could proof to be unfitting: \JWpOne{} could
+    have sent a configuration that allows too few OAFE evaluations or evaluates
+    to vectors of wrong shape. In both cases, modify the configuration to return
+    all zero vectors of the correct shape whenever the DRAC evaluation would
+    fail otherwise.
+
   \item After having symbolically evaluated the polynomial encoded by \JWpOne{},
     verify, that the polynomial has a degree that is less or equal than the
     parametrized degree $k$. If \JWpOne{} submitted a polynomial of valid
-    degree, upload that polynomial to the ideal functionality \JWfuncSymOPE{}.
-    If the polynomial was illegal, restart the simulator in the setup phase.
-    This restart is equivalent to simply ignoring \JWpOne{}'s inputs.
+    degree, store the polynomial's coefficients as $a \in \JWfieldGeneral^n$.
+    Next, upload that polynomial to the ideal functionality \JWfuncSymOPEnp{} by
+    outputting \JWmsgTP{Commit}{$a$} to \JWfuncSymOPEnp{}.  If the polynomial
+    was illegal, restart the simulator in the setup phase.  This restart is
+    equivalent to simply ignoring \JWpOne{}'s inputs.
 
 \end{itemize}
 
@@ -233,12 +243,14 @@ possibilities:
 
 \item \label{av-ad:input} Forge the input value.
 
-\item \label{av-ad:DRAV} Forge one or more DRAVs.
+\item \label{av-ad:DRAV} Illicit modification of at least one DRAV.
 
-\item \label{av-ad:other-ops} Perform additional additions.
+\item \label{av-ad:wrong-DRAV} Provide a wrong DRAV to an operation (e.g.\ for
+  $\widetilde{b} \neq \widetilde{c}$, perform $\widetilde{a} + \widetilde{c}$
+  instead of $\widetilde{a} + \widetilde{b}$ as intended)
 
-\item \label{av-ad:less-ops} Perform less arithmetic operations
-  (additions/multiplications).
+\item \label{av-ad:other-ops} Perform unintended additional operations or do not
+  perform intended operations.
 
 \item \label{av-ad:last-OAFE} Forge the input to the last OAFE.
 
@@ -249,36 +261,39 @@ The proposed protocol is secure against point \ref{av-ad:input} because this is
 the same as simply changing the input value. That is by definition not an attack
 but a free choice every \JWpTwo{} can take.
 
-The protocol is secure against point \ref{av-ad:DRAV} because an polynomial is a
-circuit with exactly one root, the output value. The value of every node take
-part in the calculation of the final result. Since DRAV forging is equivalent to
-calculation involving a wrong DRAV (Lemma \ref{lem:well-formed-fun-of-dec-fun})
-we only consider DRAV forging (non--well--formed DRAVs). The propagation of
-every non--well--formed DRAV to the final result is guaranteed because only two
-operations are defined: Multiplications and additions and both propagate
-non--well--formed operands: If one non--well--formed DRAV is an operand of a
-multiplication, the multiplication result is again a non--well--formed DRAV (see
-chapter \ref{sec:DRAE-multiplication}). The same argument holds for additions,
-additionally performed additions and additions not performed as requested
-(Lemmas \ref{lem:DRAV-add}, \ref{lem:DRAV-add-bad} and \ref{lem:wrong-add}).
-Therefore an attack attempt on a DRAV is equivalent to replacing the output
-value of the DRAE that has the DRAV as one of its inputs by uniform randomness.
-Since this has to propagate until the root of the tree (the result!), any
-attempt to forge a DRAV will result in uniform randomness.
+To discuss the security of the protocol against illicit DRAV modifications
+(point \ref{av-ad:DRAV}) and calculations involving wrong DRAVs (point
+\ref{av-ad:wrong-DRAV}), we only consider illicit modifications since both are
+equivalent (Lemma \ref{lem:well-formed-fun-of-dec-fun}). The protocol is secure
+against DRAV forging because any polynomial is transformed into an arithmetic
+circuit with exactly one root gate, the output value. Therefore, the value of
+every arithmetic gate is relevant for calculation of the final result. The
+propagation of every non--well--formed DRAV to the final result is guaranteed
+because both, multiplications and additions evaluate to a non--well--formed DRAV
+if at least one operand is a non--well--formed DRAV (see Lemma
+\ref{lem:DRAV-add-bad} and chapters \ref{sec:DRAE-addition} and
+\ref{sec:DRAE-multiplication}). Therefore a DRAV modification attempt equivalent
+to replacing the output value of the DRAE that encoded an operation using the
+modified DRAV by uniform randomness. Since this propagates up to the single
+output of the circuit, any attempt to forge a DRAV will result in uniform
+randomness.
 
-Since additionally performed additions are equivalent to additions involving
-unintended operands, every attempt to do so (point \ref{av-ad:other-ops}) is
-caught (see Lemma \ref{lem:wrong-add}).
-
-Since DRAV well--formedness is a function of the decryption function
-(\ref{lem:well-formed-fun-of-dec-fun}) performing less operations is not
-feasible without knowing the encryption keys. Since \JWpTwo{} is not in
-possession of the keys, point \ref{av-ad:less-ops} does not break the protocol.
+Since DRAV well--formedness is a function of the decryption function (Lemma
+\ref{lem:well-formed-fun-of-dec-fun}) an attacker cannot perform additional
+additions nor perform less operations. Both attacks would result in intermediate
+values (DRAV) with the wrong encryption keys which is equivalent to illicit DRAV
+manipulation handled in point \ref{av-ad:wrong-DRAV}. Because multiplications
+depend on specially configured OAFEs (see chapter
+\ref{sec:DRAE-multiplication}), an attacker that corrupted \JWpTwo{} is not able
+to perform additional multiplications.
 
 Finally, the protocol is perfectly secure against point \ref{av-ad:last-OAFE}
 because an attempt to cheat results in uniform randomness. In the case of
 the final OAFE it results in uniform randomness unequal the real result (see
 chapter \ref{sec:drav-final-decoding}).
+
+As one can see above, the proposed protocol is perfectly secure against any
+attack an corrupted \JWpTwo{} can play.
 
 
 % CORRUPTED GOLIATH
@@ -299,7 +314,7 @@ A corrupted \JWpOne{} has the following possibilities to cheat:
 
 \end{enumerate}
 
-Both, the ideal model (running \JWfuncSymOPE{} and the simulator from chapter
+Both, the ideal model (running \JWfuncSymOPEnp{} and the simulator from chapter
 \ref{sec:simulator-goliath}) as well as in the real model (running
 \JWprotoSymOPE{}) handle these possibilities indistinguishably for any
 environment:

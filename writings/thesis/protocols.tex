@@ -9,22 +9,20 @@
   {The ideal $\JWfieldGeneral{}$-OPE functionality \JWfuncSymOPE{}}%
   {fig:func-ope}
 
-  Parametrized by a finite field size $q$ and maximal polynomial degree $k$.
+  Parametrized by a finite field size $2^k$ and maximal polynomial degree $n$.
 
   \begin{JWfuncSteps}
 
-  \item Upon receiving input $a \in \mathbb{F}_q^k$ from \JWpOne{}, verify that
-    there is no stored input from \JWpOne{}, yet; else ignore that input. Next
-    record $a$ and send \JWmsgTwo{processing}{\JWpOne{}} to the adversary.
+  \item Upon receiving input \JWmsgTP{Commit}{$a$} from the environment, verify
+    $a \in \JWfieldGeneral^n$ and that there is no stored input, yet; else
+    ignore that input. Next record $a$.
 
-  \item Upon receiving input $x \in \mathbb{F}_q$ from \JWpTwo{}, verify that
-    there is no stored input from \JWpTwo{}, yet; else ignore that input. Next
-    record $x$ and send \JWmsgTwo{processing}{\JWpTwo{}} to the adversary.
+  \item Upon receiving input \JWmsgTP{Evaluate}{$x$} from the enviconment,
+    verify $x \in \JWfieldGeneral{}$ and that there is no stored input, yet;
+    else ignore that input. Next record $x$.
 
-  \item Upon receiving a message \JWmsgTwo{delivery}{\JWpTwo{}} from the
-    adversary, verify that \JWpTwo{} and \JWpOne{} have both already provided
-    some input; else ignore that message. Next, compute $y \leftarrow
-    \sum_{i=1}^k a_ix^i$ and send $y$ to \JWpTwo{}.
+  \item Upon $a$ and $x$ are verified and stored, compute $y \leftarrow
+    \sum_{i=0}^n a_ix^i$ and output \JWmsgTP{Evaluated}{$y$}.
 
   \end{JWfuncSteps}
 \end{JWfunc}
@@ -60,14 +58,19 @@
   {Protocol: Oblivious Polynomial Evaluation}%
   {fig:proto-ope}
 
+  Parametrized by the security parameter $k$ that specifies the field
+  $\mathbb{F}_{2^k}$ and the maximal degree of the polynomial $n$.
+
   \JWprotoPhase{Setup:}
 
   \begin{JWprotoSteps}
 
-  \item \JWpOne{} generates the DRAC and sets up the OAFE functionality (see
-    section \ref{sec:OPE}).
+  \item Upon input \JWmsgTP{Commit}{$a$} from the environment, \JWpOne{}
+    verifies that $a \in \mathbb{F}_{2^k}^{n+1}$; else ignore that input. Next,
+    \JWpOne{} generates the DRAC and sets up the OAFE functionality for the
+    polynomial $f(x) = \sum_{i=0}^n a_ix^i$ (see section \ref{sec:OPE}).
 
-  \item \JWpOne{} sends DRAC to \JWpTwo{}.
+  \item Finally, \JWpOne{} sends DRAC to \JWpTwo{}.
 
   \end{JWprotoSteps}
 
@@ -76,23 +79,29 @@
 
   \begin{JWprotoSteps}
 
-  \item Upon receiving the DRAC, \JWpTwo{} verifies the received input really it
-    a DRAC, else ignore that input. Additionally it verifies that the DRAC
-    encodes a function whose degree is less or equal than the parametrized
-    degree (see chapter \ref{sec:max-poly-degree}), else ignore the input.
+  \item Upon receiving the DRAC from \JWpOne{}, verify that there is no stored
+    DRAC yet, else ignore that input. Next, \JWpTwo{} verifies the received
+    input really it a DRAC, else ignore that input. Additionally it verifies
+    that the DRAC encodes a function whose degree is less or equal than $n$ (see
+    chapter \ref{sec:max-poly-degree}), else ignore the input. If the DRAC
+    verification was successful, store the DRAC.
 
-  \item After a successful verification, \JWpTwo{} evaluates the DRAC, one DRAE
-    after the other. Each DRAE evaluation leads to a DRAV that \JWpTwo{} stores
-    as a variable that is used for further computations. Because the OAFE
-    functionality is set up by \JWpOne{}, during the evaluation it is possible
-    that the OAFE functionality turns out to behave unexpectedly: It could
-    decline needed evaluations and it could return vectors of unexpected shapes.
-    In both cases always assume it would have returned all zero vectors of the
-    expected shape.
+  \item Upon receiving input \JWmsgTP{Evaluate}{$x$} from the environment,
+    verify that $x \in \mathbb{F}_{2^k}$, else ignore that input. If there is
+    already a stored DRAC, continue at the next step, else wait for a stored
+    DRAC.
+
+  \item Next, \JWpTwo{} evaluates the DRAC. Because the OAFE functionality is
+    set up by \JWpOne{}, during the evaluation it is possible that the OAFE
+    functionality turns out to behave unexpectedly: It could decline needed
+    evaluations and it could return vectors of unexpected shapes. In both cases
+    always assume it would have returned all zero vectors of the expected shape.
 
   \item After the Evaluation, \JWpTwo{} adds both components of the last DRAV
-    and queries a special final OAFE with that value. The then received new
-    value is the result of the computation $y = \sum_{i=1}^k a_ix^i$.
+    and queries a special final OAFE with that value. Again, assume the all zero
+    vector is the OAFE behaves unexpectedly. The then received new value is the
+    result of the computation $y = \sum_{i=1}^k a_ix^i$. Finally, output
+    \JWmsgTP{Evaluated}{$y$} to the environment.
 
   \end{JWprotoSteps}
 
