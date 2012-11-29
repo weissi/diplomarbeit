@@ -35,16 +35,13 @@ $\mathcal{S}$).
 \JWlthree{Simulator $\mathcal{S}_{\text{\JWpTwo{}}}(\mathcal{A})$}
 \label{sec:simulator-david}
 
-\paragraph{Setup Phase}
+The setup phases are run sequentially as soon as the simulator starts.
 
-The setup phase is run as soon as the simulator starts.
+\paragraph{Setup Reference System:}
 
-
-\subparagraph{Setup Reference System:}
-
-The reference system is used to review the honesty of the corrupted \JWpTwo{} in
-the real model. The messages send from the corrupted \JWpTwo{} are compared
-to the values the honest, emulated \JWpTwo{} sends in the reference system.
+The reference system is used to review the honesty of the attacker \JWadv{}
+that impersonates \JWpTwo{}. The messages sent from \JWadv{} are compared
+to the messages an honest, emulated \JWpTwo{} sends in the reference system.
 
 \begin{itemize}
 
@@ -66,21 +63,20 @@ to the values the honest, emulated \JWpTwo{} sends in the reference system.
 \end{itemize}
 
 
-\subparagraph{Setup Test System:}
-
-The test system is wired to the corrupted \JWpTwo{} (labeled $\mathcal{D}^C$) in
-the real model.
+\subparagraph{Setup System Under Test:}
 
 \begin{itemize}
+
+  \item Setup an emulated version of the given real model adversary
+    \JWadv{} which especially impersonates the corrupted \JWpTwo{}.
 
   \item Setup emulated, honest \JWpOne{} labeled $\mathcal{G}^T$.
 
   \item Setup emulated, honest OAFE functionality \JWfuncSymOAFE{}
     labeled $\mathcal{F}^T_{OAFE}$.
 
-  \item Wire $\mathcal{G}^T$, $\mathcal{F}^T_{OAFE}$ and $\mathcal{D}^C$ as
-    usual. Every message that gets send from $\mathcal{D}^C$ should be
-    intercepted and checked by the simulator.
+  \item Wire $\mathcal{G}^T$, $\mathcal{F}^T_{OAFE}$ and \JWadv{} to each other
+    and \JWadv{} to the environment as in the real model.
 
   \item Initialize $\mathcal{G}^T$ with the same polynomial $\mathcal{G}^R$ got
     initialized.
@@ -99,34 +95,32 @@ the real model.
 
 \paragraph{Regular Processing Phase:}
 
-The regular processing phase starts as soon as the setup phase is terminated.
+The regular processing phase starts as soon as the setup phases are terminated.
 
 \begin{itemize}
 
-  \item Intercept \JWpTwo{}'s ($\mathcal{D}^C$) polynomial input. This is
-    trivial because it is the first message that \JWpTwo{} transmits to the OAFE
-    functionality \JWfuncSymOAFE{}. Now verify the input $x$ fulfills $x \in
-    F_{2^k}$ and store $x$, else ignore that input.
+  \item Intercept the adversary's (\JWadv{}) polynomial input. This is trivial
+    because it is the first message that \JWadv{} transmits to \JWfuncSymOAFE{}
+    and was not ignored by \JWfuncSymOAFE{}. Next, store $x$.
 
-  \item Upon an verified $x$ is stored, send \JWmsgTP{Evaluate}{$x$} to the
-    reference \JWpTwo{} $\mathcal{D}^R$. This will start the evaluation process
-    for $\mathcal{D}^R$.
+  \item Upon an $x$ is stored, send \JWmsgTP{Evaluate}{$x$} to the reference
+    system's emulated \JWpTwo{} $\mathcal{D}^R$. This will start the evaluation
+    process for $\mathcal{D}^R$.
 
   \item Until evaluating the last OAFE the simulation has to intercept all
-    messages from the corrupted \JWpTwo{} and adapt the scheduling of the
-    reference system to match the test system.
+    messages from \JWadv{} and adapt the scheduling of the reference system to
+    match the test system.
 
-  \item As soon as a message from the corrupted \JWpTwo{} $\mathcal{D}^C$ is
+  \item Whenever a message from the adversary \JWadv{} that is not ignored is
     intercepted, compare it to the according message of the reference \JWpTwo{}
-    ($\mathcal{D}^R$). Should the message from the corrupted \JWpTwo{} differ
-    from the message from reference \JWpTwo{} or should the corrupted \JWpTwo{}
-    send an additional message, \JWpTwo{} is caught while trying to cheat. If
-    \JWpTwo{} was caught while trying to cheat, set \JWcode{cheated $\leftarrow$
+    ($\mathcal{D}^R$). Should the message from the adversary differ from the
+    message from reference \JWpTwo{} or should the adversary send an additional
+    non--ignored message, the adversary is caught while trying to cheat. If
+    \JWadv{} was caught while trying to cheat, set \JWcode{cheated $\leftarrow$
     $true$} and continue normally.
 
-  \item As soon as the corrupted $\mathcal{D}^C$ has sent its last message to
-    the OAFE functionality check it as above and halt the test and the reference
-    systems.
+  \item As soon as the \JWadv{} has evaluated the last affine function the OAFE
+    functionality provides, halt system under test and the reference system.
 
 \end{itemize}
 
@@ -141,16 +135,16 @@ The regular processing phase starts as soon as the setup phase is terminated.
   \item Upon receiving \JWmsgTP{Evaluated}{$y$} from \JWfuncSymOPEnp{}, store
     the polynomial's evaluated result $y$.
 
-  \item The final step analyzes the variable \JWcode{cheated} and modifies the
-    final OAFE accordingly. If \JWcode{cheated $= true$} modify the final OAFE
-    to evaluate to a value at random but unequal to the real result. (e.g. an
+  \item Finally, the variable \JWcode{cheated} is analyzed and the final OAFE is
+    modified accordingly: If \JWcode{cheated $= true$} modify the final OAFE to
+    evaluate to a value at random but unequal to the real result. (e.g. an
     affine function $0 \cdot x + y + r$ where $r \in K \setminus \{0\}$ is
     fresh, uniform randomness). If \JWcode{cheated $= false$}, the final OAFE
     gets modified such that evaluating the next step honestly evaluates to the
     evaluated polynomial's result (e.g. by an affine function $0 \cdot x + y$
     where $y$ is the evaluated polynomial's value.
 
-  \item Unhalt the reference system to allow $\mathcal{D}^C$ to fetch the final
+  \item Unhalt the reference system to allow \JWadv{} to fetch the final
     result.
 
 \end{itemize}
@@ -169,8 +163,9 @@ The setup phase is run as soon as the simulator starts.
   \item Setup emulated, honest \JWpTwo{} and OAFE functionality
     \JWfuncSymOAFE{}.
 
-  \item Wire the possibly corrupted \JWpOne{}, the emulated \JWpTwo{} and
-    \JWfuncSymOAFE{} as usual.
+  \item Wire the given real model adversary \JWadv{} that impersonates \JWpOne{}
+    with the emulated \JWpTwo{} and \JWfuncSymOAFE{}. Additionally wire \JWadv{}
+    with the environment the way they would be wired in the real model.
 
 \end{itemize}
 
@@ -180,21 +175,21 @@ The setup phase is run as soon as the simulator starts.
 
   \item Upon the emulated OAFE functionality received the OAFE configuration and
     the emulated \JWpTwo{} received the DRAC, symbolically evaluate the
-    polynomial \JWpOne{} described. During the symbolic evaluation, the OAFE
-    functionality configuration could proof to be unfitting: \JWpOne{} could
+    polynomial that \JWadv{} described. During the symbolic evaluation, the OAFE
+    functionality configuration could proof to be unfitting: \JWadv{} could
     have sent a configuration that allows too few OAFE evaluations or evaluates
     to vectors of wrong shape. In both cases, modify the configuration to return
     all zero vectors of the correct shape whenever the DRAC evaluation would
     fail otherwise.
 
-  \item After having symbolically evaluated the polynomial encoded by \JWpOne{},
+  \item After having symbolically evaluated the polynomial encoded by \JWadv{},
     verify, that the polynomial has a degree that is less or equal than the
-    parametrized degree $k$. If \JWpOne{} submitted a polynomial of valid
+    parametrized degree $k$. If \JWadv{} submitted a polynomial of valid
     degree, store the polynomial's coefficients as $a \in \JWfieldGeneral^n$.
     Next, upload that polynomial to the ideal functionality \JWfuncSymOPEnp{} by
     outputting \JWmsgTP{Commit}{$a$} to \JWfuncSymOPEnp{}.  If the polynomial
     was illegal, restart the simulator in the setup phase.  This restart is
-    equivalent to simply ignoring \JWpOne{}'s inputs.
+    equivalent to simply ignoring the adversary's inputs.
 
 \end{itemize}
 
@@ -225,9 +220,47 @@ model.
 % CORRUPTED DAVID
 \JWlthree{Corrupted \JWpTwo{}}
 
-Using the simulator from chapter \ref{sec:simulator-david}.
+Using the simulator from chapter \ref{sec:simulator-david}, the adversary
+\JWadv{} is just a player in a game and has to proof its honesty. Interestingly,
+\JWadv{} is only very shortly involved in the evaluation of the polynomial
+itself: Only its first message is intercepted which reveals its unencrypted
+polynomial input $x$. All the following moves in the game only serve the purpose
+of checking the adversary's honesty. Because an honest \JWpTwo{} acts
+deterministic while running the protocol, the adversary's messages can easily be
+compared to the messages from the honest \JWpTwo{} in the reference system.
 
-\JWtodo{Rewrite proof}
+The most interesting part seems to be the simulator's choice of the polynomial
+to evaluate because the simulator has---except the degree---no information about
+the polynomial \JWpOne{} committed itself to. It would be harmful if the
+environment could discover that the adversary is evaluating another polynomial
+because it would then be able to distinguish between the real and the ideal
+model. It is important to notice that any polynomial of the same degree gets
+(except for DRAV constants) deterministically transformed to a DRAC. Two DRACs
+representing two polynomials of the same degree are equal except for the values
+of the constants (DRAVs).  While evaluating a polynomial using the protocol,
+\JWpTwo{} only learns intermediate values (DRAVs) and the DRAC. Since the degree
+of the polynomial is a protocol parameter, the security of the protocol is
+reduced to the information the environment can reveal from the DRAVs. As Lemma
+\ref{lem:DRAV-random} proofs, DRAVs consist of uniform, uncorrelated randomness.
+Therefore the concrete polynomial is unimportant, the emulated \JWpOne{}
+therefore generates a random polynomial (of the correct degree) and tests the
+honesty of the adversary. In the right moment, the simulator uses the ideal
+functionality \JWfuncSymOPE{} to correctly evaluate the polynomial using the
+adversary's input intercepted at the beginning. If the adversary proofed honest
+throughout the process, the simulator modifies the emulated OAFE functionality
+to evaluate exactly to the correct polynomial evaluation iff the adversary
+proves its honesty again. If the adversary was caught while trying to cheat, the
+simulator modifies the final OAFE to evaluate to some random value.
+
+Summing up, a party that is not in possession of the encryption keys cannot tell
+if two DRACs encode the same polynomial or not. This remains true when also
+analyzing all intermediate values while evaluating a DRAC. Therefore, for any
+passively corrupted \JWadv{}, the environment will not be able to tell if the
+adversary \JWadv{} was running in the real model or inside the simulator in the
+ideal model. Because an honest \JWpTwo{} is entirely deterministic, the
+adversary (which impersonates \JWpTwo{}) can be perfectly compared against the
+honest \JWpTwo{} running in the reference system. This makes the protocol
+perfectly secure against any actively corrupted, \JWpTwo{}, too.
 
 
 % CORRUPTED GOLIATH
@@ -248,10 +281,9 @@ A corrupted \JWpOne{} has the following possibilities to cheat:
 
 \end{enumerate}
 
-Both, the ideal model (running \JWfuncSymOPEnp{} and the simulator from chapter
-\ref{sec:simulator-goliath}) as well as in the real model (running
-\JWprotoSymOPE{}) handle these possibilities indistinguishably for any
-environment:
+Both, the ideal model (running the simulator from \ref{sec:simulator-goliath})
+as well as in the real model (running the \JWprotoSymOPE{} and the adversary)
+handle these possibilities indistinguishably for any environment:
 
 \begin{enumerate}
 
