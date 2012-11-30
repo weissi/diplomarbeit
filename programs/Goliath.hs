@@ -4,6 +4,7 @@ module Main where
 import Control.Concurrent (forkIO)
 import Control.Concurrent.STM.TChan (TChan, newTChan, readTChan, writeTChan)
 import Control.Exception.Base (IOException, catch)
+import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (atomically)
 import Data.List (foldl')
@@ -57,6 +58,12 @@ oacSerializeConduit :: MonadResource m
                                m BS.ByteString
 oacSerializeConduit = oafeConfigSerializeConduit
 
+debugPrintConduit :: (MonadResource m, Show a) => Conduit a m a
+debugPrintConduit = CL.mapM $ \a -> liftIO (print a) >> return a
+
+_DEBUG_ :: Bool
+_DEBUG_ = False
+
 configureToken :: CN.ClientSettings RMonad
                -> OAFEConfiguration Element
                -> IO ()
@@ -68,7 +75,8 @@ configureToken tokenSettings oac =
           confTokenApp appData =
               let sink = CN.appSink appData
                in CL.sourceList (HM.toList oac)
-                  $= oacSerializeConduit
+                  $= (if _DEBUG_ then debugPrintConduit else CL.map id)
+                  =$= oacSerializeConduit
                   $$ sink
 
 configureDavid :: SetupDavidToGoliath
@@ -82,7 +90,8 @@ configureDavid sd2g rac =
    where connected appData =
              let sink = CN.appSink appData
               in CL.sourceList rac
-                 $= racFragmentSerializeConduit
+                 $= (if _DEBUG_ then debugPrintConduit else CL.map id)
+                 =$= racFragmentSerializeConduit
                  $$ sink
 
 runGoliath :: CN.ClientSettings RMonad
@@ -147,7 +156,7 @@ readExprFromFile path =
            exprs = map (uncurry (*)) exprTuples
            expr :: Expr Element
            expr = foldl' (+) (fromInteger 0) exprs
-       print expr
+       when _DEBUG_ (print expr)
        return expr
     where parseElements :: Monad m => Text -> m Element
           parseElements str =
