@@ -700,31 +700,45 @@ result at all because it added both components before using the final OAFE.
 \label{sec:drae}
 
 \JWdef{Dual Randomized Affine Encoding}{DRAE}{s} are affine representations of
-parts of arithmetic circuits. So, a DRAE is an entity that corresponds to
-arithmetic expressions but one single DRAE is not powerful enough to model
-arbitry arithmetic expressions. Technically, a DRAE is a specification of
-calculations that need to be performed to obtain the evaluated value arithmetic
-expression this DRAE stands models. Just the same way ususal arithmetic
-expressions evaluate to scalar values, DRAEs evalute to DRAVs. The calculations
-that are specified by a DRAE are solely affine functions. The definition of
-these functions is not known by the party that eventually evaluates these
-calulations. Because the definition of an affine function is known as soon as it
-has been evaluated the second time, the calculations may only be evaluated once.
-To solution to hiding and assuring only one evaluation are OAFEs (see chapter
-\ref{def:OAFE}). The values used to evaluate the OAFEs are DRAVs, more precisely
-both tuple components of a DRAV which are scalar values of the finite field $K$.
-The DRAVs are the input values for the OAFEs which perform partial affine
-calculations. The results obtained from the OAFE evaluation only need a simple
-final combining step that yields th the evaluated output value (a DRAV) of a
-single DRAE.
+parts of arithmetic circuits. A DRAE describes arithmetic expressions in terms
+of affine functions without revealing the original expression. A single DRAE
+alone is not powerful enough to describe arbitrary complex arithmetic
+expressions, therefore chapter \ref{def:DRAC} proposes a procedure to evaluate
+arbitrary expression using multiple DRAEs. Technically, a DRAE is a
+specification of calculations that need to be performed to eventually obtain the
+evaluated value of the arithmetic expression. The reason for using DRAEs instead
+of evaluating the arithmetic expressions as usual is that a DRAE operates on
+encrypted values. Both, the input values and the output value of a DRAE are
+DRAVs (see chapter \ref{def:DRAV}). Additionally, the arithmetic expression
+performed is hidden from every party that is not in possession of the encryption
+keys.  The reason why DRAEs specify the calculations using affine functions is
+that OAFEs provide a secure way to obliviously evaluate affine functions. The
+procedure of evaluating arithmetic expression using DRAEs works as follows: The
+first party that is in possession of the encryption keys chooses the expression
+to evaluate.  Next, it sets up the DRAE but hides the affine calculations inside
+OAFEs. In fact, instead of the affine calculations themselves, the DRAEs
+specifies references to the OAFEs that were configured to evaluate these
+functions obliviously. The evaluating party finally evaluates the DRAEs with the
+help of the OAFEs provided by the first party.
+
+To easily envision the role of DRAEs and DRAVs, given a number of DRAVs, a DRAE
+performs some arithmetic operations on them and evaluates to a DRAV. Just the
+same way given a number of values, an arithmetic expression evaluates to a value
+(e.g. given $x=17$ and $y=23$, the arithmetic expression $x*y + 3$ evaluates to
+$394$).
 
 Summing up, DRAE evaluation is partitioning calculations between the two
-parties: The first that built the DRAE and set up the OAFEs and the second that
-provides the input and does the evaluation. In fact, the first party isn't
-directly involved in the evaluation process, it provided its calculations
-a priori hidden inside OAFEs.  As a rule of thumb: As soon as a (non--trivial)
-multiplication is part of the original circuit, additional DRAEs have to be
-build.
+parties: The first that builds the DRAE and sets up the OAFEs and the second
+that provides the input and does the evaluation. In fact, the first party isn't
+directly involved in the evaluation process, it provided its calculations a
+priori hidden inside OAFEs. But as stated above, one DRAE cannot realize
+arbitrary complex arithmetic expressions, as a rule of thumb: As soon as a
+(non--trivial) multiplication is part of the original arithmetic, one DRAE is
+not enough to evaluate it.
+
+
+% FORMAL DESCRIPTION
+\JWlthree{Formal Description}
 
 Because DRAEs are tightly related to DRAVs, they fulfill similar properties:
 
@@ -748,19 +762,21 @@ Because DRAEs are tightly related to DRAVs, they fulfill similar properties:
 
 \end{enumerate}
 
-\noindent{}A DRAE can be eventually evaluated to a final value, that is a DRAV
-(see chapter \ref{def:DRAV}). Informally, a DRAE is composed of two finite
-multi--sets. The first multi--set, called the \emph{multiplicative terms}
+\noindent{}Informally, a DRAE is composed of two finite multi--sets and a
+constant DRAV. The first multi--set, called the \emph{multiplicative terms}
 contains tuples of computations. The second multi--set, called the
 \emph{additive terms} contains computations that can be evaluated to DRAVs. The
+constant DRAV represents the constant terms in the arithmetic expression. The
 component--wise multiplication of each of the computation tuples (from the
-multiplicative terms) yields DRAVs, too. The addition of all the DRAVs obtained
-from the additive terms and all the DRAVs obtained from the multiplicative terms
-leads to a DRAV that is the evaluation of this DRAE.
+multiplicative terms) yields DRAVs, too. The sum of the constant DRAV, the DRAVs
+obtained from the additive terms and the DRAVs obtained from the multiplicative
+terms is the evaluated value of this DRAE. Again the evaluated value is a valid
+DRAV.
 
 More formally, a DRAE can be described as follows where
-$\mathcal{E}_\mathcal{C}$ represents the DRAEs, $\mathcal{C}$ the computations
-and $\mathcal{V}_\mathcal{C}$ the computations that lead to DRAVs.
+$\mathcal{E}_\mathcal{C}$ represents the DRAEs, $\mathcal{C}$ the affine
+computations, $\mathcal{V}$ the set of all DRAVs and $\mathcal{V}_\mathcal{C}$
+the computations that lead to DRAVs.
 
 \begin{align}
 %
@@ -777,19 +793,23 @@ and $\mathcal{V}_\mathcal{C}$ the computations that lead to DRAVs.
                     \mid f, f' \in \mathcal{C} \} \nonumber\\
 %
   \label{rel:DRAE}
-  \mathcal{E}_\mathcal{C} = & \{ (M, A, (k_l, k_r)) \mid
+  \mathcal{E}_\mathcal{C} = & \{ (M, A, k) \mid
       M \subseteq \mathcal{V}_\mathcal{C} \times
       \mathcal{V}_\mathcal{C}; A \subseteq \mathcal{V}_\mathcal{C};
-      k_l, k_r \in K;
+      k \in \mathcal{V};
       A, M~\text{finite multi--sets} \}
 %
 \end{align}
 
-Pre--evaluating a DRAE to DRAVs can be done by evaluating the OAFEs set up by
-the party in possession of the encryption keys. Obviously none of the
-computations $c \in \mathcal{C}$ becomes visible by the party not in possession
-of the keys. The latter party will only learn exactly one evaluation $c(x)$ for
-each variable $x$. This leads to pre--evaluated DRAEs of the form
+As stated in the introduction to this chapter, the calculations are hidden
+inside OAFEs. When the party that built the DRAE transmits it to the evaluating
+party, it obviously replaces the concrete affine computations by references to
+the OAFEs that calculate them obliviously.  Because of the definition of OAFEs
+(see chapter \ref{def:OAFE}) the evaluating party will only learn exactly one
+evaluation $c(x)$ for each variable $x$. A \emph{pre--evaluated DRAE} is defined
+as the entity that the evaluating party obtains after successfully having
+evaluated all the computations (using the OAFEs). The pre--evaluated DRAEs
+($\mathcal{E}$) are defined as follows:
 
 \begin{align}
   \mathcal{V} = & \{ (v_l, v_r) \mid v_l, v_r \in K \}
@@ -803,9 +823,10 @@ each variable $x$. This leads to pre--evaluated DRAEs of the form
       &\text{, the pre--evaluated DRAEs}
 \end{align}
 
-Evaluating a pre--evaluated DRAE is straightforward: A DRAE $e \in \mathcal{E} =
-(M,A, k)$ can be evaluated to its single resulting DRAV $r \in \mathcal{V}$ as
-follows (all additions performed component--wise):
+Entirely evaluating a pre--evaluated DRAE to obtain the DRAV is straightforward:
+A pre--evaluated DRAE $e \in \mathcal{E} = (M,A, k)$ can be evaluated to its
+single resulting DRAV $r \in \mathcal{V}$ as follows (all additions performed
+component--wise):
 
 \begin{align*}
 M' &= \Bigg\{ m_1 \cdot m_2\ \Bigg|\ \begin{pmatrix}m_1\\m_2\end{pmatrix}
@@ -817,16 +838,18 @@ r & = \sum_{a \in A}a + \sum_{m \in M'}m + k
 % DRAE ARITHMETIC
 \JWlthree{DRAE Arithmetic}
 
-DRAE arithmetic is used to combine multiple DRAEs to one DRAE that performs
-complexer computations. Since DRAEs evaluate to DRAVs are DRAVs can be easily
-added (see chapter \ref{sec:DRAV-addition}), an arbitrary number of
-DRAEs can be added to one resulting DRAE. But two arbitrary DRAEs cannot be
-multiplied to one DRAE. To multiply two arbitrary DRAEs, both DRAEs get assigned
-to a temporary variable that will hold the DRAV obtained as soon as the DRAV is
-evaluated. Additionally a separate multiplying DRAE gets constructed that
-multiplies the two temporary variables. That is feasible because a DRAE can
-multiply two DRAVs and the temporary variables do nothing more than just giving
-DRAVs a name as soon as they are evaluated.
+The purpose of DRAEs is to specify arithmetic operations. This chapter describes
+how arithmetic operations can be safely encoded using DRAEs. Since DRAEs
+evaluate to DRAVs and DRAVs can be easily added (see chapter
+\ref{sec:DRAV-addition}), DRAE addition is easy, too: A DRAE that encodes the
+addition of two DRAEs can be built practically costless. But DRAE multiplication
+is slightly more complex: To multiply two arbitrary DRAEs, both DRAEs have to be
+evaluated separately, their results have have to be assigned to intermediate
+variables and a third DRAE has to be built that solely multiplies the
+intermediate variables. In contrast to general DRAE multiplication, a DRAE can
+encode the multiplication of two DRAVs and assigning intermediate values to
+variables is just giving intermediate DRAVs a temporary name.
+
 
 %Direct Addition
 \JWlfour{Addition}
@@ -837,11 +860,10 @@ Since two DRAVs can directly be added as explained in chapter
 multiplicative ($M$ in relations \ref{rel:DRAE} and \ref{rel:pre-eval-DRAE}) and
 additive ($A$) terms. Notably, although the encryption keys change, this
 operation can be performed by any party, in possession of the encryption keys or
-not. But as for DRAVs no operations that were not intended by the party in
-possession of the keys can be performed. If one would perform an unintended
-operation, the encryption keys would change and the resulting DRAE (that
-evaluates to a DRAV) becomes unusable (non--well--formed). Obviously, the same
-argument holds for pre--evaluated DRAEs.
+not. Similarly to DRAVs, unintended operations ruin the information because the
+encryption keys change when performing operations. Operations unintended by the
+party in possession of the keys lead to non--well--formed DRAVs because wrong
+encryption keys will be used to decode them.
 
 
 %Multiplication
@@ -849,11 +871,9 @@ argument holds for pre--evaluated DRAEs.
 \label{sec:DRAE-multiplication}
 
 Since neither a DRAV (chapter \ref{def:DRAV}) nor a DRAE (see above) can be
-multiplied directly, most multiplications lead to additional DRAEs. These
-additional DRAEs perform the multiplication indirectly requiring additional OAFE
-calls. To maintain the important DRAV and DRAE property that any operation on
-bottom ($\bot$) results in bottom, the two components of each DRAV get mixed for
-multiplication.
+multiplied directly, most multiplications have to be performed using a
+construction involving additional DRAEs and intermediate variables holding
+DRAVs.
 
 \JWtodo{Warum müssen sie gemixt werden: Das Argument mit gegen
 Null prüfen}
