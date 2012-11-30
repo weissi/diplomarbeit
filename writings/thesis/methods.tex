@@ -823,6 +823,11 @@ evaluated all the computations (using the OAFEs). The pre--evaluated DRAEs
       &\text{, the pre--evaluated DRAEs}
 \end{align}
 
+
+% DECODING DRAEs
+\JWlthree{Decoding DRAEs}
+\label{sec:DRAE-decoding}
+
 Entirely evaluating a pre--evaluated DRAE to obtain the DRAV is straightforward:
 A pre--evaluated DRAE $e \in \mathcal{E} = (M,A, k)$ can be evaluated to its
 single resulting DRAV $r \in \mathcal{V}$ as follows (all additions performed
@@ -873,7 +878,10 @@ encryption keys will be used to decode them.
 Since neither a DRAV (chapter \ref{def:DRAV}) nor a DRAE (see above) can be
 multiplied directly, most multiplications have to be performed using a
 construction involving additional DRAEs and intermediate variables holding
-DRAVs.
+DRAVs. Chapter \ref{def:DRAC} describes the transformation of arbitrary
+arithmetic expression. This chapter describes multiplications that can directly
+be expressed as a DRAE: A single multiplication of two DRAVs $\widetilde{x}$ and
+$\widetilde{y}$ (each assigned to a variable) to a DRAE $E \in \mathcal{E}$.
 
 \JWtodo{Warum müssen sie gemixt werden: Das Argument mit gegen
 Null prüfen}
@@ -886,7 +894,7 @@ Null prüfen}
   r_1, r_2, r_3, r_4, r_5, r_6, r_7, r_8 \in K;
   \alpha_l, \alpha_r \in K \setminus \{0\} \\
   %
-  E & = \widetilde{x} \cdot \widetilde{y} \\
+  E & = \widetilde{x} \otimes \widetilde{y} \\
   %
   E & = \Bigg(\left\{\left(
             \begin{pmatrix}
@@ -908,11 +916,22 @@ Null prüfen}
             r_1        \cdot D_r(\widetilde{y}) + r_4 \\
             r_5        \cdot D_l(\widetilde{y}) + r_8
           \end{pmatrix}
-        \bigg\}\Bigg) \\
+        \bigg\} \\
+    &  \qquad, 0
+        \Bigg) \\
 \end{align*}
 
-Decoding (see chapter \ref{def:DRAE}) a possibly non--well--formed $E$ to
-$\widetilde{e} \in \mathcal{V}$ leads to:
+In the relation above, the first curly bracket contains the multiplicative
+terms, the second contains the additive terms and the constant is set to $0$
+since no constant addition is performed.
+
+The following equations demonstrate that the multiplication of two well--formed
+DRAVs will evaluate to the desired result. Additionally is shows that a
+non--well--formed DRAV operands will turn the result to a non--well--formed DRAV
+as well. In the following the decoding of a DRAE will be analyzed and it will
+become apparent that every DRAV modification propagates through a
+multiplication. The DRAE $E$ gets decoded (as defined in chapter
+\ref{sec:DRAE-decoding}) to a DRAV $\widetilde{e}$.
 
 \begin{align*}
   \widetilde{e} & =
@@ -992,6 +1011,12 @@ $\widetilde{e} \in \mathcal{V}$ leads to:
 \end{align*}
 
 \noindent{}That leads to two possibilities: Either $E$ is well--formed or not.
+Although the DRAVs $\widetilde{x}$ and $\widetilde{y}$ are both used in multiple
+affine expression, it is safe to assume they have the same value. At the first
+glance, one could think a malicious adversary could use different values for the
+same variable. But since all expressions depending on the same variable are
+evaluated using one and the same OAFE, the attacker has to commit itself to one
+value for one variable (see chapters \ref{def:OAFE} and \ref{def:OPE}).
 
 \paragraph{The DRAVs $\widetilde{x}$ and $\widetilde{y}$ are well--formed}
 
@@ -1009,9 +1034,13 @@ $\beta = r_1r_2 + r_3 + r_4$, $\beta' = r_5r_6 + r_7 + r_8$ (dynamic keys).
   \end{pmatrix} \\
 \end{align*}
 
+\noindent{}The decrypted value is $e = D(\widetilde{e}) = xy$ as expected.
+
+
 \paragraph{At least one of the DRAVs $\widetilde{x}$ and $\widetilde{y}$ is
-non--well--formed} This leads to a non--well--formed DRAV $\widetilde{e}$ whose
-both components are uniformly at random.
+non--well--formed} If at least one DRAV is non--well--formed, at least one
+$\Delta$ is non--zero. This leads to a non--well--formed DRAV $\widetilde{e}$
+whose both components are uniformly at random.
 
 \begin{align*}
   &
@@ -1040,10 +1069,12 @@ both components are uniformly at random.
   \end{pmatrix} \\
 \end{align*}
 
-\noindent{}As one can easily see, if at least one $\Delta \neq 0$ the result
-will comprise at least one term that depends on fresh, uniform randomness (the
-$r$s). In a finite field this means that both components are uniformly at random
-and uncorrelated to any other value in the process.
+\noindent{}As one can easily see, if at least one $\Delta \neq 0$ the decoded
+result ($e = D(\widetilde{e})$) will comprise at least one term that depends on
+fresh, uniform randomness ($r_{1 \cdots 8}$). In a finite field this means that
+both components are uniformly at random. Since the random values $r_{1 \cdots
+8}$ were---per definition---fresh random values, the resulting term will
+additionally be uncorrelated to any term in the process.
 
 
 % MAXIMAL POLYNOMIAL DEGREE
@@ -1161,7 +1192,10 @@ unencrypted evaluated value of the polynomial.
 \JWlthree{Checking the Polynomial Degree}
 \label{sec:checking-poly-degree}
 
-\JWtodo{Wie kann David den Polynomgrad überprüfen}
+\JWpTwo{} has to verify the degree of the polynomial it is supposed to evaluate.
+The DRAC that evaluates to the polynomial has the same degree as the DRAE that
+evaluates the final value. Chapter \ref{sec:max-poly-degree} describes how
+to derive the maximal polynomial degree from a given DRAE.
 
 
 %
