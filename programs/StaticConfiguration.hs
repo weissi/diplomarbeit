@@ -4,38 +4,17 @@ import qualified Data.Conduit.Network as CN
 
 import Control.Monad.Trans.Resource (ResourceT)
 import Data.ExpressionTypes
-import Data.FieldTypes
-import Data.RAE.Conduit (ByteSerializable(..))
 import qualified Data.ByteString.Char8 as BS8
-import qualified Data.ByteString.Lazy as BSL
 
 --import Math.FiniteFields.F2Pow256
 --type Element = F2Pow256
 
-import Math.Algebra.Field.Base (F97, Fp)
-import Math.Common.IntegerAsType (IntegerAsType)
-import Control.Monad.CryptoRandom (CRandom(..))
+import Math.FiniteFields.F97
 type Element = F97
-instance IntegerAsType n => Field (Fp n) where
-    invert n =
-        case n of
-          0 -> error "0 is not invertible"
-          n' -> 1 / n'
-    one = 1
-    zero = 0
 
-instance IntegerAsType n => Read (Fp n) where
-    readsPrec n str = map (\(f,s) -> (fromInteger f, s)) (readsPrec n str)
+--import Math.FiniteFields.DebugField
+--type Element = DebugField
 
-instance IntegerAsType n => ByteSerializable (Fp n) where
-    serializeBytes = BSL.fromStrict . BS8.pack . show
-    parseBytes = read . BS8.unpack . BSL.toStrict
-
-instance IntegerAsType n => CRandom (Fp n) where
-    crandom g =
-        case crandom g of
-          Left err -> Left err
-          Right (a, g') -> Right (fromIntegral (a :: Int), g')
 
 _X_ :: Expr Element
 _X_ = Var "x"

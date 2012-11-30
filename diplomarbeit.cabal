@@ -51,6 +51,8 @@ Library
                       Data.ExpressionTypes,
                       Data.FieldTypes,
                       Math.FiniteFields.F2Pow256,
+                      Math.FiniteFields.F97,
+                      Math.FiniteFields.DebugField,
                       Data.LinearExpression,
                       Data.Helpers,
                       Math.MatrixOnLists,
@@ -100,7 +102,6 @@ Executable David
                       vector >= 0.9,
                       text >= 0.11,
                       resourcet >= 0.4,
-                      HaskellForMaths >= 0.4,
                       monadcryptorandom >= 0.5
     hs-source-dirs:   programs
     GHC-Options:      -Wall
@@ -124,7 +125,6 @@ Executable Goliath
                       unordered-containers >= 0.2,
                       resourcet >= 0.4,
                       text >= 0.11,
-                      HaskellForMaths >= 0.4,
                       monadcryptorandom >= 0.5
     hs-source-dirs:   programs
     GHC-Options:      -Wall
@@ -148,7 +148,6 @@ Executable Token
                       unordered-containers >= 0.2,
                       network >= 2.4,
                       resourcet >= 0.4,
-                      HaskellForMaths >= 0.4,
                       monadcryptorandom >= 0.5
     hs-source-dirs:   programs
     GHC-Options:      -Wall
