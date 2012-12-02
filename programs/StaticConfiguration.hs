@@ -16,7 +16,7 @@ type Element = F97
 --type Element = DebugField
 
 
-_X_ :: Expr Element
+_X_ :: Num a => Expr a
 _X_ = Var "x"
 
 type RMonad = ResourceT IO

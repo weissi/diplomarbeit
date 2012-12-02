@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 module Main where
 
 -- # STDLIB
@@ -7,7 +8,7 @@ import Control.Exception.Base (IOException, catch)
 import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (atomically)
-import Data.List (foldl')
+import Data.List (partition)
 import Data.Text (Text)
 import System.Environment (getArgs)
 import System.Exit (exitWith, ExitCode(..))
@@ -35,13 +36,14 @@ import Data.OAFE (OAFEConfiguration)
 import Data.RAE.Conduit ( oafeConfigSerializeConduit
                         , racFragmentSerializeConduit
                         )
-import Data.Helpers (takeOneConduit)
+import Data.Helpers (takeOneConduit, isOptionArg)
 import Functionality.SetupPhase ( SetupDavidToGoliath(..)
                                 , SetupGoliathToDavid(..)
                                 , sg2dSerializeConduit, sd2gParseConduit
                                 , setupG2DFromClientSettings
                                 , clientSettingsFromSetupD2G
                                 )
+import qualified Math.Polynomials as P
 
 import StaticConfiguration
 
@@ -139,8 +141,9 @@ spawnTokenGenerator cTokens =
                return ()
        return ()
 
-readExprFromFile :: FilePath -> IO (Expr Element)
-readExprFromFile path =
+readExprFromFile :: forall a. (Show a, Read a, Num a)
+                 => (Expr a -> [Expr a] -> Expr a) -> FilePath -> IO (Expr a)
+readExprFromFile buildPoly path =
     do elems <-
         runResourceT $
             CB.sourceFile path
@@ -148,17 +151,11 @@ readExprFromFile path =
             =$= CT.lines
             =$= CL.mapM parseElements
             $$ CL.consume
-       let powers = [0..] :: [Integer]
-           powersOfX = map (\p -> _X_^p) powers
-           exprTuples :: [(Expr Element, Expr Element)]
-           exprTuples = zip (map Literal elems) powersOfX
-           exprs :: [Expr Element]
-           exprs = map (uncurry (*)) exprTuples
-           expr :: Expr Element
-           expr = foldl' (+) (fromInteger 0) exprs
+       let expr :: Expr a
+           expr = buildPoly _X_ (map Literal elems)
        when _DEBUG_ (print expr)
        return expr
-    where parseElements :: Monad m => Text -> m Element
+    where parseElements :: Monad m => Text -> m a
           parseElements str =
               let parsed = readsPrec 0 (T.unpack str)
                in case parsed of
@@ -168,12 +165,17 @@ readExprFromFile path =
 main :: IO ()
 main =
     do putStrLn "GOLIATH START"
-       args <- getArgs
-       let filePath = case args of
+       rawArgs <- getArgs
+       let (optionArgs, args) = partition isOptionArg rawArgs
+           filePath = case args of
                         [x] -> x
-                        _ -> error $ "Usage: Goliath FILE    # found: " ++
+                        _ -> error $ "Usage: Goliath [-h|-m] FILE   # found: "++
                                      show args
-       expr <- readExprFromFile filePath
+       buildPoly <- if "-m" `elem` optionArgs
+                       then do putStrLn "POLY BUILDING: Monomial"
+                               return P.monomial
+                       else putStrLn "POLY BUILDING: Horner" >> return P.horner
+       expr <- readExprFromFile buildPoly filePath
        cTokens <- atomically newTChan
        spawnTokenGenerator cTokens
        runResourceT $ CN.runTCPServer _SRV_CONF_GOLIATH_FROM_DAVID_

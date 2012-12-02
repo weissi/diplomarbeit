@@ -56,6 +56,7 @@ Library
                       Data.LinearExpression,
                       Data.Helpers,
                       Math.MatrixOnLists,
+                      Math.Polynomials,
                       Data.OAFE,
                       Data.Conduit.ProtoBufConduit,
                       Data.RAE.Encoder.Internal.DRAC,
@@ -168,6 +169,14 @@ Test-Suite TestRAE
                       stm >= 2.4,
                       conduit >= 0.5,
                       transformers >= 0.3
+    hs-source-dirs:   test
+    GHC-Prof-Options: -rtsopts -auto-all -caf-all
+
+Test-Suite TestPolynomials
+    type:             exitcode-stdio-1.0
+    main-is:          TestPolynomials.hs
+    Default-Language: Haskell2010
+    build-depends:    base, HTF >= 0.9, diplomarbeit
     hs-source-dirs:   test
     GHC-Prof-Options: -rtsopts -auto-all -caf-all
 

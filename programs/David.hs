@@ -10,6 +10,7 @@ import Control.Exception.Base (finally, catch, IOException)
 import Control.Monad (liftM, when, void)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.STM (atomically)
+import Data.List (partition)
 import System.Environment (getArgs)
 
 -- # SITE PACKAGES
@@ -27,7 +28,7 @@ import qualified Data.Text as T
 
 -- # LOCAL
 import Data.OAFE (OAFEEvaluationRequest, OAFEEvaluationResponse)
-import Data.Helpers (takeOneConduit, runTCPClientNoWait)
+import Data.Helpers (takeOneConduit, runTCPClientNoWait, isOptionArg)
 import Data.LinearExpression (VarMapping)
 import Data.RAE.Conduit ( oafeEvaluationResponseParseConduit
                         , oafeEvaluationRequestSerializeConduit
@@ -161,8 +162,9 @@ type DieCommand = String -> IO ()
 main :: IO ()
 main =
     do putStrLn "DAVID START"
-       args <- getArgs
-       let inputArg =
+       rawArgs <- getArgs
+       let (_, args) = partition isOptionArg rawArgs
+           inputArg =
              case args of
                [x] -> x
                _ -> error $ "Usage: David INPUT-ELEMENT    # found: " ++

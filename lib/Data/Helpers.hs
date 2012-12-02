@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 module Data.Helpers ( integralBytes, takeOneConduit
                     , runTCPClientNoWait
+                    , isOptionArg
                     ) where
 import Blaze.ByteString.Builder (Builder, toByteString)
 import Blaze.ByteString.Builder.Char8 (fromChar)
@@ -60,3 +61,10 @@ runTCPClientNoWait cs app =
                          , appSockAddr = address
                          , appLocalAddr = Nothing
                          })
+
+isOptionArg :: String -> Bool
+isOptionArg s =
+    case s of
+      [] -> False
+      ('-':_) -> True
+      _ -> False

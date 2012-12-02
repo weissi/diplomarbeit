@@ -2,3 +2,4 @@
 :set -Ldist/build/Lib/Math/FiniteFields/Foreign
 :set +s
 :load Data.RAE.Types Data.FieldTypes Data.LinearExpression
+import Math.Algebra.Field.Base
