@@ -6,11 +6,11 @@ import Control.Monad.Trans.Resource (ResourceT)
 import Data.ExpressionTypes
 import qualified Data.ByteString.Char8 as BS8
 
---import Math.FiniteFields.F2Pow256
---type Element = F2Pow256
+import Math.FiniteFields.F2Pow256
+type Element = F2Pow256
 
-import Math.FiniteFields.F97
-type Element = F97
+--import Math.FiniteFields.F97
+--type Element = F97
 
 --import Math.FiniteFields.DebugField
 --type Element = DebugField
