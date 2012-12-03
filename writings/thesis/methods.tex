@@ -182,18 +182,22 @@ finite field, such as $\mathbb{F}_{2^{256}}$.
 
 
 % OAFEs
-\JWlthree*{OAFEs}
+\JWlthree{Oblivious Affine Function Evaluation}
 
-\JWtodo{Dominiks Verbesserungen einbringen (Mail "Thesis 2.2")}
-
-In this thesis the \JWdef{Oblivious Affine Function Evaluation}{OAFE}{s} are
-essentially one \emph{Sequential one--time OAFE} as defined by Döttling,
-Kraschewski and Müller-Quade \cite{davidgoliath}. The OAFEs can be used to
-obliviously evaluate affine functions $f_i$. The collectivity of all OAFEs (as
-defined in this thesis) maps to exactly one tamper--proof hardware token
-realizing one \emph{Sequential one--time OAFE} \cite{davidgoliath}:
+The main building block of this thesis are \JWdef{Oblivious Affine Function
+Evaluation}{OAFE}{s}. More precisely, \emph{Sequential one--time OAFE} as
+defined by Döttling, Kraschewski and Müller--Quade \cite{davidgoliath}. The OAFE
+functionality enables to sequentially evaluate $n$ affine functions specified a
+priori. The OAFE functionality is implemented using the David \& Goliath
+protocol and exactly one stateful tamper--proof hardware token. In other words,
+one party can specify $n$ affine functions and another party will be able to
+sequentially evaluate the functions exactly once respectively. The evaluating
+party will only learn one evaluation of each function $f_i$ but not their
+definition.
 
 \begin{align*}
+  i \in& \{1, \ldots, n\}\\
+%
   f_i(x_i) = &
   a_ix_i + b_i \\
 %
@@ -202,15 +206,13 @@ realizing one \emph{Sequential one--time OAFE} \cite{davidgoliath}:
 \begin{pmatrix}b_{i,1}\\b_{i,2}\\b_{i,3}\\\vdots\end{pmatrix}
 \end{align*}
 
-\noindent{}Obviously, every function $f_i$ can only be evaluated only once and
-the functions $f_i$ have to be evaluated in order: $f_1$ being the first, $f_2$
-the second and so forth.
-
-In this thesis usually the term OAFEs is used to denote the fact that there are
-multiple affine functions ($f_i$) that can be evaluated obliviously. The term
-OAFE configuration is used to denote the vectors $a_i$ and $b_i$. One OAFE
-configuration is the same as the collectivity of the $(a_i, b_i, i)$ triples as
-used in the original definition \cite{davidgoliath}.
+\noindent{}For the sake of simplicity, the term \emph{OAFE} is used slightly
+different in this thesis: The term \emph{OAFE} is used to determine a
+functionality to evaluate one affine function. The plural (\emph{OAFEs}) is used
+to determine a set of OAFEs that enable to evaluate a number of affine
+functions. Therefore the collectivity of OAFEs as defined in this thesis can be
+implemented by one \emph{Sequential one--time OAFE} functionality as defined by
+Döttling, Kraschewski and Müller--Quade \cite{davidgoliath}.
 
 
 %
