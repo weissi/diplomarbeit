@@ -97,12 +97,13 @@ runEvaluator :: VarMapping Element
              -> TBMChan (OAFEEvaluationResponse Element)
              -> TMVar (Maybe Element)
              -> DieCommand
+             -> (String -> IO())
              -> IO ()
-runEvaluator varMap reqs rsps vResult die =
+runEvaluator varMap reqs rsps vResult logMsg die =
     do vStop <- atomically newEmptyTMVar
        cRACFrag <- atomically $ newTBMChan _INCOMING_ARE_CHAN_SIZE_
        _ <- forkIO $
-             (runRACEvaluation varMap reqs rsps cRACFrag vResult putStrLn)
+             (runRACEvaluation varMap reqs rsps cRACFrag vResult logMsg)
                `catch` (\e -> die $ show (e :: IOException))
        runResourceT
            (CN.runTCPServer _SRV_CONF_DAVID_FROM_GOLIATH_ (conn vStop cRACFrag))
@@ -163,12 +164,15 @@ main :: IO ()
 main =
     do putStrLn "DAVID START"
        rawArgs <- getArgs
-       let (_, args) = partition isOptionArg rawArgs
+       let (optionArgs, args) = partition isOptionArg rawArgs
            inputArg =
              case args of
                [x] -> x
-               _ -> error $ "Usage: David INPUT-ELEMENT    # found: " ++
+               _ -> error $ "Usage: David [-q] INPUT-ELEMENT    # found: " ++
                             show args
+           logMsg = if "-q" `elem` optionArgs
+                       then \_ -> return ()
+                       else putStrLn
        let !inputElement = read inputArg
        let varMap = M.fromList [(T.pack "x", inputElement)]
        cRequests <- atomically $ newTBMChan _ARE_EVAL_CHAN_SIZE_
@@ -184,7 +188,7 @@ main =
                   atomically $ closeTBMChan cResponses
                   killThread mainTid
                   error "Thread should be dead"
-       _ <- forkIO $ runEvaluator varMap cRequests cResponses vResult die
+       _ <- forkIO $ runEvaluator varMap cRequests cResponses vResult logMsg die
 
        putStrLn "Trying to acquire token settings... "
        sg2dM <- exchangeConfWithGoliath

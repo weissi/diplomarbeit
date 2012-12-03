@@ -178,6 +178,7 @@ main =
        expr <- readExprFromFile buildPoly filePath
        cTokens <- atomically newTChan
        spawnTokenGenerator cTokens
+       putStrLn "GOLIATH READY FOR CONNECTION"
        runResourceT $ CN.runTCPServer _SRV_CONF_GOLIATH_FROM_DAVID_
                                       (evalClient cTokens expr)
        putStrLn "GOLIATH DONE"

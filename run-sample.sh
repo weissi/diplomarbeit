@@ -17,6 +17,10 @@ function kill_child_processes() {
     echo "Killed $KILLED"
 }
 
+function current_time_millis() {
+    echo $(($(date +%s%N)/1000000));
+}
+
 #trap error ERR
 trap kill_child_processes SIGINT
 
@@ -55,6 +59,7 @@ function run_component() {
     NAME="$1"
     shift
     echo "$NAME: Starting"
+    TIMES=$(current_time_millis)
     if [ $DIRECT -eq 1 ]; then
         unbuffer dist/build/$NAME/$NAME "$@"
     else
@@ -62,7 +67,9 @@ function run_component() {
             echo "$NAME: $line"
         done < <(unbuffer dist/build/$NAME/$NAME "$@")
     fi
-    echo "$NAME: Exited"
+    TIMEE=$(current_time_millis)
+    let TIME=$TIMEE-$TIMES
+    echo "$NAME: Exited (running ${TIME}ms)"
 }
 
 function run_component_bg() {
@@ -75,7 +82,7 @@ set -e
 
 run_component_bg Goliath "$POLYFILE" "$@"
 GPID=$!
-sleep 0.2
+cat "$POLYFILE" | while read line; do sleep 0.001; done
 run_component_bg Token "$@"
 TPID=$!
 sleep 0.5

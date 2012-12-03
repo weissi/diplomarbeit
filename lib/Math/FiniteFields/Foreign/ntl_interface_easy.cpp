@@ -35,11 +35,13 @@ extern "C" {
             initialized = true;
         }
 
+        /*
         if (my_tid == 0) {
             my_tid = pthread_self();
         } else {
             assert(my_tid == pthread_self());
         }
+        */
     }
 
     static inline GF2E *allocGF2E(void) {
