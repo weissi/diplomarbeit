@@ -78,8 +78,8 @@ Library
     include-dirs:     lib/Math/FiniteFields/Foreign
     hs-source-dirs:   lib, gen-src
     GHC-Options:      -Wall
-    --GHC-Options:      -Werror
-    GHC-Prof-Options: -rtsopts -auto-all -caf-all
+    GHC-Options:      -rtsopts
+    GHC-Prof-Options: -auto-all -caf-all
     Build-tools:      c2hs -any
     Extra-libraries:  ntl, stdc++
     C-Sources:        lib/Math/FiniteFields/Foreign/ntl_interface_easy.cpp
@@ -106,9 +106,8 @@ Executable David
                       monadcryptorandom >= 0.5
     hs-source-dirs:   programs
     GHC-Options:      -Wall
-    --GHC-Options:      -Werror
     GHC-Options:      -rtsopts
-    GHC-Prof-Options: -rtsopts -auto-all -caf-all
+    GHC-Prof-Options: -auto-all -caf-all
 
 Executable Goliath
     main-is:          Goliath.hs
@@ -129,9 +128,8 @@ Executable Goliath
                       monadcryptorandom >= 0.5
     hs-source-dirs:   programs
     GHC-Options:      -Wall
-    --GHC-Options:      -Werror
     GHC-Options:      -rtsopts
-    GHC-Prof-Options: -rtsopts -auto-all -caf-all
+    GHC-Prof-Options: -auto-all -caf-all
 
 Executable Token
     main-is:          Token.hs
@@ -152,9 +150,8 @@ Executable Token
                       monadcryptorandom >= 0.5
     hs-source-dirs:   programs
     GHC-Options:      -Wall
-    --GHC-Options:      -Werror
     GHC-Options:      -rtsopts
-    GHC-Prof-Options: -rtsopts -auto-all -caf-all
+    GHC-Prof-Options: -auto-all -caf-all
 
 Test-Suite TestRAE
     type:             exitcode-stdio-1.0
@@ -170,7 +167,8 @@ Test-Suite TestRAE
                       conduit >= 0.5,
                       transformers >= 0.3
     hs-source-dirs:   test
-    GHC-Prof-Options: -rtsopts -auto-all -caf-all
+    GHC-Options:      -rtsopts
+    GHC-Prof-Options: -auto-all -caf-all
 
 Test-Suite TestPolynomials
     type:             exitcode-stdio-1.0
@@ -178,7 +176,8 @@ Test-Suite TestPolynomials
     Default-Language: Haskell2010
     build-depends:    base, HTF >= 0.9, diplomarbeit
     hs-source-dirs:   test
-    GHC-Prof-Options: -rtsopts -auto-all -caf-all
+    GHC-Options:      -rtsopts
+    GHC-Prof-Options: -auto-all -caf-all
 
 Test-Suite TestF2Pow256
     type:             exitcode-stdio-1.0
@@ -186,7 +185,8 @@ Test-Suite TestF2Pow256
     Default-Language: Haskell2010
     build-depends:    base, HTF >= 0.9, diplomarbeit
     hs-source-dirs:   test
-    GHC-Prof-Options: -rtsopts -auto-all -caf-all
+    GHC-Options:      -rtsopts
+    GHC-Prof-Options: -auto-all -caf-all
 
 Test-Suite TestMisc
     type:             exitcode-stdio-1.0
@@ -194,7 +194,8 @@ Test-Suite TestMisc
     Default-Language: Haskell2010
     build-depends:    base, HTF >= 0.9, diplomarbeit, bytestring >= 0.10
     hs-source-dirs:   test
-    GHC-Prof-Options: -rtsopts -auto-all -caf-all
+    GHC-Options:      -rtsopts
+    GHC-Prof-Options: -auto-all -caf-all
 
 Benchmark BenchRAE
     Type:             exitcode-stdio-1.0
@@ -216,8 +217,8 @@ Benchmark BenchRAE
 --                      mtl >= 2.0, diplomarbeit
 --    hs-source-dirs:   programs
 --    GHC-Options:      -Wall
---    GHC-Options:      -Werror
---    GHC-Prof-Options: -rtsopts -auto-all -caf-all
+--    GHC-Options:      -rtsopts
+--    GHC-Prof-Options: -auto-all -caf-all
 
 Executable RAEFun
     main-is:          RAEFun.hs
@@ -227,5 +228,5 @@ Executable RAEFun
                       diplomarbeit, bytestring >= 0.10, conduit >= 0.5
     hs-source-dirs:   programs
     GHC-Options:      -Wall
-    --GHC-Options:      -Werror
-    GHC-Prof-Options: -rtsopts -auto-all -caf-all
+    GHC-Options:      -rtsopts
+    GHC-Prof-Options: -auto-all -caf-all
