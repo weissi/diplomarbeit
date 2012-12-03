@@ -12,6 +12,7 @@ import Data.List (partition)
 import Data.Text (Text)
 import System.Environment (getArgs)
 import System.Exit (exitWith, ExitCode(..))
+import System.IO (hFlush, stdout)
 import qualified Data.ByteString as BS
 import qualified Data.Text as T
 
@@ -179,6 +180,7 @@ main =
        cTokens <- atomically newTChan
        spawnTokenGenerator cTokens
        putStrLn "GOLIATH READY FOR CONNECTION"
+       hFlush stdout
        runResourceT $ CN.runTCPServer _SRV_CONF_GOLIATH_FROM_DAVID_
                                       (evalClient cTokens expr)
        putStrLn "GOLIATH DONE"

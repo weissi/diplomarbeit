@@ -18,7 +18,11 @@ function kill_child_processes() {
 }
 
 function current_time_millis() {
-    echo $(($(date +%s%N)/1000000));
+    if uname -a | grep -q Darwin; then
+        python -c 'import time; print long(time.time()*1000L)'
+    else
+        echo $(($(date +%s%N)/1000000));
+    fi
 }
 
 #trap error ERR
@@ -73,19 +77,37 @@ function run_component() {
 }
 
 function run_component_bg() {
-    run_component "$@" &
+    if [ "$1" = "-XXX:OUT" ]; then
+        COMPOUT="$2"
+        shift
+        shift
+        run_component "$@" 2>&1 | tee "$COMPOUT" &
+    else
+        run_component "$@" &
+    fi
 }
 
 set +e
 killall David Goliath Token &> /dev/null
 set -e
 
-run_component_bg Goliath "$POLYFILE" "$@"
+GOUT=$(mktemp /tmp/gout.XXXXXX)
+run_component_bg -XXX:OUT "$GOUT" Goliath "$POLYFILE" "$@"
 GPID=$!
-cat "$POLYFILE" | while read line; do sleep 0.001; done
+while true; do
+    if grep -q READY "$GOUT"; then
+        echo
+        break
+    else
+        echo -n .
+        sleep 0.5
+    fi
+done
+
 run_component_bg Token "$@"
 TPID=$!
 sleep 0.5
+
 run_component_bg David "$INPUTELEM" "$@"
 DPID=$!
 

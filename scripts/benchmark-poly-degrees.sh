@@ -61,7 +61,7 @@ function get_random_element() {
 }
 
 function random_poly_file() {
-    PFILE=$(mktemp)
+    PFILE=$(mktemp /tmp/poly.XXXXXX)
     for (( i=0; i<$1; i=$i+1 )); do
         get_random_element >> "$PFILE"
     done
@@ -86,16 +86,16 @@ function run_sample() {
     PDEGREE="$1"
     PFILE="$2"
     EL="$3"
-    TMPOUT=$(mktemp)
+    TMPOUT=$(mktemp /tmp/out.XXXXXX)
     RET=0
 
-    if [ $(wc -l "$PFILE" | cut -d' ' -f1) -ne $PDEGREE ]; then
+    if [ $(wc -l "$PFILE" | grep -Eo '[0-9]+' | head -1) -ne $PDEGREE ]; then
         echo "ERROR: length of poly file does not equal degree"
         exit 2
     fi
 
     if [ $DEBUG -ne 0 ]; then
-        ../run-sample.sh "$PFILE" "$EL" $POLY_EVAL_OPTS -q |& tee "$TMPOUT"
+        ../run-sample.sh "$PFILE" "$EL" $POLY_EVAL_OPTS -q 2>&1 | tee "$TMPOUT"
     else
         ../run-sample.sh "$PFILE" "$EL" $POLY_EVAL_OPTS -q &> "$TMPOUT"
     fi
