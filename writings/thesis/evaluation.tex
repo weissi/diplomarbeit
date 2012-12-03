@@ -16,17 +16,21 @@ dual core processor at \emph{1.83 GHz}. It has \emph{2 GB} system memory.
 
 \JWlfour*{Test Maschine 2}
 
-\emph{Apple Mac mini}.
-\JWtodo{Mac beschreiben}
+\emph{Apple Mac mini} (\texttt{Macmini 3,1}) running \emph{MacOS X 10.7.5
+(Lion)}. The machine is powered by a \emph{Intel\TReg{} Core 2 Duo} dual core
+processor at \emph{2.26 GHz}. It has \emph{8 GB} system memory.
 
 \JWlthree{Test Setup}
 
 Both machines run the three programs (\JWBpOne{}, \JWBpTwo{}, \JWBtoken{})
 simultaneously, the programs are compiled single--threaded. The programs
-communicate to each other using local TCP/IP networking. The running time
-includes the DRAC building and transmitting, the OAFE configuration and the
-successful evaluation of a random polynomial in the field
-$\mathbb{F}_{2^{256}}$.  The polynomial is evaluated using \emph{Horner's rule}.
+communicate to each other using local TCP/IP networking. Chapter
+\ref{sec:communication-channels} has a in depth description about the
+communication that takes part in the implementation that comes with this thesis.
+The running time includes the DRAC building and transmitting, the OAFE
+configuration and the successful evaluation of a random polynomial in the field
+$\mathbb{F}_{2^{256}}$. The polynomial is evaluated using \emph{Horner's
+rule}\cite{cormen01}.
 
 
 \JWltwo{Running Time}
@@ -34,16 +38,34 @@ $\mathbb{F}_{2^{256}}$.  The polynomial is evaluated using \emph{Horner's rule}.
 
 Ordinary evaluation of a polynomial using \emph{Horner's rule} is in $\Theta(n)$
 \cite{cormen01}. Despite the complex technique presented in this thesis the
-running time increases nearly linear in the polynomial degree. This means that
-polynomial evaluation is only slower than the common polynomial evaluation by a
-constant factor. Figure \ref{fig:poly-deg-t} and table \ref{tab:poly-deg-t}
-demonstrate that.
+running time increases nearly linear in the polynomial degree. The small
+non--linear part comes from the large amount of memory the large degree
+polynomials take to evaluate. Especially the marshalling (and unmarshalling) of
+the large data--structure that is necessary before transmission via network is
+quite memory intensive and gives the garbage collector a lot to do. This means
+that polynomial evaluation is only slower than the common polynomial evaluation
+by a constant factor. Figure \ref{fig:poly-deg-t} and table \ref{tab:poly-deg-t}
+demonstrate that. An implementation whose goal is optimal performance could very
+likely drop the non--linear factor entirely. Figure \ref{fig:poly-deg-t-small}
+and table \ref{tab:poly-deg-t-small} motivate this because the non--linearity is
+invisible for polynomials of smaller degree ($< 300$).
+
+The difference in the running time is nearly equal between both Test Machines
+(see figure \ref{fig:poly-deg-t}), this is because the marshalling/unmarshalling
+and network transmission are the most relevant factors for the running time.
 
 \begin{figure}[ht]
   \centering
   \input{images/poly-deg-t}
-  \caption{Polynomial Evaluation Time By Degree}
+  \caption{Evaluation Time of Polynomial (Larger Degrees) on Both Test Machines}
   \label{fig:poly-deg-t}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \input{images/poly-deg-t-small}
+  \caption{Evaluation Time of Polynomial (Smaller Degrees) on Test Machine 1}
+  \label{fig:poly-deg-t-small}
 \end{figure}
 
 \begin{table}[ht]
@@ -68,8 +90,42 @@ demonstrate that.
     5500 & 41.0512 \\
     6000 & 48.2210 \\
   \end{tabular}
-  \caption{Polynomial Evaluation Time By Degree}
+  \caption{Evaluation Time of Polynomial (Larger Degrees) on Test Machine 1}
   \label{tab:poly-deg-t}
+\end{table}
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{|c|c|}
+    Polynomial Degree & Average Running Time [ms] \\
+    0  & 68.4 \\
+    10 &  80.2 \\
+    20 & 101.2 \\
+    30 & 121.6 \\
+    40 & 142.6 \\
+    50 & 160.8 \\
+    60 & 183.0 \\
+    70 & 208.0 \\
+    80 & 232.2 \\
+    90 & 258.4 \\
+    100 & 280.4 \\
+    110 & 307.2 \\
+    120 & 321.2 \\
+    130 & 347.2 \\
+    140 & 372.8 \\
+    150 & 402.6 \\
+    160 & 429.4 \\
+    170 & 470.8 \\
+    180 & 484.4 \\
+    190 & 508.0 \\
+    200 & 527.8 \\
+    210 & 563.8 \\
+    220 & 601.6 \\
+    230 & 606.8 \\
+    240 & 640.0 \\
+  \end{tabular}
+  \caption{Evaluation Time of Polynomial (Smaller Degrees) on Test Machine 1}
+  \label{tab:poly-deg-t-small}
 \end{table}
 
 \begin{JWtodoBox}
@@ -90,3 +146,5 @@ demonstrate that.
 
 Implementing David \& Goliath protocol. The implementation assumes it's already
 available.
+
+% vim: set spell spelllang=en_us fileencoding=utf8 :

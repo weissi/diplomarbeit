@@ -3,11 +3,15 @@
 #R
 t <- read.table('linux-bench-500-6000-500.out', header=T)
 a <- aggregate(t$Time, list(degree=t$Polynomial.Degree), mean)
+tm <- read.table('mac-bench-500-6000-500.out', header=T)
+am <- aggregate(tm$Time, list(degree=tm$Polynomial.Degree), mean)
 require( tikzDevice )
 tikz('../writings/thesis/images/poly-deg-t.tex', height=3, width=6)
 plot(data.frame(degree=a$degree, time=a$x/1000),
      xlab='Polynomial Degree', ylab='Average Running Time [s]',
-     main='', type='b')
+     main='', type='o', pch=21)
+lines(data.frame(degree=am$degree, time=am$x/1000), pch=22, lty=2)
+legend(1, 45, c("Test Machine 1", "Test Machine 2"), pch=21:22, lty=1:2)
 dev.off()
 
 t <- read.table('linux-bench-0-1000-10.out', header=T)
