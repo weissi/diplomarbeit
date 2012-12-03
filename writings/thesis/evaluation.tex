@@ -1,10 +1,43 @@
 \JWlone{Evaluation}
 \label{sec:evaluation}
 
-This chapter will evaluate this thesis.
+\JWltwo{Test Setup}
+\label{sec:test-setup}
 
-Polynomial evaluation using \emph{Horner's rule} is in $\Theta(n)$
-\cite{cormen01}.
+\JWlthree{Test Maschines}
+\label{sec:test-machines}
+
+\JWlfour*{Test Maschine 1}
+
+\emph{Dell Latitude D620} running \emph{Debian GNU/Linux} on kernel version
+\emph{3.1.7}. The machine is powered by a \emph{Intel\TReg{} Core Duo T2400}
+dual core processor at \emph{1.83 GHz}. It has \emph{2 GB} system memory.
+
+
+\JWlfour*{Test Maschine 2}
+
+\emph{Apple Mac mini}.
+\JWtodo{Mac beschreiben}
+
+\JWlthree{Test Setup}
+
+Both machines run the three programs (\JWBpOne{}, \JWBpTwo{}, \JWBtoken{})
+simultaneously, the programs are compiled single--threaded. The programs
+communicate to each other using local TCP/IP networking. The running time
+includes the DRAC building and transmitting, the OAFE configuration and the
+successful evaluation of a random polynomial in the field
+$\mathbb{F}_{2^{256}}$.  The polynomial is evaluated using \emph{Horner's rule}.
+
+
+\JWltwo{Running Time}
+\label{sec:running-time}
+
+Ordinary evaluation of a polynomial using \emph{Horner's rule} is in $\Theta(n)$
+\cite{cormen01}. Despite the complex technique presented in this thesis the
+running time increases nearly linear in the polynomial degree. This means that
+polynomial evaluation is only slower than the common polynomial evaluation by a
+constant factor. Figure \ref{fig:poly-deg-t} and table \ref{tab:poly-deg-t}
+demonstrate that.
 
 \begin{figure}[ht]
   \centering
