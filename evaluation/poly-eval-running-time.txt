@@ -1,11 +1,21 @@
 ./benchmark-poly-degrees.sh -r 5 -m 500 -M 6000 -o /tmp/bench.out
 
 #R
-t <- read.table('/tmp/bench.out', header=T)
+t <- read.table('linux-bench-500-6000-500.out', header=T)
 a <- aggregate(t$Time, list(degree=t$Polynomial.Degree), mean)
 require( tikzDevice )
-tikz('/home/weissi/studium/diplomarbeit/writings/thesis/images/poly-deg-t.tex',
-     height=3, width=6)
+tikz('../writings/thesis/images/poly-deg-t.tex', height=3, width=6)
+plot(data.frame(degree=a$degree, time=a$x/1000),
+     xlab='Polynomial Degree', ylab='Average Running Time [s]',
+     main='', type='b')
+dev.off()
+
+t <- read.table('linux-bench-0-1000-10.out', header=T)
+a <- aggregate(t$Time, list(degree=t$Polynomial.Degree), mean)
+selected <- a$degree < 250
+a <- data.frame(degree=a$degree[selected], x=a$x[selected])
+require( tikzDevice )
+tikz('../writings/thesis/images/poly-deg-t-small.tex', height=3, width=6)
 plot(data.frame(degree=a$degree, time=a$x/1000),
      xlab='Polynomial Degree', ylab='Average Running Time [s]',
      main='', type='b')

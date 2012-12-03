@@ -99,6 +99,9 @@ while true; do
         echo
         break
     else
+        if grep -q 'Exited (running ' "$GOUT"; then
+            break
+        fi
         echo -n .
         sleep 0.5
     fi
