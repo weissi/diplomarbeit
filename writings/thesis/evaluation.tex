@@ -3,6 +3,42 @@
 
 This chapter will evaluate this thesis.
 
+Polynomial evaluation using \emph{Horner's rule} is in $\Theta(n)$
+\cite{cormen01}.
+
+\begin{figure}[ht]
+  \centering
+  \input{images/poly-deg-t}
+  \caption{Polynomial Evaluation Time By Degree}
+  \label{fig:poly-deg-t}
+\end{figure}
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{|c|c|}
+    Polynomial Degree & Average Running Time [s] \\
+    0 & 0.0694 \\
+    100 & 0.2772 \\
+    200 & 0.5434 \\
+    300 & 0.8466 \\
+    400 & 1.2524 \\
+    500 & 1.6181 \\
+    1000 &  3.9952 \\
+    1500 &  6.9746 \\
+    2000 & 10.8058 \\
+    2500 & 12.8614 \\
+    3000 & 17.3338 \\
+    3500 & 21.2246 \\
+    4000 & 26.8632 \\
+    4500 & 29.8446 \\
+    5000 & 34.9154 \\
+    5500 & 41.0512 \\
+    6000 & 48.2210 \\
+  \end{tabular}
+  \caption{Polynomial Evaluation Time By Degree}
+  \label{tab:poly-deg-t}
+\end{table}
+
 \begin{JWtodoBox}
 
 \begin{itemize}
