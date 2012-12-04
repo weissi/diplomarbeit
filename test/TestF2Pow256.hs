@@ -10,7 +10,6 @@ import Math.FiniteFields.F2Pow256
 
 -- # HTF
 import Test.Framework
-import TestHelpers
 
 -- # DEBUG
 import Debug.Trace

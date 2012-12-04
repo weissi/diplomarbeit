@@ -12,7 +12,6 @@ import Data.Helpers
 
 -- # HTF
 import Test.Framework
-import TestHelpers
 
 -- # DEBUG
 import Debug.Trace

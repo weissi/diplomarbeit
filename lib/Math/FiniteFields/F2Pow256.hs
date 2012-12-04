@@ -13,6 +13,8 @@ import Foreign.Storable (Storable(..))
 import Foreign.Ptr (Ptr, castPtr)
 import Control.Monad.CryptoRandom (CRandom(..))
 import Crypto.Random (CryptoRandomGen(..))
+import Test.QuickCheck.Arbitrary (Arbitrary(..))
+import Test.QuickCheck.Gen (choose)
 import Text.Regex (Regex, mkRegex, matchRegex)
 
 import qualified Math.FiniteFields.Foreign.FFInterface as FFI
@@ -91,3 +93,6 @@ f2Pow256FromBytes = F2Pow256 . FFI.ffElementFromBytes
 
 instance Eq F2Pow256 where
     (==) (F2Pow256 l) (F2Pow256 r) = FFI.ffEquals l r
+
+instance Arbitrary F2Pow256 where
+    arbitrary = fmap fromInteger $ choose (0, (2::Integer)^(256::Integer)-1)

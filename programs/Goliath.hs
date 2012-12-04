@@ -9,12 +9,10 @@ import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (atomically)
 import Data.List (partition)
-import Data.Text (Text)
 import System.Environment (getArgs)
 import System.Exit (exitWith, ExitCode(..))
 import System.IO (hFlush, stdout)
 import qualified Data.ByteString as BS
-import qualified Data.Text as T
 
 -- # SITE PACKAGES
 import Crypto.Random (SystemRandom, newGenIO)
@@ -23,10 +21,8 @@ import Data.Conduit ( Conduit, MonadResource
                     , runResourceT
                     )
 import Data.Vector (Vector)
-import qualified Data.Conduit.Binary as CB
 import qualified Data.Conduit.List as CL
 import qualified Data.Conduit.Network as CN
-import qualified Data.Conduit.Text as CT
 import qualified Data.HashMap.Strict as HM
 
 -- # LOCAL
@@ -38,6 +34,7 @@ import Data.RAE.Conduit ( oafeConfigSerializeConduit
                         , racFragmentSerializeConduit
                         )
 import Data.Helpers (takeOneConduit, isOptionArg)
+import Functionality.Goliath (readExprFromFile)
 import Functionality.SetupPhase ( SetupDavidToGoliath(..)
                                 , SetupGoliathToDavid(..)
                                 , sg2dSerializeConduit, sd2gParseConduit
@@ -142,27 +139,6 @@ spawnTokenGenerator cTokens =
                return ()
        return ()
 
-readExprFromFile :: forall a. (Show a, Read a, Num a)
-                 => (Expr a -> [Expr a] -> Expr a) -> FilePath -> IO (Expr a)
-readExprFromFile buildPoly path =
-    do elems <-
-        runResourceT $
-            CB.sourceFile path
-            $= CT.decode CT.utf8
-            =$= CT.lines
-            =$= CL.mapM parseElements
-            $$ CL.consume
-       let expr :: Expr a
-           expr = buildPoly _X_ (map Literal elems)
-       when _DEBUG_ (print expr)
-       return expr
-    where parseElements :: Monad m => Text -> m a
-          parseElements str =
-              let parsed = readsPrec 0 (T.unpack str)
-               in case parsed of
-                    ((v, _):_) -> return $! v
-                    _ -> fail "Parse failed"
-
 main :: IO ()
 main =
     do putStrLn "GOLIATH START"
@@ -176,7 +152,8 @@ main =
                        then do putStrLn "POLY BUILDING: Monomial"
                                return P.monomial
                        else putStrLn "POLY BUILDING: Horner" >> return P.horner
-       expr <- readExprFromFile buildPoly filePath
+       expr <- readExprFromFile (buildPoly _X_) filePath
+       when _DEBUG_ (print expr)
        cTokens <- atomically newTChan
        spawnTokenGenerator cTokens
        putStrLn "GOLIATH READY FOR CONNECTION"

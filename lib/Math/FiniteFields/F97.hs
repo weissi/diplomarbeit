@@ -2,11 +2,15 @@
 -- Don't use this module in production code.
 module Math.FiniteFields.F97 (F97) where
 
-import qualified Data.ByteString.Lazy as BSL
-import qualified Data.ByteString.Char8 as BS8
 import Math.Algebra.Field.Base (F97, Fp)
 import Math.Common.IntegerAsType (IntegerAsType)
 import Control.Monad.CryptoRandom (CRandom(..))
+import Test.QuickCheck.Arbitrary ( Arbitrary(..), arbitrary
+                                 , arbitrarySizedIntegral
+                                 )
+import System.Random (Random(..))
+import qualified Data.ByteString.Lazy as BSL
+import qualified Data.ByteString.Char8 as BS8
 
 import Data.FieldTypes (Field(..))
 import Data.RAE.Conduit (ByteSerializable(..))
@@ -31,3 +35,19 @@ instance IntegerAsType n => CRandom (Fp n) where
         case crandom g of
           Left err -> Left err
           Right (a, g') -> Right (fromIntegral (a :: Int), g')
+
+instance IntegerAsType n => Arbitrary (Fp n) where
+    arbitrary = arbitrarySizedIntegral
+
+instance IntegerAsType n => Random (Fp n) where
+    random g =
+        let (rint, g') = random g
+            rint' = rint :: Integer
+            in (fromIntegral rint', g')
+    randomR (lo, hi) g =
+        let loint = (read . show) lo :: Integer
+            hiint = (read . show) hi :: Integer
+            (rint, g') = randomR (loint, hiint) g
+            rint' = rint :: Integer
+            rfp = fromIntegral rint'
+            in (rfp, g')
