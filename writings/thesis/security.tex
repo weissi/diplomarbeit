@@ -184,9 +184,9 @@ The setup phase is run as soon as the simulator starts.
 
   \item After having symbolically evaluated the polynomial encoded by \JWadv{},
     verify, that the polynomial has a degree that is less or equal than the
-    parametrized degree $k$. If \JWadv{} submitted a polynomial of valid
-    degree, store the polynomial's coefficients as $a \in \JWfieldGeneral^n$.
-    Next, upload that polynomial to the ideal functionality \JWfuncSymOPEnp{} by
+    parametrized degree $k$. If \JWadv{} submitted a polynomial of valid degree,
+    store the polynomial's coefficients as $a \in \JWfieldGeneral^n$.  Next,
+    upload that polynomial to the ideal functionality \JWfuncSymOPEnp{} by
     outputting \JWmsgTP{Commit}{$a$} to \JWfuncSymOPEnp{}.  If the polynomial
     was illegal, restart the simulator in the setup phase.  This restart is
     equivalent to simply ignoring the adversary's inputs.
