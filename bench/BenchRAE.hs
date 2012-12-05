@@ -5,6 +5,7 @@ module Main where
 import Data.Map (Map)
 import Data.Maybe (fromJust)
 import Data.List (foldl')
+import System.Environment (getArgs)
 import qualified Data.Map as M
 
 -- SITE PACKAGES
@@ -14,6 +15,7 @@ import Math.Algebra.Field.Base (Fp, F97)
 import Math.Common.IntegerAsType (IntegerAsType)
 
 -- CRITERION
+import Criterion.Config
 import Criterion.Main
 import Criterion.Types
 
@@ -24,6 +26,7 @@ import Data.LinearExpression (VariableName, VarMapping)
 import Data.RAE.Encoder (exprToRAC, exprToDRAC)
 import Data.RAE.Evaluation (runRAC, runDRAC)
 import Math.FiniteFields.F2Pow256 (F2Pow256)
+import qualified Math.Polynomials as P
 
 instance IntegerAsType n => Field (Fp n) where
     invert n =
@@ -68,6 +71,7 @@ _Y_ = Var "y"
 
 main =
     do g <- (newGenIO :: IO SystemRandom)
+       (cfg, _) <- parseArgs defaultConfig defaultOptions =<< getArgs
        defaultMain
          [ bgroup "DRAC direct F97"
              [ bench "x ^ 1"    $ whnf (evalD97 g) (_X_ ^ 1)
@@ -113,9 +117,25 @@ main =
              , bench "x * 1000" $ whnf (evalRACF2e256 g) (addNx 1000)
              , bench "x * 10000"$ whnf (evalRACF2e256 g) (addNx 10000)
              ]
+         , bgroup "Horner Poly Building F97"
+             [ bench "1..100"     $whnf hornerF97 $ replicate 100 17
+             , bench "1..1000"    $whnf hornerF97 $ replicate 1000 17
+             , bench "1..10000"   $whnf hornerF97 $ replicate 10000 17
+             , bench "1..100000"  $whnf hornerF97 $ replicate 100000 17
+             ]
+         , bgroup "Horner Poly Building F2Pow256"
+             [ bench "1..100"    $whnf hornerF2P $ replicate 100 someF2PElem
+             , bench "1..1000"   $whnf hornerF2P $ replicate 1000 someF2PElem
+             , bench "1..10000"  $whnf hornerF2P $ replicate 10000 someF2PElem
+             , bench "1..100000" $whnf hornerF2P $ replicate 100000 someF2PElem
+             ]
          ]
     where evalD97 g = evalDirect g _TVM_F97_
           evalDF2e256 g = evalDirect g _TVM_F2Pow256_
           evalRAC97 g = evalViaRAC g _TVM_F97_
           evalRACF2e256 g = evalViaRAC g _TVM_F2Pow256_
           addNx n = foldl' (+) 0 $ take n $ repeat _X_
+          hornerF97 = P.horner (17 :: F97)
+          hornerF2P = P.horner someF2PElem
+          someF2PElem :: F2Pow256
+          someF2PElem = read "[1 0 1 1 0 0 1 0 1]"
