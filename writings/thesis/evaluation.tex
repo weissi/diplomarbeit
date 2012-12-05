@@ -7,23 +7,25 @@
 \JWlthree{Test Maschines}
 \label{sec:test-machines}
 
-Both test machines are regular home computer systems and the benchmarks were not
-run under laboratory conditions. Though, most background services and other
-programs that could interfere with the benchmarks have been stopped.
+Both test machines are regular home computer systems thus the benchmarks were
+not run under laboratory conditions. Though, most background services and other
+programs that could interfere with the benchmarks have been stopped. The
+implementation has been compiled using full optimizations turned on
+(\JWcmd{cabal configure --ghc-options=-O3}).
 
 
 \JWlfour*{Test Maschine 1}
 
 \emph{Dell Latitude D620} running \emph{Debian GNU/Linux} on kernel version
-\emph{3.1.7}. The machine is powered by a \emph{Intel\TReg{} Core Duo T2400}
-dual core processor at \emph{1.83 GHz}. It has \emph{2 GB} system memory.
+\emph{3.1.7, 32--bit}. The machine is powered by a \emph{Intel\TReg{} Core Duo
+T2400} dual core processor at \emph{1.83 GHz}. It has \emph{2 GB} system memory.
 
 
 \JWlfour*{Test Maschine 2}
 
 \emph{Apple Mac mini} (\texttt{Macmini 3,1}) running \emph{MacOS X 10.7.5
-(Lion)}. The machine is powered by a \emph{Intel\TReg{} Core 2 Duo} dual core
-processor at \emph{2.26 GHz}. It has \emph{8 GB} system memory.
+(Lion), 64--bit}. The machine is powered by a \emph{Intel\TReg{} Core 2 Duo}
+dual core processor at \emph{2.26 GHz}. It has \emph{8 GB} system memory.
 
 \JWlthree{Test Setup}
 
@@ -66,11 +68,12 @@ is not the main concern of this thesis. For futher details see chapter
 \ref{sec:finite-field-calcs}. For smaller degrees the current implementation for
 $\mathbb{F}_{2^{256}}$ does perform in linear time. Figure
 \ref{fig:poly-deg-t-small} and table \ref{tab:poly-deg-t-small} demonstrate
-this.
+this. It is also noteworthy that the first test machine (see chapter
+\ref{sec:test-machines}) outperforms the second test machine despite the
+inferior hardware. The cause has not been investigated, a possible causes could
+be that the 64--bit \JWTghc{} runtime seems to be slower (at least on Apple
+Macs)\cite{lentczner11}.
 
-The difference in the running time is nearly equal between both Test Machines
-(see figure \ref{fig:poly-deg-t}), this is because the marshalling/unmarshalling
-and network transmission are the most relevant factors for the running time.
 
 % F97 vs. F2Pow256 and Linux vs. Mac
 \begin{figure}[ht]
@@ -117,32 +120,6 @@ and network transmission are the most relevant factors for the running time.
   \caption{Evaluation Time of Polynomial (Smaller Degrees) on Test Machine 1}
   \label{fig:poly-deg-t-small}
 \end{figure}
-
-\begin{table}[ht]
-  \centering
-  \begin{tabular}{|c|c|}
-    Polynomial Degree & Average Running Time [s] \\
-    0 & 0.0694 \\
-    100 & 0.2772 \\
-    200 & 0.5434 \\
-    300 & 0.8466 \\
-    400 & 1.2524 \\
-    500 & 1.6181 \\
-    1000 &  3.9952 \\
-    1500 &  6.9746 \\
-    2000 & 10.8058 \\
-    2500 & 12.8614 \\
-    3000 & 17.3338 \\
-    3500 & 21.2246 \\
-    4000 & 26.8632 \\
-    4500 & 29.8446 \\
-    5000 & 34.9154 \\
-    5500 & 41.0512 \\
-    6000 & 48.2210 \\
-  \end{tabular}
-  \caption{Evaluation Time of Polynomial (Larger Degrees) on Test Machine 1}
-  \label{tab:poly-deg-t}
-\end{table}
 
 \begin{table}[ht]
   \centering

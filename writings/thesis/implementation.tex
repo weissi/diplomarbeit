@@ -134,6 +134,14 @@ lightweight \JWTc{} wrapper has been developed because the library is written in
 \end{JWtodoBox}
 
 
+% Thread Safety
+\JWlthree{Thread Safety}
+
+The implementation is fully threadsafe, all communication is done using
+\JWTghc{}'s implementation of \emph{Software Transactional Memory} (STM)
+\cite{stm05} for Haskell.
+
+
 % Testing Correctness
 \JWlthree{Testing the Correctness of the Implementation}
 
@@ -164,6 +172,13 @@ schrieblesque \JWTXLprotobuf{}.
 This thesis uses a lot of other libraries mainly from \JWTLhackage{}. The
 complete list of packages can be extracted from the file
 \JWpath{diplomarbeit.cabal} that comes with the source code of this thesis.
+
+
+% Source Tree Organization
+\JWlthree{Source Tree Organization}
+\label{sec:src-org}
+
+\JWtodo{WICHTIG: Ist referenziert im LBS chapter}
 
 
 % Build System

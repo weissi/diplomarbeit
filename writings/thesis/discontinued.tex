@@ -1,128 +1,41 @@
 \JWlone{Discontinued Approaches}
 \label{sec:discontinued}
 
-\JWltwo{Using Decomposable Affine Randomized Encodings}
-\label{sec:dare}
+This chapter shortly describes the approaches that have been investigated (and
+implemented) but were not good enough to reach the ultimate goal. The approaches
+are ordered chronologically by date of examination.
 
-\JWtodo{DARE und LBS tauschen, in Entwicklungs--Reihenfolge bringen}
 
-The transformation from general functions to affine functions used in this
-thesis will lead to a slightly modified form of \emph{Decomposable Affine
-Randomized Encodings} (DAREs) \cite{gac2012} only called \emph{Affine Randomized
-Encoding} (ARE) in this thesis. The modification is necessary because this
-thesis uses OAFEs to evaluate the DAREs and does therefore not depend on the
-learning with errors (LWE) problem. This leads to further changes: The
-\emph{affinization gadget} \cite{gac2012} is modified and the
-\emph{key--shrinking gadget} \cite{gac2012} is not needed.
-
-\noindent{}The following sections will describe the whole process.
-
-\JWlthree{Definitions}
-\label{sec:affinization_definitions}
-
-An \emph{Linear Randomized Expression} (LRE) is an element of the set
-$\mathcal{F}_{AR}$ ($K$ a finite field), an \emph{Affine Randomized Encoding}
-(ARE) an element of the set $\mathcal{E}_{AR}$. One important constraint has to
-hold for all LREs and therefore for all AREs, too: After fully evaluating a LRE,
-i.e. replacing the variable by its actual value, the now constant LRE should
-reveal no more information that the result of a full decoding of the respective
-ARE. The safety is proven in \emph{How to Garble Arithmetic Circuits}
-\cite{gac2012}.
-
-\begin{align*}
-  \mathcal{V} = & \{ x \mid x~\text{a variable over}~K \} \\
 %
-  \mathcal{F}_{AR} = & \{ s \cdot x + i \mid s, i \in K, x \in \mathcal{V} \}
-  \cup \{ v \mid v \in K \} \\
+% LBS
 %
-  \mathcal{E}_{AR} = & \{ (M, A) \mid
-    M \subseteq \mathcal{F}_{AR} \times \mathcal{F}_{AR},
-    A \subseteq, \mathcal{F}_{AR};
-    A, M~\text{finite multi--sets} \}
-%
-\end{align*}
-
-
-\JWlthree{Encoding}
-\label{sec:affinization_encoding}
-
-\begin{itemize}
-
-\item A function $f_1(x_1, x_2) = x_1 + x_2$ can be securely encoded by
-$ENC_A(f_1, r)$; $r \in K$ being uniformly at random
-
-\item A function $f_2(x_1, x_2, x_3) = x_1 \cdot x_2 + x_3$ can be securely
-encoded by $ENC_M(f_2, r_1, r_2, r_3, r_4)$; $r_1, r_2, r_3, r_4 \in K$ being
-uniformly at random
-\end{itemize}
-
-\begin{align*}
-ENC_A(f_1, r) = \Big( & \emptyset, (x_1 + r, 1 \cdot x_2 - r)\Big) \\
-ENC_M(f_2,  r_1, r_2, r_3, r_4) = \Bigg( & \bigg\{
-\begin{pmatrix}1 \cdot x_1 - r_1\\1 \cdot x_2 - r_2\end{pmatrix} \bigg\}\\
-,& \bigg\{r_2 \cdot x_1 -r_1r_2+r_3 \\
-&\ ,\ r_1 \cdot x_2 + r_4 \\
-&\ ,\ 1 \cdot x_3-r_3-r_4\bigg\} \Bigg)
-\end{align*}
-
-
-\JWlthree{Decoding}
-\label{sec:affinization_decoding}
-
-Decoding a fully evaluated ARE $\mathcal{E}_{AR} = \{(M,A)\}$ as $r =
-DEC(\mathcal{E}_{AR})$ is
-straightforward:
-
-\begin{align*}
-M' &= \Bigg\{ m_1 \cdot m_2\ \Bigg|\ \begin{pmatrix}m_1\\m_2\end{pmatrix}
-\in M \Bigg\} \\
-r & = \sum_{a \in A} a + \sum_{m \in M'} m
-\end{align*}
-
-
-\JWlthree{Randomized Variables}
-\label{sec:rv}
-
-Whenever a circuit is not directly transformable to one single ARE, sub--AREs
-get replaced by \emph{Randomized Variables} (RV). RVs are just (sub--)ARE that
-get transmitted to the second party (see section \ref{sec:dare}) which
-fully evaluates them and saves the result just like an ordinary input variable
-(such as $x_D$). Following AREs may then use the RVs as pseudo--inputs. But
-since a ARE reveals as much information as its decoded form, the original ARE
-cannot just be transmitted as the final overall ARE. That would reveal
-intermediate information. Therefore, RVs get an additional garbling step: Say
-the following property would hold for a variable $v$ being the decoded value of
-an ARE $e$:
-
-\begin{align*}
-  v = DEC(e \in \mathcal{E}_{AR})
-\end{align*}
-
-\noindent{}Then a modified ARE $\hat{e} \in \mathcal{E}_{AR}^+$ decoding to a
-value $\hat{v}$
-
-\begin{align*}
-\hat{v} = \alpha \cdot (v + \beta) = DEC(\hat{e})
-\end{align*}
-
-\noindent{}with secret keys---known only by the first party---$\alpha$ and
-$\beta$ would get transmitted.
-
-
-\JWltwo{Using Linear Bijection Straight--Line Programs}
+\JWltwo{Linear Bijection Straight--Line Programs}
 \label{sec:using-lbs}
 
 The first approach taken in this thesis to transform general formulas to affine
 functions suitable for OAFEs was via Linear Bijection Straight--Line Programs.
 The results looked promising at a first glance but a problem leading to
-exponential blowup when using multiplications emerged. This approach is partly
-implemented as explained in detail in the next few section but plays no role in
-the overall solution.
+exponential blowup when using multiplications emerged:
+
+\begin{quote}
+  We show that, over an arbitrary ring, for any fixed $\epsilon > 0$, all
+  balanced algebraic formulas of size $s$ are computed by algebraic
+  straight--line programs that employ a constant number of registers and have
+  length $O(s^{1 + \epsilon})$.\cite{cleve91}
+\end{quote}
+
+\noindent{}Two problems arise: Cleve's approach does not support \emph{Square
+and Multiply}\cite{knuth81} at all and since the size $s$ is defined as the
+depth of a balanced formula, evaluating a polynomial of degree $n$ would produce
+a program of length $O(s^{1 + \epsilon}) = O(2^{n^{1 + \epsilon}})$. However,
+the approach is partly implemented as explained in detail in the next few
+chapters but neither the code nor the ideas are used for the final version of
+this thesis.
 
 \JWlthree{From Arithmetic Formulas To Matrix Multiplications}
 \label{sec:FormulasToMatrixMuls}
 
-Our definition of formulas is the same as in \cite{cleve91}: Formulas are
+The definition of formulas is the same as in \cite{cleve91}: Formulas are
 circuits that are trees. A postorder traversal is enough to evaluate the formula
 easily. We describe the evaluation of such a formula using \emph{linear
 bijection straight--line programs} (LBS programs)\cite{cleve91} which use at
@@ -135,12 +48,12 @@ A LBS program consists of assignment statements of the following
 forms where $R_{1,...,\omega}$ denote registers, $c \in K$ constants and $x_u
 \in K$ the formula's inputs:
 
-\begin{align}
+\begin{align*}
 R_j & \leftarrow R_j + (R_i \cdot c) \\
 R_j & \leftarrow R_j - (R_i \cdot c) \\
 R_j & \leftarrow R_j + (R_i \cdot x_u) \\
 R_j & \leftarrow R_j - (R_i \cdot x_u)
-\end{align}
+\end{align*}
 
 
 \JWlfour{Transformation of Formulas to LBS Programs}
@@ -202,27 +115,15 @@ R_j & \leftarrow R_j + R_i \cdot l(x_G, x_D)
 \end{align*}
 
 
-\JWlfour{Current Implementation State}
+\JWlfour{Implementation State}
 
 The current implementation is a Haskell library which does the transformation
-from the formula, over the LBS program to the matrices. Exemplary,
-the definition of the function $f(x_G,x_D) = 3x \cdot (x_G + x_D^2)$ looks like
-
-\lstset{language=Haskell}
-
-\begin{lstlisting}
-_Xg_ :: Expr
-_Xg_ = Var "Xg"
-
-_Xd_ :: Expr
-_Xd_ = Var "Xd"
-
-f :: Expr
-f = 3 * _Xg_ * (_Xg_ + _Yd_ * _Yd_)
-\end{lstlisting}
-
-\noindent{}The resulting LBS program which will hold the result in \texttt{R1}
-looks like:
+from the formula, over the LBS program to the matrices that only need to be
+multiplied in order to calculate the result. The main implementation can be
+found in the \JWpath{lib/Codec/LBS.hs} of the code tree of this thesis (see
+chapters \ref{sec:src-org} and \ref{sec:code-availability}). Exemplary, the
+LBS program to evaluate the function $f(x_G,x_D) = 3x \cdot (x_G + x_D^2)$ which
+will hold the result in \texttt{R1}:
 
 \begin{lstlisting}
 R1 <- R1 - R2 * Xg
@@ -254,7 +155,7 @@ $R_i \leftarrow R_i + (R_j \cdot \alpha)$ is equivalent to the $K^{\omega \times
 \label{sec:matrix-grouping}
 
 The grouping process is very straightforward, too: From the process described in
-section \ref{sec:FormulasToMatrixMuls} we obtain matrices $\widehat{M_1}$ to
+chapter \ref{sec:FormulasToMatrixMuls} we obtain matrices $\widehat{M_1}$ to
 $\widehat{M_n}$ which each have the effect of exactly one LBS program statement.
 Using associativity, we group together a variable amount of matrices
 $\widehat{M_1}$ to $\widehat{M_n}$. Each group is complete when there is at
@@ -293,12 +194,12 @@ result.
 
 \JWlthree{Evaluating them using OAFEs (David \& Goliath)}
 
-From section \ref{sec:matrix-garbling} we obtain the matrices $U_{1..m} \in
+From chapter \ref{sec:matrix-garbling} we obtain the matrices $U_{1..m} \in
 K^{\omega \times \omega}$. We can easily reshape the matrices $U_{1..m}$ to
 vectors $u_{1..m} \in K^{\omega^2}$ and concatenate the vectors $u_{1..m}$ to
 one giant vector $\mu \in K^{m\omega^2}$. After that we deduce two vectors $a$
 and $b$ that hold the following property ($a, b \in K^{m\omega^2}$, $x_D$ a
-scalar variable, as in section \ref{sec:matrix-grouping} David's input):
+scalar variable, as in chapter \ref{sec:matrix-grouping} David's input):
 
 \begin{align}
 a \cdot x_D + b = \mu
@@ -324,5 +225,140 @@ functions to his result vector $y \in K^{m\omega^2} = GWh + \tilde{a}x_D +
 $f(x_G,x_D)$.
 
 \end{itemize}
+
+
+%
+% DARE
+%
+\JWltwo{Decomposable Affine Randomized Encodings}
+\label{sec:dare}
+
+The second approach that was examinated while this thesis evolved was to
+transform general functions to affine functions using a slightly modified form
+of the \emph{Decomposable Affine Randomized Encodings} (DAREs) from
+\emph{Garbled Arithmetic Circuits} by Applebaum et al.\ \cite{gac2012}. The
+modification is necessary because this thesis uses OAFEs to evaluate the DAREs
+and does therefore not depend on the \emph{learning with errors} (LWE) problem.
+This leads to further changes: The \emph{affinization gadget} \cite{gac2012} is
+modified and the \emph{key--shrinking gadget} \cite{gac2012} is not needed.
+Altough the final version of this thesis does not directly contain anything from
+Applebaum's garbled arithmetic circuits, some ideas are closely related and
+inspired by Applebaum's paper. The reader might also notice similar wording.
+
+
+\JWlthree{Definitions}
+\label{sec:affinization_definitions}
+
+These definitions are not from the original paper but are closely related and
+modeled thereafter. An \emph{Linear Randomized Expression} (LRE) is an element
+of the set $\mathcal{F}_{AR}$ ($K$ a finite field), an \emph{Decomposable Affine
+Randomized Encoding} (DARE) an element of the set $\mathcal{E}_{AR}$. One
+important constraint has to hold for all LREs and therefore for all DAREs, too:
+After fully evaluating a LRE, i.e. replacing the variable by its actual value,
+the now constant LRE should reveal no more information that the result of a full
+decoding of the respective DARE. The safety is proven in \emph{How to Garble
+Arithmetic Circuits} \cite{gac2012}.
+
+\begin{align*}
+  \mathcal{V} = & \{ x \mid x~\text{a variable over}~K \} \\
+%
+  \mathcal{F}_{AR} = & \{ s \cdot x + i \mid s, i \in K, x \in \mathcal{V} \}
+  \cup \{ v \mid v \in K \} \\
+%
+  \mathcal{E}_{AR} = & \{ (M, A) \mid
+    M \subseteq \mathcal{F}_{AR} \times \mathcal{F}_{AR},
+    A \subseteq, \mathcal{F}_{AR};
+    A, M~\text{finite multi--sets} \}
+%
+\end{align*}
+
+
+\JWlthree{Encoding}
+\label{sec:affinization_encoding}
+
+\begin{itemize}
+
+\item A function $f_1(x_1, x_2) = x_1 + x_2$ can be securely encoded by
+$ENC_A(f_1, r)$; $r \in K$ being uniformly at random
+
+\item A function $f_2(x_1, x_2, x_3) = x_1 \cdot x_2 + x_3$ can be securely
+encoded by $ENC_M(f_2, r_1, r_2, r_3, r_4)$; $r_1, r_2, r_3, r_4 \in K$ being
+uniformly at random
+\end{itemize}
+
+\begin{align*}
+ENC_A(f_1, r) = \Big( & \emptyset, (x_1 + r, 1 \cdot x_2 - r)\Big) \\
+ENC_M(f_2,  r_1, r_2, r_3, r_4) = \Bigg( & \bigg\{
+\begin{pmatrix}1 \cdot x_1 - r_1\\1 \cdot x_2 - r_2\end{pmatrix} \bigg\}\\
+,& \bigg\{r_2 \cdot x_1 -r_1r_2+r_3 \\
+&\ ,\ r_1 \cdot x_2 + r_4 \\
+&\ ,\ 1 \cdot x_3-r_3-r_4\bigg\} \Bigg)
+\end{align*}
+
+
+\JWlthree{Decoding}
+\label{sec:affinization_decoding}
+
+Decoding a fully evaluated DARE $\mathcal{E}_{AR} = \{(M,A)\}$ as $r =
+DEC(\mathcal{E}_{AR})$ is
+straightforward:
+
+\begin{align*}
+M' &= \Bigg\{ m_1 \cdot m_2\ \Bigg|\ \begin{pmatrix}m_1\\m_2\end{pmatrix}
+\in M \Bigg\} \\
+r & = \sum_{a \in A} a + \sum_{m \in M'} m
+\end{align*}
+
+
+\JWlthree{Randomized Variables}
+\label{sec:rv}
+
+Whenever a circuit is not directly transformable to one single DARE, sub--DAREs
+get replaced by \emph{Randomized Variables} (RV). RVs do not appear in
+Applebaum's paper\cite{gac2012} at all. RVs are just (sub--)DARE that
+get transmitted to the second party (see chapter \ref{sec:dare}) which
+fully evaluates them and saves the result just like an ordinary input variable
+(such as $x_D$). Following DAREs may then use the RVs as pseudo--inputs. But
+since a DARE reveals as much information as its decoded form, the original DARE
+cannot just be transmitted as the final overall DARE. That would reveal
+intermediate information. Therefore, RVs get an additional garbling step: Say
+the following property would hold for a variable $v$ being the decoded value of
+an DARE $e$:
+
+\begin{align*}
+  v = DEC(e \in \mathcal{E}_{AR})
+\end{align*}
+
+\noindent{}Then a modified DARE $\hat{e} \in \mathcal{E}_{AR}^+$ decoding to a
+value $\hat{v}$
+
+\begin{align*}
+\hat{v} = \alpha \cdot (v + \beta) = DEC(\hat{e})
+\end{align*}
+
+\noindent{}with secret keys---known only by the first party---$\alpha$ and
+$\beta$ would get transmitted.
+
+
+\JWlthree{Relation to the Final Version}
+
+Some of the ideas and entities presented in this chapter relate to the final
+version of this thesis. \emph{Decomposable Affine Randomized Encodings} (DAREs)
+are closely related to \emph{Dual Randomized Affine Encodings} (DRAEs, chapter
+\ref{def:DRAE}). The difference is that an evaluated DARE is equivalent to the
+value of the sub--circuit it models, encrypted DRAEs in contrast are still
+(twofoldly) encrypted. Because the DAREs are equal to their plain evaluation,
+the old version presented in this chapter needed the \emph{Randomized Variables}
+(RVs) that are not present in the final version. However, the final version does
+also assign evaluated sub--circuits to variables but since DRAEs are encrypted
+anyways, there is no need for an additional encryption.
+
+
+\JWlthree{Implementation State}
+
+This ideas of this chapter were fully implemented but the implementation did
+evolve to the final version fully described in chapter \ref{sec:methods}. If
+there is interest on the old implementation, it can fully be recovered from this
+thesis' source code tree by using the \JWTgit{} version control system.
 
 % vim: set spell spelllang=en_us fileencoding=utf8 :
