@@ -37,13 +37,15 @@ import Crypto.Random (GenError, CryptoRandomGen)
 import Data.ExpressionTypes (Expr(..), Operator(..))
 import Data.FieldTypes (Field(..))
 import Data.LinearExpression (LinearExpr(..))
-import Data.RAE.Evaluation ( _SPECIAL_VAR_OUT_, _SPECIAL_VAR_ADDED_PRE_OUT_
-                           , _SPECIAL_VAR_PRE_OUT_
+import Data.RAE.Evaluation ( _SPECIAL_DUAL_VAR_OUT_
+                           , _SPECIAL_VAR_ADDED_PRE_OUT_
+                           , _SPECIAL_DUAL_VAR_PRE_OUT_
                            )
 import Data.RAE.Types ( VariableName, DRAE(..), DRAC
                       , PrimaryExpression(..)
                       , Key, DualKey, DualKeyPair
-                      , leftVar, rightVar
+                      , DualVarName(..)
+                      , genDualVarName
                       )
 import qualified Data.LinearExpression as LE
 
@@ -52,7 +54,7 @@ import qualified Data.LinearExpression as LE
 -- Either an unencrypted constant or an encrypted variable along with the dual
 -- key (only the dynamic keys) needed to decrypt it.
 data DualEncPrimExpr el = DualConst el
-                        | DualVar (DualKey el) VariableName
+                        | DualVar (DualKey el) DualVarName
                         deriving Show
 
 getRandomElement :: (Monad m, CryptoRandomGen g, Field el, CRandom el)
@@ -164,7 +166,7 @@ draeEncodeAdd skp@(!skL, !skR) !x1 !x2 !r1 !r2 !r3 !r4 =
              )
 
 decodeAndApply :: Field el
-               => (VariableName -> VariableName)
+               => (DualVarName -> VariableName)
                -> (DualKey el -> Key el)
                -> DualKey el
                -> el
@@ -180,7 +182,7 @@ decodeAndApplyL :: Field el
                 -> DualEncPrimExpr el
                 -> el
                 -> LinearExpr el
-decodeAndApplyL = decodeAndApply leftVar fst
+decodeAndApplyL = decodeAndApply dvnLeftVarName fst
 
 decodeAndApplyR :: Field el
                 => DualKey el
@@ -188,11 +190,11 @@ decodeAndApplyR :: Field el
                 -> DualEncPrimExpr el
                 -> el
                 -> LinearExpr el
-decodeAndApplyR = decodeAndApply rightVar snd
+decodeAndApplyR = decodeAndApply dvnRightVarName snd
 
 decodeDualEncPrimExpr :: forall el. Field el
                     => DualKey el
-                    -> (VariableName -> VariableName)
+                    -> (DualVarName -> VariableName)
                     -> (DualKey el -> Key el)
                     -> DualEncPrimExpr el
                     -> LinearExpr el
@@ -213,9 +215,9 @@ draeEncodeDRAEAdd :: Field el
 draeEncodeDRAEAdd skp
                   (DRAE (dlSkp, dlDkp) dlMuls dlAdds)
                   (DRAE (drSkp, drDkp) drMuls drAdds) =
-    let (dlDkpL, dlDkpR) = dlDkp
-        (drDkpL, drDkpR) = drDkp
-        dkp = (dlDkpL + drDkpL, dlDkpR + drDkpR)
+    let (!dlDkpL, !dlDkpR) = dlDkp
+        (!drDkpL, !drDkpR) = drDkp
+        !dkp = (dlDkpL + drDkpL, dlDkpR + drDkpR)
      in if (skp /= dlSkp) || (skp /= drSkp)
            then error "skps differ"
            else DRAE (skp, dkp)
@@ -259,8 +261,8 @@ draeEncodePrimaryExpr skp@(!skpL, !skpR) e !r1 !r2 =
       DualVar dkp v ->
           DRAE (skp, dkp)
                DL.empty
-               (DL.singleton ( LinearExpr one (leftVar v) zero
-                             , LinearExpr one (rightVar v) zero
+               (DL.singleton ( LinearExpr one (dvnLeftVarName v) zero
+                             , LinearExpr one (dvnRightVarName v) zero
                              )
                )
 
@@ -285,15 +287,15 @@ varToDualVar :: Field el
            -> DualEncPrimExpr el
 varToDualVar dkps v =
     case M.lookup v dkps of
-      Just dkp -> DualVar dkp v
+      Just dkp -> DualVar dkp (genDualVarName v)
       Nothing -> error $ "lookup in initial dkps failed for " ++ T.unpack v
 
 freshVar :: (CryptoRandomGen g, Field el)
-         => (DRACGenMonad g el) VariableName
+         => (DRACGenMonad g el) DualVarName
 freshVar =
     do n <- lift get
        lift $ put (n+1)
-       return $ "_t" `T.append` T.pack (show n)
+       return $! genDualVarName ("_t" `T.append` T.pack (show n))
 
 exprToDRAE :: (CryptoRandomGen g, Field el, CRandom el)
            => DualKey el
@@ -331,22 +333,23 @@ exprToDRAE skp initDkps expr =
       Literal l -> draeEncodePrimaryExprRnd skp $ DualConst l
       where putDRAE :: (CryptoRandomGen g, Field el)
                     => DRAE el
-                    -> VariableName
+                    -> DualVarName
                     -> (DRACGenMonad g el) (DualEncPrimExpr el)
-            putDRAE drae@(DRAE (_, dkp) _ _) varName =
-               do lift $ tell $ DL.singleton (varName, drae)
-                  return $ DualVar dkp varName
+            putDRAE drae@(DRAE (_, !dkp) _ _) !varName =
+               do lift $ tell $! DL.singleton (varName, drae)
+                  return $! DualVar dkp varName
 
 finalDRAE :: forall el. forall g. (CryptoRandomGen g, Field el)
           => DualKey el
           -> DualKey el
-          -> VariableName
           -> (DRACGenMonad g el) (DRAE el)
-finalDRAE (skpL, skpR) (dkpL, dkpR) varName =
+finalDRAE (skpL, skpR) (dkpL, dkpR) =
     do let finalSK = skpL + skpR
            finalDK = dkpL + dkpR
            finalSKinv = invert finalSK
-           decodedLE = LinearExpr finalSKinv varName (-finalDK * finalSKinv)
+           decodedLE = LinearExpr finalSKinv
+                                  _SPECIAL_VAR_ADDED_PRE_OUT_
+                                  (-finalDK * finalSKinv)
        return $ DRAE ((one, one), (zero, zero))
                      DL.empty
                      (DL.singleton (decodedLE, decodedLE))
@@ -377,7 +380,7 @@ initialVarDRAE skp@(skL, skR) (v, dkp@(dkL, dkR)) =
     let drae = DRAE (skp, dkp)
                     DL.empty
                     (DL.singleton (LinearExpr skL v dkL, LinearExpr skR v dkR))
-     in lift $ tell $ DL.singleton (v, drae)
+     in lift $ tell $! DL.singleton (genDualVarName v, drae)
 
 genSkp :: (CryptoRandomGen g, Field el, CRandom el)
        => (DRACGenMonad g el) (DualKey el)
@@ -401,14 +404,14 @@ exprToDRAC g expr =
                 let initialKeys = M.fromList dkps
                 mapM_ (initialVarDRAE skp) dkps
                 zDRAE <- exprToDRAE skp initialKeys expr
-                lift $ tell $ DL.singleton (_SPECIAL_VAR_PRE_OUT_, zDRAE)
+                lift $ tell $! DL.singleton (_SPECIAL_DUAL_VAR_PRE_OUT_, zDRAE)
                 let (DRAE (_, dkp) _ _) = zDRAE
-                finalDRAE skp dkp _SPECIAL_VAR_ADDED_PRE_OUT_
+                finalDRAE skp dkp
        (ge, draes) = runWriter (evalStateT (runCRandT act g) 0)
        lastDRAE =
            case ge of
              Left _ -> DL.empty
-             Right (ld, _) -> DL.singleton (_SPECIAL_VAR_OUT_, ld)
+             Right (ld, _) -> DL.singleton (_SPECIAL_DUAL_VAR_OUT_, ld)
        errOrGen =
            case ge of
              Left err -> Left err

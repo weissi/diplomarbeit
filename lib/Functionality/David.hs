@@ -1,4 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE BangPatterns #-}
 module Functionality.David (runRACEvaluation) where
 
 -- # STDLIB
@@ -24,10 +25,13 @@ import Data.LinearExpression (VarMapping, VariableName)
 import Data.OAFE ( OAFEEvaluationRequest, OAFEEvaluationResponse
                  , OAFEEvaluation
                  )
-import Data.RAE.Evaluation ( evalRAE, _SPECIAL_VAR_OUT_, _SPECIAL_VAR_PRE_OUT_
+import Data.RAE.Evaluation ( evalRAE
+                           , _SPECIAL_VAR_OUT_LEFT_, _SPECIAL_VAR_OUT_RIGHT_
+                           , _SPECIAL_VAR_PRE_OUT_LEFT_
+                           , _SPECIAL_VAR_PRE_OUT_RIGHT_
                            , _SPECIAL_VAR_ADDED_PRE_OUT_
                            )
-import Data.RAE.Types (RACFragment, leftVar, rightVar)
+import Data.RAE.Types (RACFragment)
 
 -- | This is the main functionality of David: Evaluating AREs.
 --
@@ -48,13 +52,17 @@ runRACEvaluation :: forall el. Field el
 runRACEvaluation varMap reqs rsps cRACFrag vResult logMsg =
     do oaeRef <- newIORef =<< evaluateInitialVars (M.toList varMap)
        loop oaeRef
-    where loop oaeRef =
+    where _VAR_OUT_LEFT_ = _SPECIAL_VAR_OUT_LEFT_
+          _VAR_OUT_RIGHT_ = _SPECIAL_VAR_OUT_RIGHT_
+          _VAR_PRE_OUT_LEFT_ = _SPECIAL_VAR_PRE_OUT_LEFT_
+          _VAR_PRE_OUT_RIGHT_ = _SPECIAL_VAR_PRE_OUT_RIGHT_
+          loop oaeRef =
               do areStmt <- atomically $ readTBMChan cRACFrag
                  case areStmt of
                    Just (var, rae) ->
                       do logMsg ("Next ARE evaluates variable " ++
                                 T.unpack var ++ ":")
-                         oae <- if var == leftVar _SPECIAL_VAR_OUT_
+                         oae <- if var == _VAR_OUT_LEFT_
                                    then readIORef oaeRef >>= doPreOutAddition
                                    else readIORef oaeRef
                          case evalRAE rae oae of
@@ -69,10 +77,8 @@ runRACEvaluation varMap reqs rsps cRACFrag vResult logMsg =
                          loop oaeRef
                    Nothing ->
                       do oae <- readIORef oaeRef
-                         case ( liftM V.toList $
-                                HM.lookup (leftVar _SPECIAL_VAR_OUT_) oae
-                              , liftM V.toList $
-                                HM.lookup (rightVar _SPECIAL_VAR_OUT_) oae
+                         case ( liftM V.toList $ HM.lookup _VAR_OUT_LEFT_ oae
+                              , liftM V.toList $ HM.lookup _VAR_OUT_RIGHT_ oae
                               ) of
                            (Just [l], Just [r]) ->
                                if l == r
@@ -82,23 +88,21 @@ runRACEvaluation varMap reqs rsps cRACFrag vResult logMsg =
           doPreOutAddition :: OAFEEvaluation el
                            -> IO (OAFEEvaluation el)
           doPreOutAddition oae =
-              let svl = leftVar _SPECIAL_VAR_PRE_OUT_
-                  svr = rightVar _SPECIAL_VAR_PRE_OUT_
-               in case ( liftM V.toList $ HM.lookup svl oae
-                       , liftM V.toList $ HM.lookup svr oae
-                       ) of
-                    (Just [valL], Just [valR]) ->
-                        do atomically $
-                             writeTBMChan reqs
-                                          ( _SPECIAL_VAR_ADDED_PRE_OUT_
-                                          , valL+valR
-                                          )
-                           fetchResponse (Just _SPECIAL_VAR_ADDED_PRE_OUT_) oae
-                    _ -> fail "Pre out variables not in OAE" >> undefined
+               case ( liftM V.toList $ HM.lookup _VAR_PRE_OUT_LEFT_ oae
+                    , liftM V.toList $ HM.lookup _VAR_PRE_OUT_RIGHT_ oae
+                    ) of
+                 (Just [valL], Just [valR]) ->
+                     do atomically $
+                          writeTBMChan reqs
+                                       ( _SPECIAL_VAR_ADDED_PRE_OUT_
+                                       , valL+valR
+                                       )
+                        fetchResponse (Just _SPECIAL_VAR_ADDED_PRE_OUT_) oae
+                 _ -> fail "Pre out variables not in OAE" >> undefined
           fetchResponse :: Maybe VariableName
                         -> OAFEEvaluation el
                         -> IO (OAFEEvaluation el)
-          fetchResponse force oae =
+          fetchResponse force !oae =
               do res <- if isJust force
                            then liftM Just (atomically $    readTBMChan rsps)
                            else             atomically $ tryReadTBMChan rsps
@@ -113,7 +117,7 @@ runRACEvaluation varMap reqs rsps cRACFrag vResult logMsg =
                                Nothing -> Nothing
                         in fetchResponse force' (HM.insert var val oae)
                    Just Nothing ->
-                       return oae
+                       return $! oae
                    Nothing ->
                        fail "FUCK, channel closed"
           evaluateInitialVars initialVars =

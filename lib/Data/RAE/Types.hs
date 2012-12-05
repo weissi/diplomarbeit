@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BangPatterns #-}
 -- | Types for /RAE/s (/R/andomized /A/ffine /E/ncodings).
 module Data.RAE.Types
     ( -- * Basic Data Types
@@ -6,15 +7,20 @@ module Data.RAE.Types
     , DualLinearExpr
       -- * Encryption Key Data Types
     , Key, DualKey, DualKeyPair
+      -- * Other Types
+    , DualVarName(..)
       -- * Helper Functions
-    , leftVar, rightVar
+    , genDualVarName
       -- * Convenience Re-exports
     , VariableName
     , VarMapping
     , PrimaryExpression(..)
+      -- * Only Exported for Tests
+    , leftVar, rightVar
     ) where
 
 import Data.DList (DList)
+import Data.String (IsString(..))
 import qualified Data.DList as DL
 import qualified Data.Text as T
 
@@ -44,7 +50,7 @@ data DRAE el = DRAE !(DualKeyPair el)
                     !(DList (DualLinearExpr el))
 
 -- | /D/ual /R/andomized /A/ffine /C/ircuit fragment.
-type DRACFragment el = (VariableName, DRAE el)
+type DRACFragment el = (DualVarName, DRAE el)
 
 -- | /D/ual /R/andomized /A/ffine /C/ircuit.
 type DRAC el = DList (DRACFragment el)
@@ -52,11 +58,22 @@ type DRAC el = DList (DRACFragment el)
 instance (Field el, Show el) => Show (DRAE el) where
     show = prettyPrintDRAE
 
+genDualVarName :: VariableName -> DualVarName
+genDualVarName vn = DualVarName vn (leftVar vn) (rightVar vn)
+
+data DualVarName = DualVarName { dvnVarName :: !VariableName
+                               , dvnLeftVarName :: !VariableName
+                               , dvnRightVarName :: !VariableName
+                               } deriving (Show, Eq)
+
+instance IsString DualVarName where
+    fromString = genDualVarName . fromString
+
 leftVar :: VariableName -> VariableName
-leftVar v = "__enc_" `T.append` v `T.append` "~_1"
+leftVar !v = "__e1_" `T.append` v
 
 rightVar :: VariableName -> VariableName
-rightVar v = "__enc_" `T.append` v `T.append` "~_2"
+rightVar !v = "__e2_" `T.append` v
 
 prettyPrintDRAE :: (Field el, Show el) => DRAE el -> String
 prettyPrintDRAE (DRAE keys muls adds) =

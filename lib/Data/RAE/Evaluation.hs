@@ -9,8 +9,10 @@ module Data.RAE.Evaluation
       evalRAE
     , RAEEvaluationFailure(..)
       -- * Important Special Variable Names
-    , _SPECIAL_VAR_OUT_, _SPECIAL_VAR_PRE_OUT_
+    , _SPECIAL_VAR_OUT_LEFT_, _SPECIAL_VAR_OUT_RIGHT_
+    , _SPECIAL_VAR_PRE_OUT_LEFT_, _SPECIAL_VAR_PRE_OUT_RIGHT_
     , _SPECIAL_VAR_ADDED_PRE_OUT_
+    , _SPECIAL_DUAL_VAR_OUT_, _SPECIAL_DUAL_VAR_PRE_OUT_
       -- * Direct Evaluation of @RAC@s and @DRAC@s (for tests/benchmarks)
     , runRAC, runDRAC
     ) where
@@ -37,8 +39,7 @@ import Data.LinearExpression (VariableName, VarMapping)
 import Data.OAFE (OAFEConfiguration, OAFEEvaluation, OAFEReference(..))
 import Data.RAE.Decoder (decodeDRAE)
 import Data.RAE.Types ( DRAC, DRACFragment, RACFragment
-                      , RAE(..), RAC
-                      , leftVar, rightVar
+                      , RAE(..), RAC, DualVarName(..), genDualVarName
                       )
 
 
@@ -66,8 +67,8 @@ runDRAC initialVarMap drac =
       outVarMap = execState (mapM_ execDRACFragment (DL.toList drac))
                             initialVarMap
       out =
-          case ( M.lookup (leftVar _SPECIAL_VAR_OUT_) outVarMap
-               , M.lookup (rightVar _SPECIAL_VAR_OUT_) outVarMap
+          case ( M.lookup _SPECIAL_VAR_OUT_LEFT_ outVarMap
+               , M.lookup _SPECIAL_VAR_OUT_RIGHT_ outVarMap
                ) of
             (Just l, Just r) ->
                if l == r then Just l else error "the impossible happened"
@@ -89,14 +90,14 @@ runRAC racFrag oac vars =
     where doIt =
               do let oac' = oac `HM.union`
                             HM.fromList
-                                [ (leftVar _SPECIAL_VAR_OUT_, oneZeroV)
-                                , (rightVar _SPECIAL_VAR_OUT_, oneZeroV)
-                                , (leftVar _SPECIAL_VAR_PRE_OUT_, oneZeroV)
-                                , (rightVar _SPECIAL_VAR_PRE_OUT_, oneZeroV)
+                                [ (_SPECIAL_VAR_OUT_LEFT_, oneZeroV)
+                                , (_SPECIAL_VAR_OUT_RIGHT_, oneZeroV)
+                                , (_SPECIAL_VAR_PRE_OUT_LEFT_, oneZeroV)
+                                , (_SPECIAL_VAR_OUT_RIGHT_, oneZeroV)
                                 ]
                  oae <- initiallyEvaluateOAFE oac' vars
                  out <- execStateT (mapM_ (execRACFragment oac') racFrag) oae
-                 case HM.lookup (leftVar _SPECIAL_VAR_OUT_) out of
+                 case HM.lookup _SPECIAL_VAR_OUT_LEFT_ out of
                    Just val -> return val
                    Nothing ->
                        failure $ UnknownFailure "output not calculated" "runRAC"
@@ -128,7 +129,7 @@ evaluateOAFE oac curEval (var, val) =
                              "evaluateOAFE"
           -}
       Just xs ->
-          return $ HM.insert var (V.map (\(s, i) -> s * val + i) xs) curEval
+          return $! HM.insert var (V.map (\(s, i) -> s * val + i) xs) curEval
 
 evaluateRAE' :: forall f. forall el.
                  (Failure RAEEvaluationFailure f, Field el)
@@ -138,13 +139,13 @@ evaluateRAE' :: forall f. forall el.
 evaluateRAE' (RAE muls adds c) oafeVals =
     do adds' <- mapM resolve adds
        muls' <- mapM resolveTuple muls
-       return $ RAE muls' adds' c
+       return $! RAE muls' adds' c
     where resolveTuple :: (OAFEReference, OAFEReference)
                        -> f (el, el)
           resolveTuple (oarefl, oarefr) =
               do l <- resolve oarefl
                  r <- resolve oarefr
-                 return (l, r)
+                 l `seq` r `seq` return $! (l, r)
           resolve :: OAFEReference
                   -> f el
           resolve (OAFERef var idx) =
@@ -154,7 +155,7 @@ evaluateRAE' (RAE muls adds c) oafeVals =
                     if V.length vals <= idx
                        then failure $
                                 IndexOutOfBounds var idx "evaluateRAE'"
-                       else return $ vals V.! idx
+                       else return $! vals V.! idx
 
 -- | Evaluate one @RAE@.
 --
@@ -184,7 +185,7 @@ evaluateRAE rae vals =
           rMuls = foldl' (+) zero muls'
           rAdds :: el
           rAdds = foldl' (+) zero adds
-      return $ rMuls + rAdds + c
+      return $! rMuls + rAdds + c
 
 -- | Execute one @DRACFragment@.
 --
@@ -197,13 +198,14 @@ execDRACFragment (outVar, drae) =
            varMap''' =
               case valsM of
                Just (valL, valR) ->
-                  let varMap' = M.insert (leftVar outVar) valL varMap
-                      varMap'' = if outVar == _SPECIAL_VAR_PRE_OUT_
-                                    then M.insert _SPECIAL_VAR_ADDED_PRE_OUT_
-                                                  (valL + valR)
-                                                  varMap'
-                                    else varMap'
-                   in M.insert (rightVar outVar) valR varMap''
+                  let varMap' = M.insert (dvnLeftVarName outVar) valL varMap
+                      varMap'' =
+                          if outVar == _SPECIAL_DUAL_VAR_PRE_OUT_
+                             then M.insert _SPECIAL_VAR_ADDED_PRE_OUT_
+                                           (valL + valR)
+                                           varMap'
+                             else varMap'
+                   in M.insert (dvnRightVarName outVar) valR varMap''
                Nothing -> varMap
        put varMap'''
        return valsM
@@ -221,11 +223,11 @@ execRACFragment oac (outVar, rae) =
        oae <- lift $ evaluateOAFE oac varMap (outVar, val)
        oae' <- lift $ possiblyCalculateAddedPreOutVar oae
        put oae'
-       return val
+       return $! val
     where
       possiblyCalculateAddedPreOutVar oae =
-          let svl = leftVar _SPECIAL_VAR_PRE_OUT_
-              svr = rightVar _SPECIAL_VAR_PRE_OUT_
+          let svl = _SPECIAL_VAR_PRE_OUT_LEFT_
+              svr = _SPECIAL_VAR_PRE_OUT_RIGHT_
               svalM = if outVar == svl || outVar == svr
                          then case ( liftM V.toList $ HM.lookup svl oae
                                    , liftM V.toList $ HM.lookup svr oae
@@ -237,20 +239,39 @@ execRACFragment oac (outVar, rae) =
            in case svalM of
                 Just sval ->
                     evaluateOAFE oac oae (_SPECIAL_VAR_ADDED_PRE_OUT_, sval)
-                Nothing -> return oae
+                Nothing -> return $! oae
 
 oneZeroV :: Field el => Vector (el, el)
 oneZeroV = V.singleton (one, zero)
 
--- | The special variable that contains the overall output.
-_SPECIAL_VAR_OUT_ :: VariableName
-_SPECIAL_VAR_OUT_ = "__out"
+-- | The special variable that contains the overall output (left part).
+_SPECIAL_VAR_OUT_LEFT_ :: VariableName
+_SPECIAL_VAR_OUT_LEFT_ = dvnLeftVarName _SPECIAL_DUAL_VAR_OUT_
+
+-- | The special variable that contains the overall output (right part).
+_SPECIAL_VAR_OUT_RIGHT_ :: VariableName
+_SPECIAL_VAR_OUT_RIGHT_ = dvnRightVarName _SPECIAL_DUAL_VAR_OUT_
 
 -- | The special variable that contains the added output of the last reguar
 -- @RAE@.
 _SPECIAL_VAR_ADDED_PRE_OUT_ :: VariableName
 _SPECIAL_VAR_ADDED_PRE_OUT_ = "__added_last_rae"
 
--- | The special variable that contains the output of the last regular @RAE@.
-_SPECIAL_VAR_PRE_OUT_ :: VariableName
-_SPECIAL_VAR_PRE_OUT_ = "__last_rae"
+-- | The special variable that contains the output of the last regular @RAE@,
+-- left part.
+_SPECIAL_VAR_PRE_OUT_LEFT_ :: VariableName
+_SPECIAL_VAR_PRE_OUT_LEFT_ = dvnLeftVarName _SPECIAL_DUAL_VAR_PRE_OUT_
+
+-- | The special variable that contains the output of the last regular @RAE@,
+-- left part.
+_SPECIAL_VAR_PRE_OUT_RIGHT_ :: VariableName
+_SPECIAL_VAR_PRE_OUT_RIGHT_ = dvnRightVarName _SPECIAL_DUAL_VAR_PRE_OUT_
+
+-- | The special dual variable that contains the overall output.
+_SPECIAL_DUAL_VAR_OUT_ :: DualVarName
+_SPECIAL_DUAL_VAR_OUT_ = genDualVarName "__out"
+
+-- | The special dual variable that contains the output of the last
+-- regular @DRAE@.
+_SPECIAL_DUAL_VAR_PRE_OUT_ :: DualVarName
+_SPECIAL_DUAL_VAR_PRE_OUT_ = genDualVarName "__last_rae"

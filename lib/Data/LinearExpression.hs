@@ -25,7 +25,7 @@ data LinearExpr el = LinearExpr { leSlope     :: !el
                                 , leVariable  :: !VariableName
                                 , leIntercept :: !el
                                 }
-                   | ConstLinearExpr el
+                   | ConstLinearExpr !el
 
 -- | Mutiply a scalar to the linear expression.
 scalarMul :: Field el => LinearExpr el -> el -> LinearExpr el

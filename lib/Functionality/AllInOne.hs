@@ -64,8 +64,7 @@ evaluateExpr varMap expr logMsg =
        -- fetch result
        result <- atomically $ takeTMVar vResult
        return $! result
-    where -- LOGGING
-          goliath =
+    where goliath =
               do g <- newGenIO :: IO SystemRandom
                  let (errM, rac, oac) = exprToRAC g expr
                  case errM of
@@ -73,12 +72,7 @@ evaluateExpr varMap expr logMsg =
                    Right _ -> return (rac, oac)
           token vOAC d2t t2d =
               do sourceTBMChan d2t
-                 $= CL.mapM (printEvaluation "EVAL REQ: ")
                  $= CL.mapM (liftIO . (runOAFEEvaluation vOAC))
-                 $= CL.mapM (printEvaluation "EVAL RSP: ")
                  $$ sinkTBMChan t2d
-          printEvaluation str e =
-              do liftIO $ logMsg $ str ++ show e
-                 return e
           pushRAC :: RAC el -> TBMChan (RACFragment el) -> IO ()
           pushRAC rac g2d = sourceList rac $$ sinkTBMChan g2d

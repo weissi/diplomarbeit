@@ -1,5 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE Rank2Types #-}
 {-# OPTIONS_GHC -F -pgmF htfpp #-}
 
 -- # Standard Library
@@ -17,6 +18,7 @@ import Data.RAE.Decoder
 import Data.RAE.Types
 import Data.ExpressionTypes
 import Data.FieldTypes
+import qualified Math.Polynomials as P
 import qualified Functionality.AllInOne as AIO
 
 -- # HTF
@@ -129,6 +131,20 @@ test_complexDRAE2 =
                               * _VAL_X_
                              )
        assertEqual expected actual
+
+poly1toN :: Integer -> (forall a. Num a => a -> [a] -> a) -> IO ()
+poly1toN n buildPoly =
+    do let polyCoeffs :: [Element]
+           polyCoeffs = map fromInteger [1..n]
+           poly :: Expr Element
+           poly = buildPoly _VAR_X_ (map Literal polyCoeffs)
+           expected = Just $ buildPoly _VAL_X_ polyCoeffs
+       actual <- execExpr poly
+       assertEqual expected actual
+
+test_hornerPoly1to100 = poly1toN 100 P.horner
+
+test_monomialPoly1to100 = poly1toN 10 P.monomial
 
 prop_draeAddDRAEConstants :: Element
                           -> Element

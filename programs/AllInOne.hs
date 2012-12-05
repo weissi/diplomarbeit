@@ -4,7 +4,7 @@ module Main where
 -- # STDLIB
 import Control.Monad (when)
 import Data.List (partition)
-import System.CPUTime (getCPUTime)
+import Data.Time.Clock (getCurrentTime, diffUTCTime)
 import System.Environment (getArgs)
 import qualified Data.Map as M
 import qualified Data.Text as T
@@ -42,13 +42,14 @@ main =
            !varMap = M.fromList [(T.pack "x", inputElement)]
        expr <- readExprFromFile (buildPoly _X_) filePath
        when _DEBUG_ (print expr)
-       davidStart <- getCPUTime
+       davidStart <- getCurrentTime
        out <- evaluateExpr varMap expr logMsg
-       davidStop <- getCPUTime
-       let psToMs :: Integer -> Double
-           psToMs v = (fromIntegral v) / (10^(9::Integer))
+       davidStop <- getCurrentTime
+       let sToMs :: Double -> Double
+           sToMs = (1000 *)
+           calcDiff e a = (truncate . sToMs . realToFrac) (diffUTCTime e a)
            diff :: Integer
-           diff = truncate $ (psToMs . fromIntegral) (davidStop - davidStart)
+           diff = calcDiff davidStop davidStart
        putStrLn $ "David: Exited (running "++show diff++"ms )"
        putStrLn $ "DAVID DONE, final result = " ++ show out
        putStrLn "AllInOne DONE"

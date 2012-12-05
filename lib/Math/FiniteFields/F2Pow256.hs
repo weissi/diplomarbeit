@@ -23,7 +23,7 @@ newtype F2Pow256 = F2Pow256 { unF2Pow256 :: FFI.OpaqueElement }
 
 binaryOp :: (FFI.OpaqueElement -> FFI.OpaqueElement -> FFI.OpaqueElement)
          -> F2Pow256 -> F2Pow256 -> F2Pow256
-binaryOp op (F2Pow256 !l) (F2Pow256 !r) =
+binaryOp op (F2Pow256 l) (F2Pow256 r) =
    let result = l `op` r
     in result `seq` F2Pow256 result
 

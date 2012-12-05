@@ -17,10 +17,11 @@ import Data.DList (DList)
 import Data.FieldTypes (Field(..))
 import Data.LinearExpression (LinearExpr(..), VariableName, scalarMul)
 import Data.OAFE (OAFEConfiguration, OAFEReference(..))
-import Data.RAE.Evaluation ( _SPECIAL_VAR_OUT_
-                           , _SPECIAL_VAR_PRE_OUT_
+import Data.RAE.Evaluation ( _SPECIAL_VAR_OUT_LEFT_, _SPECIAL_VAR_OUT_RIGHT_
+                           , _SPECIAL_VAR_PRE_OUT_LEFT_
+                           , _SPECIAL_VAR_PRE_OUT_RIGHT_
                            )
-import Data.RAE.Types (DRAE(..), DRAC, RAE(..), RAC, leftVar, rightVar)
+import Data.RAE.Types ( DRAE(..), DRAC, RAE(..), RAC, DualVarName(..))
 
 instance Show a => Show (DList a) where
     show = show . DL.toList
@@ -58,9 +59,10 @@ singularizeDRAC :: forall el. Field el
                 -> (RAC el, OAFEConfiguration el)
 singularizeDRAC drac =
     let dracVars :: [VariableName]
-        dracVars = concatMap (\v -> [leftVar v, rightVar v]) varNames
+        dracVars = concatMap (\v -> [dvnLeftVarName v, dvnRightVarName v])
+                             varNames
         origDRAEs :: [DRAE el]
-        varNames :: [VariableName]
+        varNames :: [DualVarName]
         (varNames, origDRAEs) = unzip $ DL.toList drac
         toRAEs :: [DRAE el]
                -> OAFEConfigGen el
@@ -69,7 +71,7 @@ singularizeDRAC drac =
             case draes of
               [] -> return $! oac
               (drae:draes') ->
-                  do let (raeL, raeR, !oac')=singularizeDRAE drae oac
+                  do let (raeL, raeR, !oac') = singularizeDRAE drae oac
                      tell $! DL.singleton raeL
                      tell $! DL.singleton raeR
                      toRAEs draes' oac'
@@ -79,10 +81,10 @@ singularizeDRAC drac =
         finalRAEs = snd raes
         finalOAC :: OAFEConfigGen el
         finalOAC = fst raes `HM.union`
-                   HM.fromList [ (leftVar _SPECIAL_VAR_OUT_, (0,oneZeroDL))
-                               , (rightVar _SPECIAL_VAR_OUT_, (0,oneZeroDL))
-                               , (leftVar _SPECIAL_VAR_PRE_OUT_, (0,oneZeroDL))
-                               , (rightVar _SPECIAL_VAR_PRE_OUT_, (0,oneZeroDL))
+                   HM.fromList [ (_SPECIAL_VAR_OUT_LEFT_, (0,oneZeroDL))
+                               , (_SPECIAL_VAR_OUT_RIGHT_, (0,oneZeroDL))
+                               , (_SPECIAL_VAR_PRE_OUT_LEFT_, (0,oneZeroDL))
+                               , (_SPECIAL_VAR_PRE_OUT_RIGHT_, (0,oneZeroDL))
                                ]
      in ( zip dracVars $ DL.toList finalRAEs
         , HM.map (V.fromList . DL.toList . snd) finalOAC
@@ -110,7 +112,8 @@ singularizeDRAE (DRAE _ draeMuls draeAdds) !oafeCfg =
                       !varIdx' = varIdx + 1
                       oac' :: OAFEConfigGen el
                       !oac' = HM.insert var (varIdx', les') oac
-                   in (OAFERef var varIdx', oac')
+                      !oar = OAFERef var varIdx'
+                   in (oar, oac')
               ConstLinearExpr _ ->
                   error $ "singularizeDRAE: constant expressions "
                           ++ "don't need OAFEs"
@@ -118,7 +121,7 @@ singularizeDRAE (DRAE _ draeMuls draeAdds) !oafeCfg =
                     => (RAE OAFEReference el, OAFEConfigGen el)
                     -> LinearExpr el
                     -> (RAE OAFEReference el, OAFEConfigGen el)
-        processAdds (rae, oac) !le =
+        processAdds (!rae, !oac) !le =
             case le of
               LinearExpr {} ->
                   let (oaref, !oac') = oafeReference oac le
@@ -129,7 +132,7 @@ singularizeDRAE (DRAE _ draeMuls draeAdds) !oafeCfg =
                     => (RAE OAFEReference el, OAFEConfigGen el)
                     -> (LinearExpr el, LinearExpr el)
                     -> (RAE OAFEReference el, OAFEConfigGen el)
-        processMuls (rae, oac) !les =
+        processMuls (!rae, !oac) !les =
             let -- | Turn a multiplication involving a scalar to an addition
                 -- because that's an ordinary linear expression.
                 processScalarMul :: Field el
@@ -138,7 +141,7 @@ singularizeDRAE (DRAE _ draeMuls draeAdds) !oafeCfg =
                                  -> (RAE OAFEReference el, OAFEConfigGen el)
                 processScalarMul le el =
                     let le' = scalarMul le el
-                        (oaref, oac') = oafeReference oac le'
+                        (!oaref, !oac') = oafeReference oac le'
                      in (raeAddAddTerm rae oaref, oac')
              in case les of
                   (ConstLinearExpr clel, ConstLinearExpr cler) ->
@@ -158,22 +161,22 @@ singularizeDRAE (DRAE _ draeMuls draeAdds) !oafeCfg =
         sndMul :: ((a, b), (c, d)) -> (b, d)
         sndMul (l, r) = (snd l, snd r)
         raeAfterMulsL :: RAE OAFEReference el
-        (raeAfterMulsL, !oafeCfg') =
+        (!raeAfterMulsL, !oafeCfg') =
             foldl' processMuls
                    (_EMPTY_RAE_, oafeCfg)
                    (map fstMul draeMulsList)
         raeAfterAddsL :: RAE OAFEReference el
-        (raeAfterAddsL, !oafeCfg'') =
+        (!raeAfterAddsL, !oafeCfg'') =
             foldl' processAdds
                    (raeAfterMulsL, oafeCfg')
                    (map fst draeAddsList)
         raeAfterMulsR :: RAE OAFEReference el
-        (raeAfterMulsR, !oafeCfg''') =
+        (!raeAfterMulsR, !oafeCfg''') =
             foldl' processMuls
                    (_EMPTY_RAE_, oafeCfg'')
                    (map sndMul draeMulsList)
         raeAfterAddsR :: RAE OAFEReference el
-        (raeAfterAddsR, !oafeCfg'''') =
+        (!raeAfterAddsR, !oafeCfg'''') =
             foldl' processAdds
                    (raeAfterMulsR, oafeCfg''')
                    (map snd draeAddsList)
