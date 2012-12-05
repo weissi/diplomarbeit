@@ -1,26 +1,64 @@
-./benchmark-poly-degrees.sh -r 5 -m 500 -M 6000 -o /tmp/bench.out
-
+#######################################
+# Normal mit F2Pow256 (Mac und Linux) #
+#######################################
+./benchmark-poly-degrees.sh -r 5 -m 500 -M 6000 -b "../run-sample.sh" \
+  -o /tmp/bench.out
 #R
 t <- read.table('linux-bench-500-6000-500.out', header=T)
-a <- aggregate(t$Time, list(degree=t$Polynomial.Degree), mean)
+a <- aggregate(t$Time, list(degree=t$Polynomial.Degree), median)
 tm <- read.table('mac-bench-500-6000-500.out', header=T)
-am <- aggregate(tm$Time, list(degree=tm$Polynomial.Degree), mean)
+am <- aggregate(tm$Time, list(degree=tm$Polynomial.Degree), median)
 require( tikzDevice )
 tikz('../writings/thesis/images/poly-deg-t.tex', height=3, width=6)
 plot(data.frame(degree=a$degree, time=a$x/1000),
-     xlab='Polynomial Degree', ylab='Average Running Time [s]',
+     xlab='Polynomial Degree', ylab='Running Time [s]',
      main='', type='o', pch=21)
 lines(data.frame(degree=am$degree, time=am$x/1000), type='o', pch=22, lty=2)
 legend(1, 45, c("Machine 1\ \ ", "Machine 2\ \ "), pch=21:22, lty=1:2)
 dev.off()
 
+
+##############################
+# Normal mit F97 (nur Linux) #
+##############################
+scripts/benchmark-poly-degrees.sh -m 500 -M 10000 -s 500 -r 5 \
+  -b "../run-sample.sh" -f -o ../evaluation/linux-F97-bench-500-10000-500.out
+#R
+t <- read.table('linux-F97-bench-500-10000-500.out', header=T)
+a <- aggregate(t$Time, list(degree=t$Polynomial.Degree), median)
+tf2 <- read.table('linux-bench-500-10000-500.out', header=T)
+af2 <- aggregate(tf2$Time, list(degree=tf2$Polynomial.Degree), median)
+tm <- read.table('mac-bench-500-6000-500.out', header=T)
+am <- aggregate(tm$Time, list(degree=tm$Polynomial.Degree), median)
+require( tikzDevice )
+options(tikzMetricPackages = c("\\usepackage[utf8]{inputenc}",
+                               "\\usepackage[T1]{fontenc}",
+                               "\\usetikzlibrary{calc}",
+                               "\\usepackage{amssymb}"))
+tikz('../writings/thesis/images/f97-poly-deg-t.tex', height=7, width=6,
+packages=c("\\usepackage{tikz}",
+           "\\usepackage[active,tightpage,psfixbb]{preview}",
+           "\\PreviewEnvironment{pgfpicture}",
+           "\\setlength\\PreviewBorder{0pt}",
+           "\\usepackage{amssymb}"))
+plot(data.frame(degree=a$degree, time=a$x/1000),
+     xlab='Polynomial Degree', ylab='Running Time [s]',
+     main='', type='o', pch=21, ylim=c(0, 101))
+lines(data.frame(degree=af2$degree, time=af2$x/1000), type='o', pch=22, lty=2)
+lines(data.frame(degree=am$degree, time=am$x/1000), type='o', pch=23, lty=3)
+legend(6000, 10, c("Test Machine 1, $\\mathbb{F}_{97}\\qquad$",
+                   "Test Machine 1, $\\mathbb{F}_{2^{256}}\\qquad$",
+                   "Test Machine 2, $\\mathbb{F}_{2^{256}}\\qquad$"),
+       pch=21:23,lty=1:3)
+dev.off()
+
 t <- read.table('linux-bench-0-1000-10.out', header=T)
-a <- aggregate(t$Time, list(degree=t$Polynomial.Degree), mean)
+a <- aggregate(t$Time, list(degree=t$Polynomial.Degree), median)
 selected <- a$degree < 250
 a <- data.frame(degree=a$degree[selected], x=a$x[selected])
 require( tikzDevice )
 tikz('../writings/thesis/images/poly-deg-t-small.tex', height=3, width=6)
 plot(data.frame(degree=a$degree, time=a$x/1000),
-     xlab='Polynomial Degree', ylab='Average Running Time [s]',
+     xlab='Polynomial Degree', ylab='Running Time [s]',
      main='', type='o')
 dev.off()
