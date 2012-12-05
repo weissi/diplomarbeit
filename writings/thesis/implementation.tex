@@ -106,6 +106,7 @@ on which \JWpTwo{} accepts the DRAE stream.
 
 % Calculations in Finite Fields
 \JWlthree{Calculations in Finite Fields}
+\label{sec:finite-field-calcs}
 
 For the calculation in the finite fields (chapter \ref{sec:field}) the
 \JWTcpp{} library \JWTLntl{} (\emph{Number Theory Library}) has been interfaced
@@ -115,6 +116,22 @@ Function Interface}{FFI} \cite{haskell2010} and \JWdef{C $\longrightarrow$
 Haskell}{C2Hs} \cite{c2hs}. Prior to interfacing the library to Haskell a very
 lightweight \JWTc{} wrapper has been developed because the library is written in
 \JWTcpp{} which cannot directly be interfaced using the FFI.
+
+\begin{JWtodoBox}
+
+  IST WICHTIG, DARAUF REFERNZIERE ICH IN EVALUATION
+
+  \begin{itemize}
+
+    \item Garbage--Collector bekommt Probleme weil \texttt{delete} lange braucht
+
+    \item Viel Indirektion
+
+    \item Viel Speicher (32 bytes + 3 Pointer oder so)
+
+  \end{itemize}
+
+\end{JWtodoBox}
 
 
 % Testing Correctness
