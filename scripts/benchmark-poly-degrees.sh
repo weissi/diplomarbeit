@@ -122,7 +122,9 @@ function run_sample() {
     return $RET
 }
 
-echo -n > "$OUT"
+if [ "$OUT" != "-" ]; then
+    echo -n > "$OUT"
+fi
 echo -e "Polynomial-Degree\tTime" | write_out
 for (( i=$MIN; i<=$MAX; i=$i+${STEP} )); do
     for r in $(seq "$WARMUPS"); do
