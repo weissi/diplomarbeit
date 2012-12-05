@@ -1,0 +1,4 @@
+*.tex -text -diff
+*.pdf -text
+*.eps -text
+*.svg -text
