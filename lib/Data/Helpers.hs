@@ -25,12 +25,14 @@ import qualified Network.Socket as NS
 integralBytes :: (Integral a, Bits a, Show a) => a -> ByteString
 integralBytes n0
   | n0 <  0   = error ("integralBytes: applied to negative number " ++ show n0)
-  | otherwise = toByteString $ marshallIntByte n0 mempty
+  | otherwise =
+      let !bs = toByteString $ marshallIntByte n0 mempty
+       in bs
   where marshallIntByte :: (Show a, Bits a, Integral a)
                         => a -> Builder -> Builder
-        marshallIntByte n acc =
+        marshallIntByte !n !acc =
            let !newChar = chr . fromIntegral $ n `mod` 256
-               newBuilder = fromChar newChar
+               !newBuilder = fromChar newChar
             in case n of
                  0 -> acc
                  _ -> marshallIntByte (n `shiftR` 8) (acc `mappend` newBuilder)

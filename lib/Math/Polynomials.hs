@@ -1,4 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE BangPatterns #-}
 module Math.Polynomials (monomial, horner) where
 
 import Data.List (foldl')
