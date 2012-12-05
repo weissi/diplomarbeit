@@ -3,6 +3,7 @@
 module Main where
 
 import Crypto.Random (SystemRandom, newGenIO)
+import System.Environment
 import qualified Data.DList as DL
 import qualified Data.Map as M
 
@@ -33,16 +34,18 @@ main :: IO ()
 main =
     do putStrLn "RAE Fun: START"
        --test
+       args <- getArgs
+       let l = (read . head) args
        putStrLn "EXERCISE 2"
        g <- newGenIO :: IO SystemRandom
-       --let (_, drac) = exprToDRAC g testExpr1
+       let (_, drac) = exprToDRAC g (testExpr1 l)
        --let (rac, _) = singularizeDRAC drac
-       let (_, rac, _) = exprToRAC g testExpr1
-       print $ length $ show $ take 1 $ drop 5600 $ rac
+       --let (_, rac, _) = exprToRAC g (testExpr1 l)
+       print $ length $ show $ drac
        return ()
 
-testExpr1 :: Expr Element
-testExpr1 = P.horner _X_ (map (Literal . fromInteger) [1..6000])
+testExpr1 :: Integer -> Expr Element
+testExpr1 l = P.horner _X_ (map (Literal . fromInteger) [1..l])
 
 _X_ :: Field e => Expr e
 _X_ = Var "x"
