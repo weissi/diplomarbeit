@@ -3,6 +3,9 @@
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
 cd "$HERE"
 
+#PROG="../run-sample.sh"
+PROG="../dist/build/AllInOne/AllInOne"
+
 WARMUPS=1
 RUNS=3
 STEP=500
@@ -95,9 +98,9 @@ function run_sample() {
     fi
 
     if [ $DEBUG -ne 0 ]; then
-        ../run-sample.sh "$PFILE" "$EL" $POLY_EVAL_OPTS -q 2>&1 | tee "$TMPOUT"
+        "$PROG" "$PFILE" "$EL" $POLY_EVAL_OPTS -q 2>&1 | tee "$TMPOUT"
     else
-        ../run-sample.sh "$PFILE" "$EL" $POLY_EVAL_OPTS -q &> "$TMPOUT"
+        "$PROG" "$PFILE" "$EL" $POLY_EVAL_OPTS -q &> "$TMPOUT"
     fi
     #echo "David: DAVID DONE, final result = Just" > "$TMPOUT"
     #echo "David: Exited (running 718ms)" >> "$TMPOUT"

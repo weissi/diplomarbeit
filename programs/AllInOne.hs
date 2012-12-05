@@ -50,6 +50,6 @@ main =
            calcDiff e a = (truncate . sToMs . realToFrac) (diffUTCTime e a)
            diff :: Integer
            diff = calcDiff davidStop davidStart
-       putStrLn $ "David: Exited (running "++show diff++"ms )"
-       putStrLn $ "DAVID DONE, final result = " ++ show out
+       putStrLn $ "David: Exited (running "++show diff++"ms)"
+       putStrLn $ "David: DAVID DONE, final result = " ++ show out
        putStrLn "AllInOne DONE"
