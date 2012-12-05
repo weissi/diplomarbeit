@@ -11,6 +11,7 @@ import Data.LinearExpression
 import Data.FieldTypes (Field(..))
 import Data.RAE.Encoder
 import Data.RAE.Types
+import qualified Math.Polynomials as P
 
 
 import Math.FiniteFields.F2Pow256
@@ -34,21 +35,14 @@ main =
        --test
        putStrLn "EXERCISE 2"
        g <- newGenIO :: IO SystemRandom
-       let (_, drac) = exprToDRAC g testExpr1
-       let (dracFragOne:_) = DL.toList drac
-       print dracFragOne
-       let (rac, _) = singularizeDRAC drac
-           (racFragOne:_) = rac
-       print racFragOne
+       --let (_, drac) = exprToDRAC g testExpr1
+       --let (rac, _) = singularizeDRAC drac
+       let (_, rac, _) = exprToRAC g testExpr1
+       print $ length $ show $ take 1 $ drop 5600 $ rac
        return ()
 
 testExpr1 :: Expr Element
---testExpr1 = _X_ * _X_
---testExpr1 = 4 * _X_ + _Y_ + _X_ * _X_ * _X_
---testExpr1 = _X_ * _Y_
---testExpr1 = _X_ ^ 1000
---testExpr1 = foldl' (+) 0 $ take 10000 $ repeat _X_
-testExpr1 = _X_ ^ (100000 :: Integer)
+testExpr1 = P.horner _X_ (map (Literal . fromInteger) [1..6000])
 
 _X_ :: Field e => Expr e
 _X_ = Var "x"
