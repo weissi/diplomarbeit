@@ -3,9 +3,8 @@
 HERE=$(cd $(dirname ${BASH_SOURCE[0]}) > /dev/null && pwd -P)
 cd "$HERE"
 
-#PROG="../run-sample.sh"
 PROG="../dist/build/AllInOne/AllInOne"
-
+PROGOPTS=""
 WARMUPS=1
 RUNS=3
 STEP=500
@@ -14,19 +13,25 @@ MAX=6000
 POLY_EVAL_OPTS="-h"
 OUT="-"
 DEBUG=0
+F97=0
 
 function usage() {
-   echo "$0 [-w WARMUP-RUNS] [-r RUNS] [-s STEP] [-m MIN] [-M MAX] [-n]"
+   echo "$0 [-o OUT] [-w WARMUP-RUNS] [-r RUNS] [-s STEP] [-m MIN] [-M MAX]"\
+" [-n] [-f] [-b BINARY] [-o OPTS]"
    echo
+   echo "-o: output file (default: $OUT)"
    echo "-n: don't use Horner's rule (aka monomial form, discouraged)"
    echo "-w: warmup runs (default: $WARMUPS)"
    echo "-m: minimal degree (default: $MIN)"
    echo "-M: maximal degree (default: $MAX)"
    echo "-r: counted runs (default: $RUNS)"
    echo "-s: degree step (default: $STEP)"
+   echo "-f: use F97"
+   echo "-b: binary (default: $PROG)"
+   echo "-O: other options to binary (default: $PROGOPTS)"
 }
 
-while getopts w:r:s:m:M:no:d OPT; do
+while getopts w:r:s:m:M:no:dfb:O: OPT; do
     case "$OPT" in
         w)
             WARMUPS="$OPTARG"
@@ -52,6 +57,15 @@ while getopts w:r:s:m:M:no:d OPT; do
         d)
             DEBUG=1
             ;;
+        f)
+            F97=1
+            ;;
+        b)
+            PROG="$OPTARG"
+            ;;
+        O)
+            PROGOPTS="$OPTARG"
+            ;;
         [?])
             usage
             exit 1
@@ -60,7 +74,11 @@ while getopts w:r:s:m:M:no:d OPT; do
 done
 
 function get_random_element() {
-    echo '[1 1 0 0 1 0 1]'
+    if [ $F97 -ne 0 ]; then
+        echo 17
+    else
+        echo '[1 1 0 0 1 0 1]'
+    fi
 }
 
 function random_poly_file() {
@@ -98,9 +116,9 @@ function run_sample() {
     fi
 
     if [ $DEBUG -ne 0 ]; then
-        "$PROG" "$PFILE" "$EL" $POLY_EVAL_OPTS -q 2>&1 | tee "$TMPOUT"
+        "$PROG" "$PFILE" "$EL" $POLY_EVAL_OPTS -q $PROGOPTS 2>&1 | tee "$TMPOUT"
     else
-        "$PROG" "$PFILE" "$EL" $POLY_EVAL_OPTS -q &> "$TMPOUT"
+        "$PROG" "$PFILE" "$EL" $POLY_EVAL_OPTS -q $PROGOPTS &> "$TMPOUT"
     fi
     #echo "David: DAVID DONE, final result = Just" > "$TMPOUT"
     #echo "David: Exited (running 718ms)" >> "$TMPOUT"
