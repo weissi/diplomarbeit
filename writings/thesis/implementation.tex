@@ -197,6 +197,65 @@ cabal build
 
 
 %
+% USER INPUT/OUTPUT
+%
+\JWltwo{User Input/Output}
+\label{sec:user-io}
+
+Whenever field elements in large fields (such as $\mathbb{F}_{2^{256}}$) are
+read from user input or are outputted to the user, the following format (given
+as a regular expression) is used:
+
+\JWcode{\textbackslash[([01]( [01])\{0,255\})?\textbackslash]}
+
+Intuitively that is between $0$ and $256$ digits (each \JWcode{0} or \JWcode{1})
+separated by spaces and surrounded by square brackets. The meaning of such a
+string is $\sum_{i=1}^P d \cdot x^p$ where $p$ is the position of the digit in
+the string and $P$ is the maximal position (counted from $0$). And exception is
+the string \JWcode{[]} which represents the polynomial \JWcode{0}. Examples:
+
+\begin{itemize}
+
+  \item \JWcode{[]} and \JWcode{[0]} represent $0$
+
+  \item \JWcode{[1]} represents $1 \cdot x^0 = 1 \cdot 1 = 1$
+
+  \item \JWcode{[0 1]} represents $0 + 1 \cdot x^1 = x$
+
+  \item \JWcode{[1 0]} represents $1 + 0 \cdot x^1 = 1$
+
+  \item \JWcode{[1 1]} represents $1 + 1 \cdot x^1 = 1 + x$
+
+  \item \JWcode{[1 0 1 0 1 0]} represents $1 + x^2 + x^4$
+
+\end{itemize}
+
+The default implementation uses $\mathbb{F}_{2^{256}}$ specified by the
+irreducible polynomial $1 + x^2 + x^5 + x^{10} + x^{256}$. The $\mathbb{F}_{97}$
+implementation uses regular digits as the field elements, e.g.\ $1 \hat{=} 1
+(mod 97) = 1_{\mathbb{F}_{97}}$, $98 \hat{=} 98 (mod 97) = 1_{\mathbb{F}_{97}}$.
+
+
+%
+% USAGE OF THE PROGRAMS
+%
+\JWltwo{Usage of the Programs}
+\label{sec:usage}
+
+The three main programs are \JWBpOne{}, \JWBpTwo{} and \JWBtoken{}. \JWBtoken{}
+does not accept any command line parameters. \JWpOne{} expects exactly one
+command line parameter: The file for the polynomial to evaluate, one coefficient
+per line. \JWpTwo{} expects exactly one parameter, too: The field element to
+evaluate the polynomial. Example:
+
+\JWcmd{Goliath /tmp/my-polynomial.txt}
+
+\JWcmd{Token}
+
+\JWcmd{David '[1 0 1 1 1 0 1]'}
+
+
+%
 % DOCUMENTATION
 %
 \JWltwo{Documentation}

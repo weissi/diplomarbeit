@@ -1,6 +1,9 @@
 \JWlone{Evaluation}
 \label{sec:evaluation}
 
+%
+% TEST SETUP
+%
 \JWltwo{Test Setup}
 \label{sec:test-setup}
 
@@ -42,6 +45,9 @@ running the same benchmark five times in a row (preceded by a non--accounted
 warm--up run).
 
 
+%
+% COMPUTATIONAL COMPLEXITY
+%
 \JWltwo{Computational Complexity}
 \label{sec:comp-complexity}
 
@@ -155,58 +161,53 @@ Macs)\cite{lentczner11}.
   \label{tab:poly-deg-t-small}
 \end{table}
 
-\JWltwo{Unused Graphics}
+
+%
+% MEMORY COMPLEXITY
+%
+\JWltwo{Memory Complexity}
+\label{sec:mem-complexity}
+
+The memory complexity of the current implementation is in $O(n)$, $n$ being the
+polynomial's degree, too. The reason is that the implementation has store all
+DRAEs to be able to generate die OAFE configuration and to write the OAFE
+references in the DRAEs.
 
 
-\JWltwo{TODO}
-
-\begin{JWtodoBox}
-
-\begin{itemize}
-
-\item Wie schnell ist die derzeitige Implementierung?
-
-\item Wie groß kann das Polynom werden?
-
-\end{itemize}
-
-\end{JWtodoBox}
-
+%
+% CONTRIBUTION
+%
 \JWltwo{Contribution}
+\label{sec:contribution}
 
-\begin{JWtodoBox}
+The main contribution of this thesis is UC--secure (against actively corrupted
+parties) \emph{Oblivious Polynomial Evaluation} (see chapter \ref{def:OPE}) in
+linear time. For restricted security requirements (secure against actively
+corrupted function evaluating party (\JWpTwo{}), but only secure against
+passively corrupted function definition party) arbitrary arithmetic circuits
+(include Square \& Multiply) are possible using the techniques presented in
+chapter \ref{sed:methods}.
 
-  \begin{itemize}
-
-    \item OPE in $\Theta(n)$
-
-    \item Square \& Multiply und beliebige Circuits möglich aber nicht
-      implementiert.
-
-  \end{itemize}
-
-\end{JWtodoBox}
+For the main case Oblivious Polynomial Evaluation, this thesis also contributes
+a working implementation.
 
 
-\JWltwo{What's left?}
+%
+% OPEN QUESTIONS AND OUTLOOK
+%
+\JWltwo{Open Questions and Outlook}
+\label{sec:outlook}
 
-\begin{JWtodoBox}
+The most important open question is to find an improvement for the current
+technique to support arbitrary arithmetic circuits by maintaining the computing
+time complexity and the UC--security against all actively corrupted parties.
 
-  \begin{itemize}
-
-    \item Implementing David \& Goliath protocol. The implementation assumes
-      it's already available.
-
-    \item Better $\mathbb{F}_{2^{256}}$ implementation or find library
-
-    \item Fully implement arbitrary circuits.
-
-    \item Improve technique to be secure against actively corrupted Goliaths for
-      arbitrary circuits. (Goliath kann überall affine Transformationen
-      einbauen)
-
-  \end{itemize}
-
-\end{JWtodoBox}
+The implementation would profit by a better implementation of a library for
+calculations in large finite fields such as $\mathbb{F}_{2^{k}}$ for $k > 128$.
+Additionally, the David \& Goliath protocol \cite{davidgoliath} should be
+implemented as a component the implementation of this thesis can use. The
+current implementation assumes a tamper--proof hardware token that implements
+the OAFE functionality (currently the program \JWBtoken{} that comes with this
+thesis implements the functionality naively but insecure.
 
 % vim: set spell spelllang=en_us fileencoding=utf8 :
