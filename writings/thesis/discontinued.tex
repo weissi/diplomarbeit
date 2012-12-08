@@ -2,8 +2,9 @@
 \label{sec:discontinued}
 
 This chapter shortly describes the approaches that have been investigated (and
-implemented) but were not good enough to reach the ultimate goal. The approaches
-are ordered chronologically by date of examination.
+partly implemented) but were not good enough to reach the goal. The approaches
+are ordered chronologically by date of examination to document the evolution of
+the methodology.
 
 
 %
@@ -12,10 +13,12 @@ are ordered chronologically by date of examination.
 \JWltwo{Linear Bijection Straight--Line Programs}
 \label{sec:using-lbs}
 
-The first approach taken in this thesis to transform general formulas to affine
-functions suitable for OAFEs was via Linear Bijection Straight--Line Programs.
-The results looked promising at a first glance but a problem leading to
-exponential blowup when using multiplications emerged:
+The first approach pursued in this thesis to transform general formulas to
+affine functions suitable for OAFEs was via Linear Bijection Straight--Line
+Programs.  The results seemed promising at the first glance but a problem
+emerged leading to exponential blowup when using multiplications. The problem
+already becomes apparent as Cleve writes in the abtract of the paper
+\cite{cleve91}:
 
 \begin{quote}
   We show that, over an arbitrary ring, for any fixed $\epsilon > 0$, all
@@ -25,7 +28,7 @@ exponential blowup when using multiplications emerged:
 \end{quote}
 
 \noindent{}Two problems arise: Cleve's approach does not support \emph{Square
-and Multiply}\cite{knuth81} at all and since the size $s$ is defined as the
+and Multiply}\cite{knuth81} and since the size $s$ is defined as the
 depth of a balanced formula, evaluating a polynomial of degree $n$ would produce
 a program of length $O(s^{1 + \epsilon}) = O(2^{n^{1 + \epsilon}})$. However,
 the approach is partly implemented as explained in detail in the next few
@@ -37,9 +40,9 @@ this thesis.
 
 The definition of formulas is the same as in \cite{cleve91}: Formulas are
 circuits that are trees. A postorder traversal is enough to evaluate the formula
-easily. We describe the evaluation of such a formula using \emph{linear
-bijection straight--line programs} (LBS programs)\cite{cleve91} which use at
-most $\omega$ registers. A LBS program can be simulated by matrix
+easily. This chapter describes the evaluation of such a formula using
+\emph{linear bijection straight--line programs} (LBS programs)\cite{cleve91}
+which use at most $\omega$ registers. A LBS program can be simulated by matrix
 multiplications, one statement is simulated by one matrix multiplication. The
 matrices are elements of $SL_w(K)$, the special linear group consisting of
 $\omega \times \omega$ matrices with determinant $1$ (and $K$ a field).
@@ -67,19 +70,20 @@ transform arbitrary formulas to LBS programs see \cite{cleve91}.
 
 \JWlfive{Depth $d = 0$}
 
-The construction of the LBS for $d = 0$ is very straightforward:
+The construction of the LBS for $d = 0$ is straightforward:
 $R_j \leftarrow R_j \pm R_i \cdot c$ or $R_j \leftarrow R_j \pm R_i \cdot x_u$ .
 
 
 \JWlfive{Depth $d > 0$}
 
-Having LBS programs that do $R_j \leftarrow R_j \pm R_i \cdot l(x_G, x_D)$  and
-$R_j \leftarrow R_j \pm R_i \cdot r(x_G, x_D)$ we can
-transform formulas of depth $d > 0$ to a LBS program using only formulas of
-of depth $d - 1$ until $d = 0$.
+Two LBS programs that have the effect of $R_j \leftarrow R_j \pm R_i \cdot
+l(x_G, x_D)$  and $R_j \leftarrow R_j \pm R_i \cdot r(x_G, x_D)$ express
+formulas of depth $d > 0$ using only formulas of of depth $d - 1$. Repeated
+until $d = 0$, arbitrary formulas can be written as LBS programs. The following
+two sections show the induction step for additions and multiplications.
 
-\JWlsix{Additive:} We can construct a LBS program doing $R_j \leftarrow
-R_j + R_i \cdot (l + r)(x_G, x_D)$ easily by the following LBS program
+\JWlsix{Additive:} The construction of a LBS program doing $R_j \leftarrow R_j
++ R_i \cdot (l + r)(x_G, x_D)$ can be achieved by the following LBS program.
 
 \begin{align*}
 R_j & \leftarrow R_j + R_i \cdot l(x_G, x_D) \\
@@ -94,9 +98,9 @@ R_j & \leftarrow R_j - R_i \cdot r(x_G, x_D)
 \end{align*}
 
 
-\JWlsix{Multiplicative:} We can construct a LBS program doing $R_j
-\leftarrow R_j + R_i \cdot (l \cdot r)(x_G, x_D)$ less obviously by the LBS
-program
+\JWlsix{Multiplicative:} The construction of a LBS program doing $R_j \leftarrow
+R_j + R_i \cdot (l \cdot r)(x_G, x_D)$ is less obviously achieved by the
+following LBS program.
 
 \begin{align*}
 R_k & \leftarrow R_k - R_j \cdot r(x_G, x_D) \\
@@ -120,9 +124,9 @@ R_j & \leftarrow R_j + R_i \cdot l(x_G, x_D)
 The current implementation is a Haskell library which does the transformation
 from the formula, over the LBS program to the matrices that only need to be
 multiplied in order to calculate the result. The main implementation can be
-found in the \JWpath{lib/Codec/LBS.hs} of the code tree of this thesis (see
-chapters \ref{sec:src-org} and \ref{sec:code-availability}). Exemplary, the
-LBS program to evaluate the function $f(x_G,x_D) = 3x \cdot (x_G + x_D^2)$ which
+found in the file \JWpath{lib/Codec/LBS.hs} of the code tree of this thesis (see
+chapters \ref{sec:src-org} and \ref{sec:code-availability}). Exemplary, the LBS
+program to evaluate the function $f(x_G,x_D) = 3x \cdot (x_G + x_D^2)$ which
 will hold the result in \texttt{R1}:
 
 \begin{lstlisting}
@@ -146,7 +150,7 @@ R2 <- R2 + R3 * Xg
 R3 <- R3 + R0 * 3
 \end{lstlisting}
 
-\noindent{}The construction of the matrices is straight--forward: The statement
+\noindent{}The construction of the matrices is straightforward: The statement
 $R_i \leftarrow R_i + (R_j \cdot \alpha)$ is equivalent to the $K^{\omega \times
 \omega}$ identity matrix whose entry $i,j$ is set to $\alpha$.
 
@@ -154,15 +158,13 @@ $R_i \leftarrow R_i + (R_j \cdot \alpha)$ is equivalent to the $K^{\omega \times
 \JWlthree{Grouping the Matrices}
 \label{sec:matrix-grouping}
 
-The grouping process is very straightforward, too: From the process described in
-chapter \ref{sec:FormulasToMatrixMuls} we obtain matrices $\widehat{M_1}$ to
-$\widehat{M_n}$ which each have the effect of exactly one LBS program statement.
-Using associativity, we group together a variable amount of matrices
-$\widehat{M_1}$ to $\widehat{M_n}$. Each group is complete when there is at
-least one reference to the \emph{other party's input} $x_D$.  Matrices $M_1$ to
-$M_m$ where $M_1$ to $M_{m-1}$ definitely have at least one reference to $x_D$
-and $M_m$ may or may not are the result of this step.  Obviously the following
-properties hold:
+The grouping process is straightforward, too: From the process described in
+chapter \ref{sec:FormulasToMatrixMuls} matrices $\widehat{M_1}$ to
+$\widehat{M_n}$ which each have the effect of exactly one LBS program statement
+are obtained.  Using associativity, groups of a variable amount of these
+matrices can be built. Each group is complete when there is at least one
+reference to the \emph{other party's input} $x_D$. The matrices $M_1$ to $M_m$
+are the result of this step. The following properties hold:
 
 \begin{align*}
 n & \geq m \\
@@ -178,7 +180,7 @@ matrices multiplied on the right of $D_L$. Let $D_R$ be the $\omega \times
 \omega$ matrix whose entry $1,1$ is $1$, and whose other entries are $0$. This
 matrix will select the first column when multiplied on the left of any matrix.
 Using additional matrices $S_1$ to $S_{m}$ uniformly at random and invertible,
-we can build up $m$ garbled matrix groups:
+$m$ garbled matrix groups can be built:
 
 \begin{align*}
 U_1 & = D_L M_1 S_1 \\
@@ -192,21 +194,21 @@ U_m & = S_{m-1}^{-1} M_m D_R
 result.
 
 
-\JWlthree{Evaluating them using OAFEs (David \& Goliath)}
+\JWlthree{Evaluating the Matrices using OAFEs}
 
-From chapter \ref{sec:matrix-garbling} we obtain the matrices $U_{1..m} \in
-K^{\omega \times \omega}$. We can easily reshape the matrices $U_{1..m}$ to
-vectors $u_{1..m} \in K^{\omega^2}$ and concatenate the vectors $u_{1..m}$ to
-one giant vector $\mu \in K^{m\omega^2}$. After that we deduce two vectors $a$
-and $b$ that hold the following property ($a, b \in K^{m\omega^2}$, $x_D$ a
-scalar variable, as in chapter \ref{sec:matrix-grouping} David's input):
+From chapter \ref{sec:matrix-garbling} the matrices $U_{1..m} \in K^{\omega
+\times \omega}$ are obtained. The matrices $U_{1..m}$ can be reshaped to vectors
+$u_{1..m} \in K^{\omega^2}$. The vectors $u_{1..m}$ can be concatenated to one
+large vector $\mu \in K^{m\omega^2}$. Next, two vectors $a$ and $b$ are deduced
+that hold the following property ($a, b \in K^{m\omega^2}$, $x_D$ a scalar
+variable, as in chapter \ref{sec:matrix-grouping} David's input):
 
 \begin{align}
 a \cdot x_D + b = \mu
 \end{align}
 
-Using the $\prod^{\text{semi-int}}_{\text{OAFE}}$ protocol\cite{davidgoliath} we
-are now ready to evaluate the function securely:
+Using the $\prod^{\text{semi-int}}_{\text{OAFE}}$ protocol\cite{davidgoliath}
+the function can now be evaluated securely.
 
 \begin{itemize}
 
@@ -315,7 +317,7 @@ r & = \sum_{a \in A} a + \sum_{m \in M'} m
 
 Whenever a circuit is not directly transformable to one single DARE, sub--DAREs
 get replaced by \emph{Randomized Variables} (RV). RVs do not appear in
-Applebaum's paper\cite{gac2012} at all. RVs are just (sub--)DARE that
+Applebaum's paper\cite{gac2012}. RVs are just (sub--)DARE that
 get transmitted to the second party (see chapter \ref{sec:dare}) which
 fully evaluates them and saves the result just like an ordinary input variable
 (such as $x_D$). Following DAREs may then use the RVs as pseudo--inputs. But
@@ -346,8 +348,8 @@ Some of the ideas and entities presented in this chapter relate to the final
 version of this thesis. \emph{Decomposable Affine Randomized Encodings} (DAREs)
 are closely related to \emph{Dual Randomized Affine Encodings} (DRAEs, chapter
 \ref{def:DRAE}). The difference is that an evaluated DARE is equivalent to the
-value of the sub--circuit it models, encrypted DRAEs in contrast are still
-(twofoldly) encrypted. Because the DAREs are equal to their plain evaluation,
+value of the sub--circuit it models, DRAEs in contrast are still
+encrypted (twofold). Because the DAREs are equal to their plain evaluation,
 the old version presented in this chapter needed the \emph{Randomized Variables}
 (RVs) that are not present in the final version. However, the final version does
 also assign evaluated sub--circuits to variables but since DRAEs are encrypted
@@ -356,9 +358,9 @@ anyways, there is no need for an additional encryption.
 
 \JWlthree{Implementation State}
 
-This ideas of this chapter were fully implemented but the implementation did
-evolve to the final version fully described in chapter \ref{sec:methods}. If
-there is interest on the old implementation, it can fully be recovered from this
+The ideas of this chapter were implemented but the implementation did
+evolve to the final version described in chapter \ref{sec:methods}. If
+there is interest in the old implementation, it can be recovered from this
 thesis' source code tree by using the \JWTgit{} version control system.
 
 % vim: set spell spelllang=en_us fileencoding=utf8 :

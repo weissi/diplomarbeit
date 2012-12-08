@@ -9,7 +9,8 @@
   {The ideal $\JWfieldGeneral{}$-OPE functionality \JWfuncSymOPE{}}%
   {fig:func-ope}
 
-  Parametrized by a finite field size $2^k$ and maximal polynomial degree $n$.
+  Parametrized by a finite field of size $2^k$ ($\mathbb{F}_{2^k}$)
+  and maximal polynomial degree $n$.
 
   \begin{JWfuncSteps}
 
@@ -72,7 +73,7 @@
     \JWpOne{} generates the DRAC and sets up the OAFE functionality for the
     polynomial $f(x) = \sum_{i=0}^n a_ix^i$ (see section \ref{sec:OPE}).
 
-  \item Finally, \JWpOne{} sends DRAC to \JWpTwo{}.
+  \item Finally, \JWpOne{} sends the DRAC to \JWpTwo{}.
 
   \end{JWprotoSteps}
 
@@ -83,7 +84,7 @@
 
   \item Upon receiving the DRAC from \JWpOne{}, verify that there is no stored
     DRAC yet, else ignore that input. Next, \JWpTwo{} verifies the received
-    input really it a DRAC, else ignore that input. Additionally it verifies
+    input is a DRAC, else ignore that input. Additionally it verifies
     that the DRAC encodes a function whose degree is less or equal than $n$ (see
     chapter \ref{sec:max-poly-degree}), else ignore the input. If the DRAC
     verification was successful, store the DRAC.
@@ -101,8 +102,8 @@
 
   \item After the Evaluation, \JWpTwo{} adds both components of the last DRAV
     and queries a special final OAFE with that value. Again, assume the all zero
-    vector is the OAFE behaves unexpectedly. The then received new value is the
-    result of the computation $y = \sum_{i=1}^k a_ix^i$. Finally, output
+    vector if the OAFE behaves unexpectedly. The then received new value is the
+    result of the computation $y = \sum_{i=0}^k a_ix^i$. Finally, output
     \JWmsgTP{Evaluated}{$y$} to the environment.
 
   \end{JWprotoSteps}

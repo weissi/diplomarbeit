@@ -15,12 +15,13 @@ Evaluation as explained in chapter \ref{def:OPE}.
 
 Even the Haskell data--types such as \JWcode{DRAC}, \JWcode{DRAE}, \JWcode{RAE},
 \JWcode{LinearExpr} match the names of the constructs described in chapter
-\ref{sec:methods}: DRACs (chapter \ref{def:DRAC}), (chapter \ref{def:DRAE}) and
-linear expressions (named $\mathcal{C}$ in chapter \ref{def:DRAE}). For
-practical reasons the program also features \JWcode{RAC} (Randomized Affine
-Circuits) and \JWcode{RAE} (Randomized Affine Encodings) which are the same as
-their \emph{dual} counterparts but split up by the components. So while running
-the program two \JWcode{RAE}s are derived from one \JWcode{DRAE}.
+\ref{sec:methods}: DRACs (chapter \ref{def:DRAC}), DRAEs (chapter
+\ref{def:DRAE}) and linear expressions (named $\mathcal{C}$ in chapter
+\ref{def:DRAE}). For practical reasons the program also features \JWcode{RAC}
+(Randomized Affine Circuits) and \JWcode{RAE} (Randomized Affine Encodings)
+which are the same as their \emph{dual} counterparts but split into the
+components. So while running the program two \JWcode{RAE}s are derived from one
+\JWcode{DRAE}.
 
 As in chapter \ref{def:OPE}, the oblivious polynomial evaluation consists of
 three parties: The tamper--proof hardware issuing party \JWpOne{} (executable
@@ -64,9 +65,7 @@ consisting of the evaluated linear expressions.
 \label{sec:comm:goliath2david}
 
 On TCP port \JWport{23102} \JWpOne{} initiates a connection to \JWpTwo{}. This
-connection is a stream of \JWpTwo{} DRAEs (in fact \JWcode{RAE}s) assigned to
-variables, that \JWpTwo{} will evaluate one after the other in the order
-\JWpOne{} has sent them.
+connection streams the DRAC that \JWpTwo{} will evaluate.
 
 
 % DAVID TO GOLIATH
@@ -86,9 +85,9 @@ on which \JWpTwo{} accepts the DRAE stream.
 \JWltwo{Differences Between the Implementation and this Writing}
 \label{sec:implementation-differences}
 
-\begin{itemize}
+\begin{JWtodoBox}
 
-\item In writing there are no \JWcode{RAE}s
+\begin{itemize}
 
 \item Communication Channel from \JWpTwo{} to \JWpOne{}
 (\ref{sec:comm:david2goliath})
@@ -96,6 +95,8 @@ on which \JWpTwo{} accepts the DRAE stream.
 \item THERE IS NOT TAMPER-PROOF HARWARE TOKEN
 
 \end{itemize}
+
+\end{JWtodoBox}
 
 
 %
@@ -202,9 +203,9 @@ cabal build
 \JWltwo{User Input/Output}
 \label{sec:user-io}
 
-Whenever field elements in large fields (such as $\mathbb{F}_{2^{256}}$) are
-read from user input or are outputted to the user, the following format (given
-as a regular expression) is used:
+Whenever field elements in large fields that are no prime fields (e.g.\ %
+$\mathbb{F}_{2^{256}}$) are read from user input or are outputted to the user,
+the following format (given as a regular expression) is used:
 
 \JWcode{\textbackslash[([01]( [01])\{0,255\})?\textbackslash]}
 
@@ -232,8 +233,9 @@ the string \JWcode{[]} which represents the polynomial \JWcode{0}. Examples:
 
 The default implementation uses $\mathbb{F}_{2^{256}}$ specified by the
 irreducible polynomial $1 + x^2 + x^5 + x^{10} + x^{256}$. The $\mathbb{F}_{97}$
-implementation uses regular digits as the field elements, e.g.\ $1 \hat{=} 1
-(mod 97) = 1_{\mathbb{F}_{97}}$, $98 \hat{=} 98 (mod 97) = 1_{\mathbb{F}_{97}}$.
+implementation uses regular digits to read and write the field elements because
+it is a prime field. Examples: $1 \hat{=} 1 (mod 97) = 1_{\mathbb{F}_{97}}$, $98
+\hat{=} 98 (mod 97) = 1_{\mathbb{F}_{97}}$.
 
 
 %

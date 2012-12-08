@@ -30,7 +30,7 @@ T2400} dual core processor at \emph{1.83 GHz}. It has \emph{2 GB} system memory.
 (Lion), 64--bit}. The machine is powered by a \emph{Intel\TReg{} Core 2 Duo}
 dual core processor at \emph{2.26 GHz}. It has \emph{8 GB} system memory.
 
-\JWlthree{Test Setup}
+\JWlthree{Benchmarking Process}
 
 Both machines run the three programs (\JWBpOne{}, \JWBpTwo{}, \JWBtoken{})
 simultaneously, the programs are compiled single--threaded. The programs
@@ -40,7 +40,7 @@ communication that takes part in the implementation that comes with this thesis.
 The running time includes the DRAC building and transmitting, the OAFE
 configuration and the successful evaluation of a random polynomial. The
 polynomial is evaluated using \emph{Horner's rule}\cite{cormen01}. The data
-points in all figures and tables were obtained by taking taking the median of
+points in all figures and tables were obtained by taking the median of
 running the same benchmark five times in a row (preceded by a non--accounted
 warm--up run).
 
@@ -76,7 +76,7 @@ $\mathbb{F}_{2^{256}}$ does perform in linear time. Figure
 \ref{fig:poly-deg-t-small} and table \ref{tab:poly-deg-t-small} demonstrate
 this. It is also noteworthy that the first test machine (see chapter
 \ref{sec:test-machines}) outperforms the second test machine despite the
-inferior hardware. The cause has not been investigated, a possible causes could
+inferior hardware. The cause has not been investigated, a possible cause could
 be that the 64--bit \JWTghc{} runtime seems to be slower (at least on Apple
 Macs)\cite{lentczner11}.
 
@@ -169,8 +169,8 @@ Macs)\cite{lentczner11}.
 \label{sec:mem-complexity}
 
 The memory complexity of the current implementation is in $O(n)$, $n$ being the
-polynomial's degree, too. The reason is that the implementation has store all
-DRAEs to be able to generate die OAFE configuration and to write the OAFE
+polynomial's degree, too. The reason is that the implementation has to store all
+DRAEs to be able to generate the OAFE configuration and to write the OAFE
 references in the DRAEs.
 
 
@@ -183,10 +183,10 @@ references in the DRAEs.
 The main contribution of this thesis is UC--secure (against actively corrupted
 parties) \emph{Oblivious Polynomial Evaluation} (see chapter \ref{def:OPE}) in
 linear time. For restricted security requirements (secure against actively
-corrupted function evaluating party (\JWpTwo{}), but only secure against
-passively corrupted function definition party) arbitrary arithmetic circuits
-(include Square \& Multiply) are possible using the techniques presented in
-chapter \ref{sed:methods}.
+corrupted function evaluating party but only secure against passively corrupted
+function definition party) arbitrary arithmetic circuits (include Square \&
+Multiply) are possible using the techniques presented in chapter
+\ref{sec:methods}.
 
 For the main case Oblivious Polynomial Evaluation, this thesis also contributes
 a working implementation.
@@ -202,12 +202,12 @@ The most important open question is to find an improvement for the current
 technique to support arbitrary arithmetic circuits by maintaining the computing
 time complexity and the UC--security against all actively corrupted parties.
 
-The implementation would profit by a better implementation of a library for
+The implementation would benefit by a better implementation of a library for
 calculations in large finite fields such as $\mathbb{F}_{2^{k}}$ for $k > 128$.
 Additionally, the David \& Goliath protocol \cite{davidgoliath} should be
 implemented as a component the implementation of this thesis can use. The
 current implementation assumes a tamper--proof hardware token that implements
 the OAFE functionality (currently the program \JWBtoken{} that comes with this
-thesis implements the functionality naively but insecure.
+thesis implements the functionality naively but insecure).
 
 % vim: set spell spelllang=en_us fileencoding=utf8 :
