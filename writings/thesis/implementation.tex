@@ -46,8 +46,10 @@ tamper--proof hardware token is left open to potential future works.
 \label{sec:comm:goliath2Token}
 
 On TCP port \JWport{23120} \JWpOne{} initiates a connection to the \JWtoken{}.
-This connection is used to transfer the OAFE configuration to the tamper--proof
-hardware token.
+This connection is used to transfer the OAFE configuration. After having
+successfully received the OAFE configuration, the \JWtoken{} accepts OAFE
+evaluation requests (usually from \JWpTwo{}) but no more OAFE configurations.
+One \JWtoken{} process can be committed to a OAFE configuration exactly once.
 
 
 % DAVID TO TOKEN
@@ -56,16 +58,8 @@ hardware token.
 
 On TCP port \JWport{23021} \JWpTwo{} initiates a connection to the \JWtoken{}.
 This connection is used to evaluate the OAFEs. \JWpTwo{} sends a tells which
-OAFE to evaluate and its value, the \JWtoken{} then replies with a vector
+OAFE to evaluate and the value, the \JWtoken{} then replies with a vector
 consisting of the evaluated linear expressions.
-
-
-% GOLIATH TO DAVID
-\JWlthree{\JWpOne{} To \JWpTwo{}}
-\label{sec:comm:goliath2david}
-
-On TCP port \JWport{23102} \JWpOne{} initiates a connection to \JWpTwo{}. This
-connection streams the DRAC that \JWpTwo{} will evaluate.
 
 
 % DAVID TO GOLIATH
@@ -76,7 +70,15 @@ On TCP port \JWport{23201} \JWpTwo{} initiates a connection to \JWpOne{}. This
 connection is not necessary for the protocol itself but is used to exchange
 settings between \JWpOne{} and \JWpTwo{}. \JWpOne{} tells \JWpTwo{} the host
 name and the TCP port of the \JWtoken{} and \JWpTwo{} tells \JWpOne{} the port
-on which \JWpTwo{} accepts the DRAE stream.
+on which \JWpTwo{} accepts the DRAC.
+
+
+% GOLIATH TO DAVID
+\JWlthree{\JWpOne{} To \JWpTwo{}}
+\label{sec:comm:goliath2david}
+
+On TCP port \JWport{23102} \JWpOne{} initiates a connection to \JWpTwo{}. This
+connection streams the DRAC that \JWpTwo{} will evaluate.
 
 
 %
@@ -85,18 +87,12 @@ on which \JWpTwo{} accepts the DRAE stream.
 \JWltwo{Differences Between the Implementation and this Writing}
 \label{sec:implementation-differences}
 
-\begin{JWtodoBox}
-
-\begin{itemize}
-
-\item Communication Channel from \JWpTwo{} to \JWpOne{}
-(\ref{sec:comm:david2goliath})
-
-\item THERE IS NOT TAMPER-PROOF HARWARE TOKEN
-
-\end{itemize}
-
-\end{JWtodoBox}
+The main difference between the current implementation and this writing is that
+the OAFE functionality is not implemented using the David \& Goliath
+\cite{davidgoliath} protocol. Instead, the \JWBtoken{} implements a naive
+implementation of the ideal OAFE functionality. Further works could change the
+implementation to a real implementation of the protocol. Another difference is
+that \JWpTwo{} does not verify the polynomial degree it evaluates.
 
 
 %
@@ -118,53 +114,87 @@ Haskell}{C2Hs} \cite{c2hs}. Prior to interfacing the library to Haskell a very
 lightweight \JWTc{} wrapper has been developed because the library is written in
 \JWTcpp{} which cannot directly be interfaced using the FFI.
 
-\begin{JWtodoBox}
+Although \JWTntl{} does its work fast and without problems, the library has some
+implementation problems and is not optimally designed for exposing its
+functionality to functional programming languages. First of all, the library is
+neither thread--safe nor reentrant because it globally stores internal state
+that can be modified using library functions. The small \JWTc{} wrapper library
+therefore tries to provide a thread--safe interface to \JWTntl{} by limiting its
+functionality.  Another problem is that \JWTntl{} is designed for mutable
+objects, e.g.\ arithmetic operations are implemented using destructive
+assignment.  Since \JWThaskell{} is a pure functional language
+\cite{haskell2010} and destructive assignment is referentially opaque the
+\JWTc{} wrapper changes that and offers only an interface that obeys referential
+transparency. It does so by internally allocating a new element for the result
+of arithmetic operations and other functions that would modify existing objects
+otherwise.
 
-  IST WICHTIG, DARAUF REFERNZIERE ICH IN EVALUATION
-
-  \begin{itemize}
-
-    \item Garbage--Collector bekommt Probleme weil \texttt{delete} lange braucht
-
-    \item Viel Indirektion
-
-    \item Viel Speicher (32 bytes + 3 Pointer oder so)
-
-  \end{itemize}
-
-\end{JWtodoBox}
+The interface that obeys referential transparency makes the binding work well
+inside \JWThaskell{} programs. But for large number of \JWTntl{} objects, there
+is a performance problem: creating and destructing a massive amount of objects
+is slow. The problem is that it is not possible to allocate memory for \JWTntl{}
+objects completely externally because \JWTntl{} allocates memory internally on
+the heap in the constructor. In more detail: The objects the programmer gets
+from the \JWTntl{} library are only one machine word wide that stores a pointer
+to memory on the heap that stores the representation of the elements in the
+finite field. In other words: Allocating memory for an array of field elements
+is not in $O(1)$ as usual (a chunk of stack space or one \JWcode{malloc} call)
+but in $O(n)$ because \JWTntl{} allocates additional memory for every element on
+the heap internally. Obviously, the same problem occurs when destructing an
+array of \JWTntl{} objects: Usually that is in $O(1)$ as well (waiting until the
+stack frame gets destroyed or one \JWcode{free()} call) but using \JWTntl{} this
+is in $O(n)$ because \JWTcpp{}'s \JWcode{delete} has to be called for every
+element. Not calling \JWcode{delete} will lead to a massive memory leak.
+Therefore, the \JWThaskell{} binding cannot manage memory as usual but has to
+call a special memory freeing function of the \JWTc{} wrapper that calls
+\JWTcpp{}'s \JWcode{delete} for every object. This becomes a major performance
+problem for evaluations of large polynomials (see chapter
+\ref{sec:comp-complexity}). Nevertheless, this problem is fixable easily by
+using a \JWThaskell{} library for finite field calculations or interfacing a
+library that fits better.
 
 
 % Thread Safety
 \JWlthree{Thread Safety}
 
-The implementation is fully threadsafe, all communication is done using
+The implementation itself is fully thread--safe, all communication is done using
 \JWTghc{}'s implementation of \emph{Software Transactional Memory} (STM)
-\cite{stm05} for Haskell.
+\cite{stm05} for Haskell. The library (\JWTntl{}) that is used for the
+calculations in the finite fields is not thread--safe but the small \JWTc{}
+wrapper (see chapter \ref{sec:finite-field-calcs}) tries to fix \JWTntl{}'s
+thread--safety problems. However, for guaranteed thread--safety \JWTntl{} should
+be replaced by another library that is thread--safe. The \JWTntl{}
+implementation also has other disadvantages that would make another library even
+more useful (for details see chapter \ref{sec:finite-field-calcs}).
 
 
 % Testing Correctness
 \JWlthree{Testing the Correctness of the Implementation}
 
-The correctness of the implementation has not been proofed since that is not
-feasible for complex programs. Instead of a real proof, the implementation
-has been tested using the specification--driven automatic \JWThaskell{} testing
-tool \JWTquickcheck{} \cite{quickcheck} and the classic unit test approach of
-\JWTLhunit{}.
+The correctness of the implementation has not been proofed formally since that
+is not feasible for complex programs. Instead of a real proof, the
+implementation has been tested using the specification--driven automatic
+\JWThaskell{} testing tool \JWTquickcheck{} \cite{quickcheck} and the classic
+unit test approach of \JWTLhunit{}.
 
 
 % Randomness
 \JWlthree{Cryptographic Randomness}
 
 The random numbers needed for the implementation of this thesis are generated
-using \JWTLmonadcryptorandom{}.
+using \JWTLmonadcryptorandom{}. This package allows explicit failure of the
+random number generation and exchangeable random number generators such as
+\JWTLdrbg{} that implements a NIST standardized number--theoretically secure
+random number generator.
 
 
 % Communication Layer
 \JWlthree{Communication Layer}
 
-The communication layer between the different binaries is driven by the
-schrieblesque \JWTXLprotobuf{}.
+The communication between the different binaries is done using the schrieblesque
+\JWTXLprotobuf{}. This library easily allows network communication with complex
+data types independent of the programming language, operating system, machine
+endianness, and other parameters.
 
 
 % Other Libraries
@@ -179,7 +209,45 @@ complete list of packages can be extracted from the file
 \JWlthree{Source Tree Organization}
 \label{sec:src-org}
 
-\JWtodo{WICHTIG: Ist referenziert im LBS chapter}
+A listing of the most important folders in the source code tree of this thesis
+can be found below.
+
+\begin{itemize}
+
+  \item \JWpath{programs/}, the source code for the binaries (\JWBpOne{},
+    \JWBpTwo{} and \JWBtoken{}).
+
+  \item \JWpath{lib/}, the source code for everything that's reusable.
+
+  \item \JWpath{lib/Functionality/}, the reusable code that forms the binaries'
+    functionality.
+
+  \item \JWpath{lib/Data/OAFE/}, OAFE functionality implementation.
+
+  \item \JWpath{lib/Data/RAE/}, RAE encoding, decoding and evaluation.
+
+  \item \JWpath{lib/Math/}, the finite field implementation and other
+    mathematical methods.
+
+  \item \JWpath{test/}, the \JWTquickcheck{} tests and the unit tests.
+
+  \item \JWpath{bench/}, benchmarking programs.
+
+  \item \JWpath{scripts/}, helper scripts, mainly for benchmarking.
+
+  \item \JWpath{protos/}, the \JWTXprotobuf{} definition files.
+
+  \item \JWpath{gen-src/}, automatically generated source code, derived from the
+    \JWTprotobuf{} definition files.
+
+  \item \JWpath{writings/}, this writing.
+
+  \item \JWpath{evaluation/}, data for the figures of this writing.
+
+  \item \JWpath{dist/}, after having compiled the source code, this folder
+    contains the binaries.
+
+\end{itemize}
 
 
 % Build System
@@ -274,8 +342,13 @@ The implementation is documented using \JWTLhaddock{}.
 \JWltwo{Code Availability}
 \label{sec:code-availability}
 
-All of the code is open--sourced and available at...
-\JWtodo{Add link to GitHub repo}
+All of the code is open--sourced and available at
+\JWnamedlink{https://github.com/weissi/diplomarbeit.git}{GitHub}. The code can
+be obtained by typing:
+
+\begin{lstlisting}
+git clone https://github.com/weissi/diplomarbeit.git
+\end{lstlisting}
 
 
 % vim: set spell spelllang=en_us fileencoding=utf8 :
