@@ -11,7 +11,7 @@ This chapter informally illustrates the key ideas and methods proposed by this
 thesis. The following chapters contain a more formal bottom--up description that
 is rather cumbersome to understand without grasping the overall picture.
 
-The ultimate goal is to obliviously evaluate a polynomial by two mutual
+The goal is to obliviously evaluate a polynomial by two mutual
 distrusting parties. Informally, that is evaluating $f(x) = \sum a_ix^i$ where
 the first party chooses $f$ and the second party chooses $x$. But neither
 party should learn the choice of the other party. The naive and simple solution
@@ -50,9 +50,9 @@ every OAFE exactly once. After having evaluated the last OAFE, the tamper--proof
 hardware token can be physically destroyed. An honest \JWpTwo{} acts completely
 deterministically and will receive the function's final evaluated value $f(x)$.
 The following process dividing the function in smaller parts usually uses the
-term (arithmetic) circuit. The term circuit means the evaluation tree (e.g.
+term (arithmetic) circuit. The term circuit means the evaluation tree (e.g.,
 figure \ref{fig:sample-poly}) of the function where the (arithmetic) gates are
-the nodes that perform arithmetic operations.
+the nodes that do arithmetic operations.
 
 The approach pursued here is to divide the arithmetic circuit that equals the
 overall function to smaller sub--circuits. Each sub--circuit can be composed of
@@ -60,24 +60,24 @@ arithmetic gates and other sub--circuits. \JWpTwo{} has to evaluate each
 sub--circuit to an intermediate value. \JWpTwo{} has to store all intermediate
 values since they are used to compute the following sub--circuits.  Whenever one
 sub--circuit $A$ contains a node that is another sub--circuit $B$, this node
-gets replaced by the intermediate output value of $B$ before $A$ can be
-evaluated. Obviously the intermediate values are a potential security threat: A
-passively corrupted \JWpTwo{} could try to derive information from these
-intermediate results. An actively corrupted \JWpTwo{} could additionally try to
-modify the intermediate values and gain supplemental information out of that. To
-not directly reveal the value of an evaluated sub--circuit the intermediate
-values have to be \emph{encrypted}.  To be able to identify an illicit
-modification the overall evaluation has to fail when an attacker tries to
-illicitly modify an intermediate result. In this thesis, the intermediate values
-are tuples of two values. The decryption of both values represents---when
-well--formed---the same value. The gain of this technique is that an attacker
-cannot simply change the value and preserve the well--formedness without knowing
-the encryption keys. Any change to one (or both) tuple values causes the
-intermediate value to be destroyed (formally represented as $\bot$). After
-having evaluated the last sub--circuit, its resulting encrypted tuple undergoes
-a special procedure revealing the unencrypted scalar result value. Details and
-the formal description of the procedures mentioned above can be found in the
-following chapters.
+gets replaced by the intermediate output value of $B$ before evaluating $A$.
+Obviously the intermediate values are a potential security threat: A passively
+corrupted \JWpTwo{} could try to derive information from these intermediate
+results. An actively corrupted \JWpTwo{} could additionally try to modify the
+intermediate values and gain supplemental information out of that. To not
+directly reveal the value of an evaluated sub--circuit the intermediate values
+have to be \emph{encrypted}. To be able to identify an illicit forgery the
+overall evaluation has to fail when an attacker tries to illicitly modify an
+intermediate result. In this thesis, the intermediate values are tuples of two
+values. The decryption of both values represents---when well--formed---the same
+value. The gain of this technique is that an attacker cannot change the value
+and preserve the well--formedness without knowing the encryption keys. Any
+change to one (or both) tuple values causes the intermediate value to be
+destroyed (formally represented as $\bot$). After having evaluated the last
+sub--circuit, its resulting encrypted tuple undergoes a special procedure
+revealing the unencrypted scalar result value. Details and the formal
+description of the procedures mentioned above can be found in the following
+chapters.
 
 \begin{figure}[htb]
   \centering
@@ -98,10 +98,10 @@ circuits and the token \JWpOne{} can shut down because it is no longer needed in
 the process. As soon as \JWpTwo{} receives the sub--circuit description and the
 token, it starts the evaluation, one sub--circuit after the other. To discuss
 the evaluation the sample polynomial $1 + 2x + 3x^2$ (see figure
-\ref{fig:sample-poly}) is used in the following. At this point it is important
-that \JWpTwo{} does learn the degree of the polynomial $a_0 + a_1x + a_2x^2$ but
-will not learn the coefficients ($a_0$, $a_1$ and $a_2$; $1$, $2$ and $3$ in the
-example). The first step for \JWpTwo{} is to evaluate the sub--circuit only
+\ref{fig:sample-poly}) is used in the following. In the whole procedure,
+\JWpTwo{} should not learn the coefficients ($a_0$, $a_1$ and $a_2$) of the
+polynomial $a_0 + a_1x + a_2x^2$ but is able to learn the degree of the
+polynomial. The first step for \JWpTwo{} is to evaluate the sub--circuit only
 containing $x$.  This is in fact only one sub--circuit that appears three times
 in the figure.  The next step would be to evaluate the sub--circuit only
 encoding $3$ (remember, not learning the value $3$!), then the sub--circuit
@@ -112,7 +112,7 @@ additional arithmetic gates can be included. Notably, a sub--circuit can only
 contain multiplications that only depend on either constants or stored
 intermediate values.
 
-To simplify the analysis of the different parts and to demonstrate the
+To simplify the analysis of the different parts and to show the
 modularity, special terms are used throughout in this thesis. A mapping from the
 informal terms used above and the terms used otherwise (and defined in the
 following chapters) follows:
@@ -122,15 +122,14 @@ They represented values and the sub--circuits evaluated to these encrypted
 tuples. In fact, the sub--circuits are also twofold, they have a left and a
 right side that eventually evaluate to two values: Both sides of the encrypted
 tuple. For technical reasons, the two sides of the circuits and the tuples often
-handled apart. They still represent the same two values encrypted with
-different keys. For this reason the terms below all exist in two forms, the
-\emph{Double} form (such as \emph{Double Randomized Affine Encoding}) and the
-regular form (such as \emph{Randomized Affine Encoding}). At some point in the
-processing, they are split syntactically, two regular entities are just the same
-as one Double entity. The exact difference is not important to grasp the
-procedure but it is as simple as naming tuple $\widetilde{a} = (\widetilde{a_l},
-\widetilde{a_r})$ \emph{Double Value} and $\widetilde{a_l}$ and
-$\widetilde{a_r}$ \emph{Value}s respectively.
+handled apart. They still represent the same two values encrypted with different
+keys. For this reason the terms below all exist in two forms, the \emph{Double}
+form (such as \emph{Double Randomized Affine Encoding}) and the regular form
+(such as \emph{Randomized Affine Encoding}). At some point in the processing,
+they are split syntactically, two regular entities are just the same as one
+Double entity. The difference is mainly the same as naming tuple $\widetilde{a}
+= (\widetilde{a_l}, \widetilde{a_r})$ \emph{Double Value} and $\widetilde{a_l}$
+and $\widetilde{a_r}$ \emph{Value}s.
 
 \begin{itemize}
 
@@ -143,8 +142,8 @@ $\widetilde{a_r}$ \emph{Value}s respectively.
     chapter \ref{def:DRAE}. Each (D)RAE is assigned to an intermediate variable
     that occurs in the subsequent (D)RAEs. A (D)RAE is a specification of
     calculations that have to be performed until obtaining the (D)RAEs result
-    value. In terms of the (D)RAC, the result value is just an intermediate
-    value that an sub--circuit evaluated to.
+    value. For the (D)RAC, the result value is just an intermediate
+    value that a sub--circuit evaluated to.
 
   \item The overall circuit representing exactly one function is named
     \emph{Double Affine Randomized Circuit} (DRAC) or \emph{Affine Randomized
@@ -184,7 +183,7 @@ functionality enables to sequentially evaluate $n$ affine functions specified a
 priori. The OAFE functionality is implemented using the David \& Goliath
 protocol and exactly one stateful tamper--proof hardware token. In other words,
 one party can specify $n$ affine functions and another party will be able to
-sequentially evaluate the functions exactly once respectively. The evaluating
+sequentially evaluate the functions exactly once. The evaluating
 party will only learn one evaluation of each function $f_i$ but not their
 definition.
 
@@ -200,12 +199,12 @@ definition.
 \end{align*}
 
 \noindent{}For the sake of simplicity, the term \emph{OAFE} is used slightly
-different in this thesis: The term \emph{OAFE} is used to determine a
-functionality to evaluate one affine function. The plural (\emph{OAFEs}) is used
-to determine a set of OAFEs that enable to evaluate a number of affine
-functions. Therefore the collectivity of OAFEs as defined in this thesis can be
-implemented by one \emph{Sequential one--time OAFE} functionality as defined by
-Döttling, Kraschewski and Müller--Quade \cite{davidgoliath}.
+different in this thesis: The term \emph{OAFE} is a functionality to evaluate
+one affine function. The plural (\emph{OAFEs}) means a set of OAFEs that enable
+to evaluate multiple affine functions. Therefore the collectivity of OAFEs as
+defined in this thesis can be implemented by one \emph{Sequential one--time
+OAFE} functionality as defined by Döttling, Kraschewski and Müller--Quade
+\cite{davidgoliath}.
 
 
 %
@@ -267,12 +266,12 @@ contrast to $\beta$ and $\beta'$ used in for DRAVs throughout the whole
 process. The purpose they serve will be discussed in the following chapters.
 
 Notationally, the DRAV encoding a scalar value $v$ is usually denoted as
-$\widetilde{v}$. $\widetilde{v}$'s tuple components are usually referred to as
+$\widetilde{v}$. $\widetilde{v}$'s tuple components are usually called
 $\widetilde{v_l}$ and $\widetilde{v_r}$: $(\widetilde{v_l}, \widetilde{v_r}) =
 \widetilde{v} = E(v)$. Where appropriate, DRAVs are also denoted in a vector
-notation $\begin{pmatrix}\widetilde{v_l}\\\widetilde{v_r}\end{pmatrix} \hat{=}
-(\widetilde{v_l}, \widetilde{v_r}) = E(v)$. The universal decoding function
-$D(\widetilde{v})$ is defined as:
+notation $\begin{pmatrix}\widetilde{v_l}\\\widetilde{v_r}\end{pmatrix}
+\entspricht (\widetilde{v_l}, \widetilde{v_r}) = E(v)$. The universal decoding
+function $D(\widetilde{v})$ is:
 
 \begin{align}
   %
@@ -309,8 +308,8 @@ of the DRAV that was expected to be decoded (see also Lemma
   \label{lem:DRAV-random}
 
   A party that is not in possession of the encryption (dual) keys will not learn
-  anything from a DRAV. A DRAV is a tuple consisting of two values uniformly at
-  random that is uncorrelated to any other DRAV.
+  anything from a DRAV\@. A DRAV is a tuple consisting of two values uniformly
+  at random that is uncorrelated to any other DRAV\@.
 
 \end{lem}
 \begin{proof}
@@ -321,7 +320,7 @@ of the DRAV that was expected to be decoded (see also Lemma
   and only if $\beta$ and $\beta'$ are uniformly at random. Per definition,
   every time a DRAV gets encoded, $\beta$ and $\beta'$ are fresh uniformly
   distributed random values. Trivially, a DRAV is therefore uncorrelated to any
-  other DRAV.
+  other DRAV\@.
 
 \end{proof}
 
@@ -347,9 +346,9 @@ other decoding function.
   Assuming two well--formed DRAVs $\widetilde{a}$ and $\widetilde{b}$. Both
   DRAVs have their respective decoding function $D^a$ and $D^b$ and their
   dynamic dual key (say $(\beta_1, \beta_2)$ for $\widetilde{a}$ and
-  $(\beta_3, \beta_4)$ for $\widetilde{b}$). The following equations demonstrate
+  $(\beta_3, \beta_4)$ for $\widetilde{b}$). The following equations show
   the decoding of the DRAVs $\widetilde{a}$ and $\widetilde{b}$ with the correct
-  keys and the wrong keys respectively.
+  keys and the wrong keys.
 
   \begin{align*}
     %
@@ -359,7 +358,7 @@ other decoding function.
     D^b(\widetilde{b}) &= D(\widetilde{b}) \qquad\text{(using $\widetilde{b}$'s
     keys)}\\
     %
-    a &= D^a(\widetilde{a}) \hat{=}
+    a &= D^a(\widetilde{a}) \entspricht
     \begin{pmatrix}
       \frac{(\alpha_l \cdot a + \beta_1) - \beta_1}{\alpha_l}\\
       \frac{(\alpha_r \cdot a + \beta_2) - \beta_2}{\alpha_r}\\
@@ -367,12 +366,12 @@ other decoding function.
     = a\\
     %
     a' &= D^a(\widetilde{b}')
-    \hat{=}
+    \entspricht
     \begin{pmatrix}
       \frac{(\alpha_l \cdot b + \beta_3) - \beta_1}{\alpha_l}\\
       \frac{(\alpha_r \cdot b + \beta_4) - \beta_2}{\alpha_r}\\
     \end{pmatrix}
-    \hat{=}
+    \entspricht
     \begin{pmatrix}
       b +
       \frac{\beta_3 - \beta_1}{\alpha_l}\\
@@ -381,7 +380,7 @@ other decoding function.
     \end{pmatrix}
     \stackrel{*}{=} \bot\\
     %
-    b &= D^b(\widetilde{b}) \hat{=}
+    b &= D^b(\widetilde{b}) \entspricht
     \begin{pmatrix}
       \frac{(\alpha_l \cdot b + \beta_3) - \beta_3}{\alpha_l}\\
       \frac{(\alpha_r \cdot b + \beta_4) - \beta_4}{\alpha_r}\\
@@ -389,12 +388,12 @@ other decoding function.
     = b\\
     %
     b' &= D^b(\widetilde{a}')
-    \hat{=}
+    \entspricht
     \begin{pmatrix}
       \frac{(\alpha_l \cdot a + \beta_1) - \beta_3}{\alpha_l}\\
       \frac{(\alpha_r \cdot a + \beta_2) - \beta_4}{\alpha_r}\\
     \end{pmatrix}
-    \hat{=}
+    \entspricht
     \begin{pmatrix}
       a +
       \frac{\beta_1 - \beta_3}{\alpha_l}\\
@@ -416,7 +415,7 @@ other decoding function.
   \label{lem:DRAV-indistinguishable}
 
   Without knowing the encryption keys, a non--well--formed DRAV is
-  indistinguishable from a well--formed DRAV.
+  indistinguishable from a well--formed DRAV\@.
 
 \end{lem}
 \begin{proof}
@@ -424,7 +423,7 @@ other decoding function.
   From Lemma \ref{lem:DRAV-random} we learn, that a well--formed DRAV only
   consists of two values uniformly at random. From Lemma
   \ref{lem:well-formed-fun-of-dec-fun} we learn, that well--formedness is a
-  function of the encryption keys used to eventually decrypt the DRAV. Since a
+  function of the encryption keys used to eventually decrypt the DRAV\@. Since a
   party that is not in possession of the encryption keys cannot know the
   decryption function, well--formed and non--well--formed DRAVs are
   indistinguishable for a party not in possession of the keys.
@@ -474,7 +473,7 @@ From ($\widetilde{x} = \left(\alpha_l \cdot x + \beta_1,
 \begin{lem}
   \label{lem:DRAV-add-bad}
 
-The addition to a non--well--formed DRAV leads to a non--well--formed DRAV. It
+The addition to a non--well--formed DRAV leads to a non--well--formed DRAV\@. It
 is of particular interest the following property holds: $\forall \widetilde{x}:
 \widetilde{x} + \bot = \bot + \widetilde{x} = \bot$.
 
@@ -521,10 +520,10 @@ a similar argument.
   characteristic for the addition intended by a party in possession of the
   encryption keys.
 
-  Assuming there are three well--formed DRAVs $\widetilde{a}$, $\widetilde{b}$
-  and $\widetilde{c}$ and the party in possession of the keys commissions any
-  other party to execute $\widetilde{y} = \widetilde{a} + \widetilde{b}$ but the
-  other party tries to illicitly execute $\widetilde{y}' = \widetilde{a} +
+  Assuming three well--formed DRAVs $\widetilde{a}$, $\widetilde{b}$ and
+  $\widetilde{c}$ and the party in possession of the keys commissions any other
+  party to execute $\widetilde{y} = \widetilde{a} + \widetilde{b}$ but the other
+  party tries to illicitly execute $\widetilde{y}' = \widetilde{a} +
   \widetilde{c}$:
 
   \begin{align*}
@@ -577,7 +576,7 @@ a similar argument.
     %
     D^y(\widetilde{y}) &= D(y) \qquad\text{(using $y$'s encryption keys)}\\
     %
-    y &= D^y(\widetilde{y}) \hat{=}
+    y &= D^y(\widetilde{y}) \entspricht
     \begin{pmatrix}
       \frac{(\alpha_l \cdot (a+b) + (\beta_1 + \beta_3)) - (\beta_1+\beta_3)}
            {\alpha_l}\\
@@ -587,14 +586,14 @@ a similar argument.
     = a+b\\
     %
     y' &= D^y(\widetilde{y}')
-    \hat{=}
+    \entspricht
     \begin{pmatrix}
       \frac{(\alpha_l \cdot (a+b) + (\beta_1 + \beta_5)) - (\beta_1+\beta_3)}
            {\alpha_l}\\
       \frac{(\alpha_r \cdot (a+b) + (\beta_2 + \beta_6)) - (\beta_2+\beta_4)}
            {\alpha_r}\\
     \end{pmatrix}
-    \hat{=}
+    \entspricht
     \begin{pmatrix}
       (a+b) +
       \frac{\beta_5 - \beta_3}{\alpha_l}\\
@@ -617,16 +616,16 @@ because otherwise everything else would be useless. It can be trivially done
 using the universal decoding function $D(\widetilde{v})$. But as the encryption
 keys, $D$ is not available to ordinary parties. This chapter describes a system
 that enables the party in possession of the keys to allow other parties to
-decode a specific DRAV. Usually it only allows the final DRAV to be decoded,
+decode a specific DRAV\@. Usually it only allows the final DRAV to be decoded,
 otherwise intermediate information would leak.
 
 The overall costs thereof are only one addition and an OAFE call for the
-ordinary party. Of course, the OAFE has to be set up by the party that knows the
-encryption keys. The setup of this OAFE can be seen as the authorization to
-decode exactly one specific DRAV. The procedure will decode a DRAV to a final
+ordinary party. Of course, the OAFE has to be created by the party that knows
+the encryption keys. The setup of this OAFE can be seen as the authorization to
+decode exactly one specific DRAV\@. The procedure will decode a DRAV to a final
 scalar value although $D$ is a partial function. The special value $\bot$ that
-$D$ evaluates to if the DRAV is non--well--formed is simply mapped to uniform
-randomness. As a result of Lemma \ref{lem:well-formed-fun-of-dec-fun}, a DRAV is
+$D$ evaluates to if the DRAV is non--well--formed is mapped to uniform
+randomness. As Lemma \ref{lem:well-formed-fun-of-dec-fun} proofs, a DRAV is
 also non--well--formed if the encryption keys differ from the keys of the DRAV
 whose decoding was intended. Therefore, no other DRAVs can be decoded
 illegitimately. In the following, the DRAV to be decoded is named $\widetilde{v}
@@ -635,20 +634,20 @@ called the \emph{final OAFE}.
 
 The second party's input to the final OAFE is $\widehat{v} = \widetilde{v_l} +
 \widetilde{v_r}$, the addition of both components of the DRAV to decode.  The
-final OAFE was set up by the first party as follows: Assuming $\widetilde{v}$ is
-encrypted by $(\alpha_l, \alpha_r)$ and $(\beta_1, \beta_2)$ the first party
+final OAFE was created by the first party as follows: Assuming $\widetilde{v}$
+is encrypted by $(\alpha_l, \alpha_r)$ and $(\beta_1, \beta_2)$ the first party
 knows $\widehat{v}$ has to be encrypted using $(\alpha_l + \alpha_r)$ and
 $(\beta_1 + \beta_2)$.  Given this knowledge the final OAFE setup is
 $\frac{1}{\alpha_l + \alpha_r} \cdot \widehat{v} - \frac{\beta_1 +
 \beta_2}{\alpha_l + \alpha_r}$.
 
-Again, it is important that an attacker is getting caught when trying to forge a
-DRAV ($D(\widetilde{v}) = \bot$ if $\widetilde{v}$ has been forged, $\bot$ is
-mapped to uniform randomness in this process since an OAFE has no
-$\bot$--value). If the attacker cheated somewhere in the process and forged one
-of the DRAV tuples $\widetilde{x} = (\widetilde{x_1}, \widetilde{x_2})$ to
-$\widetilde{x'} = (\widetilde{x_1} + \Delta_1, \widetilde{x_2} + \Delta_2)$, the
-DRAV $\widetilde{x'}$ becomes---except for a negligible
+Again, an attacker must be caught when trying to forge a DRAV ($D(\widetilde{v})
+= \bot$ if $\widetilde{v}$ has been forged, $\bot$ is mapped to uniform
+randomness in this process since an OAFE has no $\bot$--value). If the attacker
+cheated somewhere in the process and forged one of the DRAV tuples
+$\widetilde{x} = (\widetilde{x_1}, \widetilde{x_2})$ to $\widetilde{x'} =
+(\widetilde{x_1} + \Delta_1, \widetilde{x_2} + \Delta_2)$, the DRAV
+$\widetilde{x'}$ becomes---except for a negligible
 probability---non--well--formed (see section \ref{sec:drav}). The result is that
 the decoded result will become uniform randomness (assuming $\widetilde{x}$ is
 forged to $\widetilde{x'_1} = \widetilde{x_1} + \Delta_1$ and $\widetilde{x'_2}
@@ -697,36 +696,36 @@ honest behavior.
 \label{sec:drae}
 
 \JWdef{Dual Randomized Affine Encoding}{DRAE}{s} are affine representations of
-parts of arithmetic circuits. A DRAE describes arithmetic expressions in terms
-of affine functions without revealing the original expression. A single DRAE
-alone is not powerful enough to describe arbitrary complex arithmetic
-expressions, therefore chapter \ref{def:DRAC} proposes a procedure to evaluate
-arbitrary expression using multiple DRAEs. Technically, a DRAE is a
-specification of calculations that need to be performed to eventually obtain the
-evaluated value of the arithmetic expression. The reason for using DRAEs instead
-of evaluating the arithmetic expressions as usual is that a DRAE operates on
-encrypted values. Both, the input values and the output value of a DRAE are
-DRAVs (see chapter \ref{def:DRAV}). Additionally, the arithmetic expression
-performed is hidden from every party that is not in possession of the encryption
-keys.  The reason why DRAEs specify the calculations using affine functions is
-that OAFEs provide a secure way to obliviously evaluate affine functions. The
-procedure of evaluating arithmetic expression using DRAEs works as follows: The
-first party that is in possession of the encryption keys chooses the expression
-to evaluate.  Next, it sets up the DRAE but hides the affine calculations inside
-OAFEs. In fact, instead of the affine calculations themselves, the DRAEs
-specifies references to the OAFEs that were configured to evaluate these
-functions obliviously. The evaluating party finally evaluates the DRAEs with the
-help of the OAFEs provided by the first party.
+parts of arithmetic circuits. A DRAE describes arithmetic expressions as affine
+functions without revealing the original expression. A single DRAE alone is not
+powerful enough to describe arbitrary complex arithmetic expressions, therefore
+chapter \ref{def:DRAC} proposes a procedure to evaluate arbitrary expression
+using multiple DRAEs. Technically, a DRAE is a specification of calculations
+that need to be performed to eventually obtain the evaluated value of the
+arithmetic expression. The reason for using DRAEs instead of evaluating the
+arithmetic expressions as usual is that a DRAE operates on encrypted values.
+Both, the input values and the output value of a DRAE are DRAVs (see chapter
+\ref{def:DRAV}). Additionally, the arithmetic expression performed is hidden
+from every party that is not in possession of the encryption keys. The reason
+DRAEs specify the calculations using affine functions is that OAFEs provide
+a secure way to obliviously evaluate affine functions. The procedure of
+evaluating arithmetic expression using DRAEs works as follows: The first party
+that is in possession of the encryption keys chooses the expression to evaluate.
+Next, it sets up the DRAE but hides the affine calculations inside OAFEs. In
+fact, instead of the affine calculations themselves, the DRAEs specifies
+references to the OAFEs that were configured to evaluate these functions
+obliviously. The evaluating party finally evaluates the DRAEs with the help of
+the OAFEs provided by the first party.
 
-To easily envision the role of DRAEs and DRAVs, given a number of DRAVs, a DRAE
-performs some arithmetic operations on them and evaluates to a DRAV. Just the
-same way given a number of values, an arithmetic expression evaluates to a value
-(e.g. given $x=17$ and $y=23$, the arithmetic expression $x*y + 3$ evaluates to
-$394$).
+To easily envision the role of DRAEs and DRAVs, by performing arithmetic
+operations on DRAVs a DRAE evaluates an arithmetic expression to a resulting
+DRAV\@. Just the same, an arithmetic expression performs operations on values
+and evaluates to a result value (e.g., given $x=17$ and $y=23$, the arithmetic
+expression $x*y + 3$ evaluates to $394$).
 
 Summing up, DRAE evaluation is partitioning calculations between the two
 parties: The first that builds the DRAE and sets up the OAFEs and the second
-that provides the input and does the evaluation. In fact, the first party isn't
+that provides the input and does the evaluation. In fact, the first party is not
 directly involved in the evaluation process, it provided its calculations a
 priori hidden inside OAFEs. But as stated above, one DRAE cannot realize
 arbitrary complex arithmetic expressions, as a rule of thumb: As soon as a
@@ -742,7 +741,7 @@ Because DRAEs are tightly related to DRAVs, they fulfill similar properties:
 \begin{enumerate}
 
   \item \label{prop:drae-encrypted} DRAEs are encrypted: Without the encryption
-    keys, they don't reveal any information.
+    keys, they do not reveal any information.
 
   \item \label{prop:drae-signed} DRAEs are signed: If someone tries to forge a
     DRAE, it will become non--well--formed and operations with that DRAE result
@@ -756,15 +755,15 @@ Because DRAEs are tightly related to DRAVs, they fulfill similar properties:
 \end{enumerate}
 
 \noindent{}Informally, a DRAE is composed of two finite multi--sets and a
-constant DRAV. The first multi--set, called the \emph{multiplicative terms}
+constant DRAV\@. The first multi--set, called the \emph{multiplicative terms}
 contains tuples of computations. The second multi--set, called the
-\emph{additive terms} contains computations that can be evaluated to DRAVs. The
-constant DRAV represents the constant terms in the arithmetic expression. The
+\emph{additive terms} contains computations that evaluate to DRAVs. The constant
+DRAV represents the constant terms in the arithmetic expression. The
 component--wise multiplication of each of the computation tuples (from the
 multiplicative terms) yields DRAVs, too. The sum of the constant DRAV, the DRAVs
 obtained from the additive terms and the DRAVs obtained from the multiplicative
-terms is the evaluated value of this DRAE. Again the evaluated value is a valid
-DRAV.
+terms is the evaluated value of this DRAE\@. Again the evaluated value is a
+valid DRAV\@.
 
 More formally, a DRAE can be described as follows where
 $\mathcal{E}_\mathcal{C}$ represents the DRAEs, $\mathcal{C}$ the affine
@@ -800,10 +799,10 @@ inside OAFEs. When the party that built the DRAE transmits it to the evaluating
 party, it obviously replaces the concrete affine computations by references to
 the OAFEs that calculate them obliviously.  Because of the definition of OAFEs
 (see chapter \ref{def:OAFE}) the evaluating party will only learn exactly one
-evaluation $c(x)$ for each variable $x$. A \emph{pre--evaluated DRAE} is defined
-as the entity that the evaluating party obtains after successfully having
-evaluated all the computations (using the OAFEs). The pre--evaluated DRAEs
-($\mathcal{E}$) are defined as follows:
+evaluation $c(x)$ for each variable $x$. A \emph{pre--evaluated DRAE} is the
+entity that the evaluating party obtains after successfully having evaluated all
+the computations (using the OAFEs). The pre--evaluated DRAEs ($\mathcal{E}$) are
+defined as follows:
 
 \begin{align}
   \mathcal{V} = & \{ (v_l, v_r) \mid v_l, v_r \in K \}
@@ -823,7 +822,7 @@ evaluated all the computations (using the OAFEs). The pre--evaluated DRAEs
 \label{sec:DRAE-decoding}
 
 Entirely evaluating a pre--evaluated DRAE to obtain the DRAV is straightforward:
-A pre--evaluated DRAE $e \in \mathcal{E} = (M,A, k)$ can be evaluated to its
+A pre--evaluated DRAE $e \in \mathcal{E} = (M,A, k)$ evaluates to its
 single resulting DRAV $r \in \mathcal{V}$ as follows (all additions performed
 component--wise):
 
@@ -878,11 +877,25 @@ arithmetic expressions. This chapter describes multiplications that can directly
 be expressed as a DRAE: A single multiplication of two DRAVs $\widetilde{x}$ and
 $\widetilde{y}$ (each assigned to a variable) to a DRAE $E \in \mathcal{E}$.
 
-\JWtodo{Warum müssen sie gemixt werden: Das Argument mit gegen
-Null prüfen}
-
-\JWtodo{Das Mixen genauer erklären}
-
+To ensure the security, the multiplication encoding was chosen carefully.  For
+example, a final DRAE $\psi$ that evaluates to $0$ and encodes the
+multiplication of two intermediate variables $\zeta$ and $\xi$: $\psi
+\entspricht \zeta \cdot \xi$ should not reveal any information but $\psi
+\entspricht 0 \Rightarrow \zeta \entspricht 0 \vee \xi\ \entspricht\ 0$.  But an
+attacker could forge the tuple components of the DRAV $\zeta$ to some random
+values. As shown in chapter \ref{def:DRAV} this means $\zeta = \bot$ as $\bot$
+is represented as randomness. Because the multiplication of a value with
+randomness is randomness as well, the property $\forall x: \bot \cdot x = \bot$
+holds.  Except for the multiplication of randomness to $0$ ($\forall x \in K: 0
+\cdot x = 0$). If $\psi$ still evaluates to $0$ despite the forging of $\zeta$,
+it is very likely (especially in large finite fields) that $\xi\ \entspricht\
+0$. But this information should not leak to an attacker. To ensure the
+propagation of the randomness (encoding $\bot$) the multiplication is done by
+mixing both components of the DRAV tuples. Due to the mixing, even $0 \cdot
+\zeta = \bot$ except when the attacker manages to two random numbers such that
+their decoding is the same number. Without knowledge of the encryption keys,
+this probability is negligible and particularly the attacker cannot know if it
+managed to choose to random numbers with an equal decoding.
 
 \begin{align*}
   E & \in \mathcal{E}; \widetilde{x}, \widetilde{y} \in \mathcal{V};
@@ -920,11 +933,11 @@ Null prüfen}
 multiplicative terms, the second contains the additive terms and the constant is
 set to $(0, 0)$ since no constant addition is performed.
 
-The following equations demonstrate that the multiplication of two well--formed
+The following equations show that the multiplication of two well--formed
 DRAVs will evaluate to the desired result. Additionally it shows that
 non--well--formed DRAV operands will turn the result to a non--well--formed DRAV
 as well. In the following the decoding of a DRAE will be analyzed and it will
-become apparent that every DRAV modification propagates through a
+become apparent that every DRAV forgery propagates through a
 multiplication. The DRAE $E$ gets decoded (as defined in chapter
 \ref{sec:DRAE-decoding}) to a DRAV $\widetilde{e}$.
 
@@ -1118,34 +1131,33 @@ of.
 \JWdef{Dual Randomized Affine Circuit}{DRAC}{s} are representations of entire
 arbitrary arithmetic circuits. A DRAC can be envisioned as an encoding for an
 entire arithmetic function. As discussed in the previous chapters, not every
-arithmetic function can be expressed as one DRAE. Therefore, the overall
+arithmetic function can be expressed as one DRAE\@. Therefore, the overall
 function is divided in as many DRAEs as needed. In the situation that one DRAE
-alone is not sufficient, extra DRAEs are used that evaluate to temporary
+alone is not enough, extra DRAEs are used that evaluate to temporary
 intermediate variables. Every DRAE can use the evaluated intermediate variables
-of preceding DRAEs when the computation was too complex for a single DRAE. This
-resembles to evaluate the simple function $f(x) = (a \cdot b) + (c \cdot d)$ as
-a sequence of sub--expressions, each assigned to a intermediate variable: $t_0
-\leftarrow a \cdot b; t_1 \leftarrow c \cdot d; y \leftarrow t_0 + t_1$.  In
-just the same way, DRACs are sequences of DRAEs, each assigned to a variable.
-Because DRAEs evaluate to DRAVs, the variables will hold a DRAV as soon as the
-DRAE was evaluated. Naturally the DRAC evaluation has to be performed in the
-correct order, otherwise some variables may not have their values assigned yet
-when needed.
+of preceding DRAEs when the computation was too complex for a single DRAE\@.
+This resembles to evaluate the simple function $f(x) = (a \cdot b) + (c \cdot
+d)$ as a sequence of sub--expressions, each assigned to an intermediate
+variable: $t_0 \leftarrow a \cdot b; t_1 \leftarrow c \cdot d; y \leftarrow t_0
++ t_1$.  In just the same way, DRACs are sequences of DRAEs, each assigned to a
+variable.  Because DRAEs evaluate to DRAVs, the variables will hold a DRAV as
+soon as the DRAE was evaluated. Naturally the DRAC evaluation has to be
+performed in the correct order, otherwise some variables may not have their
+values assigned yet when needed.
 
 
 % EVALUATION
 \JWlthree{Evaluating a DRAC}
 \label{sec:DRAC-eval}
 
-A DRAC can be evaluated by evaluating one DRAE after the other and assigning the
-resulting DRAV to the variable the DRAE is assigned to. Prior to the evaluation
-of the first DRAE, all (unencrypted) function parameters are evaluated to DRAVs
-using the provided OAFEs. The DRAE sequence is ordered, so a DRAE can be
-evaluated by only inputting values (DRAVs) assigned to the variables that were
-set by evaluating prior DRAEs. The last DRAV can then be decoded as explained in
-chapter \ref{sec:drav-final-decoding}. The result from the decoding of the final
-DRAE is the result of the whole computation or uniform at random (meaning
-$\bot$).
+A DRAC evaluates to its value by evaluating one DRAE after the other and
+assigning the resulting DRAV to the variable the DRAE is assigned to. Before the
+evaluation of the first DRAE, all (unencrypted) function parameters are
+evaluated to DRAVs using the provided OAFEs. The DRAE sequence is ordered, so a
+DRAE only needs values (DRAVs) of DRAEs evaluated before. The last DRAV can then
+be decoded as explained in chapter \ref{sec:drav-final-decoding}. The result
+from the decoding of the final DRAE is the result of the whole computation or
+uniform at random (meaning $\bot$).
 
 
 %
@@ -1155,22 +1167,21 @@ $\bot$).
 \label{sec:OPE}
 
 This section describes the \JWdef{Oblivious Polynomial Evaluation}{OPE} of a
-univariate polynomial $f(x) = \sum_{i=0}^k a_ix^i$. First of all, the first
-party (\JWpOne{}) fixes the polynomial coefficients and transforms $f$ into a
-DRAC consisting of many DRAEs assigned to variables. The number of DRAEs will be
-in $O(n)$, $n$ being the number of arithmetic operations needed by evaluate
-$f$ as usual. To securely evaluate the DRAC, the OAFE setup is calculated by
-the first party. It is important that the first party accumulates all OAFE calls
-using the same variable to one OAFE call resulting in a vector. If the first
-party would provide more than one OAFE that is evaluated using some variable
-$v$, a corrupted party could evaluate the OAFEs with different values for $v$.
+univariate polynomial $f(x) = \sum_{i=0}^k a_ix^i$. First, the first party
+(\JWpOne{}) fixes the polynomial coefficients and transforms $f$ into a DRAC
+consisting of many DRAEs assigned to variables. The number of DRAEs will be in
+$O(n)$, $n$ being the number of arithmetic operations needed by evaluate $f$ as
+usual. To securely evaluate the DRAC, the OAFE setup is calculated by the first
+party. The first party has to accumulate all OAFE calls using the same variable
+to one OAFE call resulting in a vector. Otherwise, a corrupted party could
+evaluate the OAFEs with different values for one and the same variable $v$.
 
 After the first party has fixed the DRAC and the OAFE configuration, it sends
-them to the second party. The DRAEs inside the DRAC that get actually
-transmitted to the second party resemble the pre--evaluated DRAEs from chapter
-\ref{def:DRAE}. Naturally, every affine function inside the DRAEs is replaced by
-a OAFE reference (and the position in the resulting vector) that has to be used
-to calculate the value. Otherwise the encryption keys would be revealed to the
+them to the second party. The DRAEs inside the DRAC that get transmitted to the
+second party resemble the pre--evaluated DRAEs from chapter \ref{def:DRAE}.
+Naturally, every affine function inside the DRAEs is replaced by a OAFE
+reference (and the position in the resulting vector) that has to be used to
+calculate the value. Otherwise the encryption keys would be revealed to the
 second party.
 
 The OAFEs are sent to the second party (\JWpTwo{}) using the David \& Goliath
@@ -1180,8 +1191,8 @@ need to be verified because a DRAC does not contain any secrets. A DRAC is made
 of DRAEs that only refer to uncorrelated uniform randomness and OAFEs.
 
 After having received the DRAC and the OAFE references, the second party can
-evaluate the DRAC. It evaluates the DRAEs one by one and assigns the resulting
-DRAV to the variable as described in the DRAC. As explained in chapters
+evaluate the DRAC\@. It evaluates the DRAEs one by one and assigns the resulting
+DRAV to the variable as described in the DRAC\@. As explained in chapters
 \ref{sec:drav-final-decoding} and \ref{sec:DRAC-eval} both components of the
 final DRAV have then to be added and passed to the final OAFE which yields the
 unencrypted evaluated value of the polynomial.
@@ -1194,6 +1205,6 @@ unencrypted evaluated value of the polynomial.
 \JWpTwo{} has to verify the degree of the polynomial it is supposed to evaluate.
 The DRAC that evaluates to the polynomial has the same degree as the DRAE that
 evaluates the final value. Chapter \ref{sec:max-poly-degree} describes how
-to derive the maximal polynomial degree from a given DRAE.
+to derive the maximal polynomial degree from a given DRAE\@.
 
 % vim: set spell spelllang=en_us fileencoding=utf8 :

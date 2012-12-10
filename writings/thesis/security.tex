@@ -11,7 +11,7 @@ all corrupted parties.  In the ideal model, there is a simulator $\mathcal{S}$
 that tries to mimic $\mathcal{A}$. An environment $\mathcal{Z}$ is plugged to
 either the real or the ideal model and has to guess to which it's plugged to. A
 protocol \JWprotoSym{}{} is an universally composable implementation of the
-ideal functionality if for every adversary $\mathcal{A}$ there exists a
+ideal functionality if for every adversary $\mathcal{A}$ there is a
 simulator $\mathcal{S}$ such that for all environments $\mathcal{Z}$ the entire
 view of $\mathcal{Z}$ in the real model (with \JWprotoSym{}{} and $\mathcal{A}$)
 is statistically close to its view in the ideal model (with \JWfuncSym{}{} and
@@ -39,7 +39,7 @@ The setup phases are run sequentially as soon as the simulator starts.
 
 \paragraph{Setup Reference System:}
 
-The reference system is used to review the honesty of the attacker \JWadv{}
+The reference system helps to review the honesty of the attacker \JWadv{}
 that impersonates \JWpTwo{}. The messages sent from \JWadv{} are compared
 to the messages an honest, emulated \JWpTwo{} sends in the reference system.
 
@@ -78,8 +78,8 @@ to the messages an honest, emulated \JWpTwo{} sends in the reference system.
   \item Wire $\mathcal{G}^T$, $\mathcal{F}^T_{OAFE}$ and \JWadv{} to each other
     and \JWadv{} to the environment as in the real model.
 
-  \item Initialize $\mathcal{G}^T$ with the same polynomial $\mathcal{G}^R$ got
-    initialized.
+  \item Initialize $\mathcal{G}^T$ with the same polynomial $\mathcal{G}^R$
+    became initialized.
 
 \end{itemize}
 
@@ -137,11 +137,11 @@ The regular processing phase starts as soon as the setup phases are terminated.
 
   \item Finally, the variable \JWcode{cheated} is analyzed and the final OAFE is
     modified accordingly: If \JWcode{cheated $= true$} modify the final OAFE to
-    evaluate to a value at random but unequal to the real result. (e.g. an
+    evaluate to a value at random but unequal to the real result. (e.g., an
     affine function $0 \cdot x + y + r$ where $r \in K \setminus \{0\}$ is
     fresh, uniform randomness). If \JWcode{cheated $= false$}, the final OAFE
     gets modified such that evaluating the next step honestly evaluates to the
-    evaluated polynomial's result (e.g. by an affine function $0 \cdot x + y$
+    evaluated polynomial's result (e.g., by an affine function $0 \cdot x + y$
     where $y$ is the evaluated polynomial's value.
 
   \item Unhalt the reference system to allow \JWadv{} to fetch the final
@@ -189,7 +189,7 @@ The setup phase is run as soon as the simulator starts.
     upload that polynomial to the ideal functionality \JWfuncSymOPEnp{} by
     outputting \JWmsgTP{Commit}{$a$} to \JWfuncSymOPEnp{}.  If the polynomial
     was illegal, restart the simulator in the setup phase.  This restart is
-    equivalent to simply ignoring the adversary's inputs.
+    equivalent to ignoring the adversary's inputs.
 
 \end{itemize}
 
@@ -204,7 +204,7 @@ The proof is a case distinction.
 
 
 % CORRECTNESS --- BOTH PARTIES HONEST
-\JWlthree{Correctness --- Both Parties Honest}
+\JWlthree{Correctness---Both Parties Honest}
 
 \JWtodo{In richtigen Worten hinschreiben}
 
@@ -226,7 +226,7 @@ model.
 
 Using the simulator from chapter \ref{sec:simulator-david}, the adversary
 \JWadv{} is just a player in a game and has to proof its honesty. Interestingly,
-\JWadv{} is only very shortly involved in the evaluation of the polynomial
+\JWadv{} is only briefly involved in the evaluation of the polynomial
 itself: Only its first message is intercepted which reveals its unencrypted
 polynomial input $x$. All the following moves in the game only serve the purpose
 of checking the adversary's honesty. Because an honest \JWpTwo{} acts
@@ -238,13 +238,13 @@ to evaluate because the simulator has---except the degree---no information about
 the polynomial \JWpOne{} committed itself to. It would be harmful if the
 environment could discover that the adversary is evaluating another polynomial
 because it would then be able to distinguish between the real and the ideal
-model. It is important to notice that any polynomial of the same degree gets
-(except for DRAV constants) deterministically transformed to a DRAC. Two DRACs
-representing two polynomials of the same degree are equal except for the values
-of the constants (DRAVs).  While evaluating a polynomial using the protocol,
-\JWpTwo{} only learns intermediate values (DRAVs) and the DRAC. Since the degree
-of the polynomial is a protocol parameter, the security of the protocol is
-reduced to the information the environment can reveal from the DRAVs. As Lemma
+model. Interestingly, a polynomial of the same degree gets (except for DRAV
+constants) deterministically transformed to a DRAC\@. Two DRACs representing two
+polynomials of the same degree are equal except for the values of the constants
+(DRAVs).  While evaluating a polynomial using the protocol, \JWpTwo{} only
+learns intermediate values (DRAVs) and the DRAC\@. Since the degree of the
+polynomial is a protocol parameter, the security of the protocol is reduced to
+the information the environment can reveal from the DRAVs. As Lemma
 \ref{lem:DRAV-random} proofs, DRAVs consist of uniform, uncorrelated randomness.
 Therefore the concrete polynomial is unimportant, the emulated \JWpOne{}
 therefore generates a random polynomial (of the correct degree) and tests the
@@ -258,7 +258,7 @@ simulator modifies the final OAFE to evaluate to some random value.
 
 Summing up, a party that is not in possession of the encryption keys cannot tell
 if two DRACs encode the same polynomial or not. This remains true when also
-analyzing all intermediate values while evaluating a DRAC. Therefore, for any
+analyzing all intermediate values while evaluating a DRAC\@. Therefore, for any
 passively corrupted \JWadv{}, the environment will not be able to tell if the
 adversary \JWadv{} was running in the real model or inside the simulator in the
 ideal model. Because an honest \JWpTwo{} is entirely deterministic, the
@@ -281,7 +281,7 @@ A corrupted \JWpOne{} has the following possibilities to cheat:
     fail because it assumes additional evaluation possibilities or vectors of
     other shapes.
 
-  \item Send messages that do not describe a valid DRAC.
+  \item Send messages that do not describe a valid DRAC\@.
 
 \end{enumerate}
 

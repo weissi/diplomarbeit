@@ -1,7 +1,7 @@
 \JWlone{Discontinued Approaches}
 \label{sec:discontinued}
 
-This chapter shortly describes the approaches that have been investigated (and
+This chapter briefly describes the approaches that have been investigated (and
 partly implemented) but were not good enough to reach the goal. The approaches
 are ordered chronologically by date of examination to document the evolution of
 the methodology.
@@ -28,17 +28,16 @@ already becomes apparent as Cleve writes in the abtract of the paper
 \end{quote}
 
 \noindent{}Two problems arise: Cleve's approach does not support \emph{Square
-and Multiply}\cite{knuth81} and since the size $s$ is defined as the
-depth of a balanced formula, evaluating a polynomial of degree $n$ would produce
-a program of length $O(s^{1 + \epsilon}) = O(2^{n^{1 + \epsilon}})$. However,
-the approach is partly implemented as explained in detail in the next few
-chapters but neither the code nor the ideas are used for the final version of
-this thesis.
+and Multiply}\cite{knuth81} and since the size $s$ is the depth of a balanced
+formula, evaluating a polynomial of degree $n$ would produce a program of length
+$O(s^{1 + \epsilon}) = O(2^{n^{1 + \epsilon}})$. However, the approach is partly
+implemented as explained in detail in the next few chapters but neither the code
+nor the ideas are used for the final version of this thesis.
 
 \JWlthree{From Arithmetic Formulas To Matrix Multiplications}
 \label{sec:FormulasToMatrixMuls}
 
-The definition of formulas is the same as in \cite{cleve91}: Formulas are
+The definition of formulas is the same as Cleve's\cite{cleve91}: Formulas are
 circuits that are trees. A postorder traversal is enough to evaluate the formula
 easily. This chapter describes the evaluation of such a formula using
 \emph{linear bijection straight--line programs} (LBS programs)\cite{cleve91}
@@ -62,7 +61,7 @@ R_j & \leftarrow R_j - (R_i \cdot x_u)
 \JWlfour{Transformation of Formulas to LBS Programs}
 
 The goal is to transform a register $R_{out}$ with a initial value of $0$ to be
-transformed like $R_{out} \leftarrow R_{out} + R_{one} \cdot f(x_G,x_D)$ . The
+transformed like $R_{out} \leftarrow R_{out} + R_{one} \cdot f(x_G,x_D)$. The
 special register $R_{one}$ holds a constant $1$. This can be achieved by
 induction as follows.  For the exact definitions, proofs and algorithms how to
 transform arbitrary formulas to LBS programs see \cite{cleve91}.
@@ -123,7 +122,7 @@ R_j & \leftarrow R_j + R_i \cdot l(x_G, x_D)
 
 The current implementation is a Haskell library which does the transformation
 from the formula, over the LBS program to the matrices that only need to be
-multiplied in order to calculate the result. The main implementation can be
+multiplied to calculate the result. The main implementation can be
 found in the file \JWpath{lib/Codec/LBS.hs} of the code tree of this thesis (see
 chapters \ref{sec:src-org} and \ref{sec:code-availability}). Exemplary, the LBS
 program to evaluate the function $f(x_G,x_D) = 3x \cdot (x_G + x_D^2)$ which
@@ -239,7 +238,7 @@ The second approach that was examinated while this thesis evolved was to
 transform general functions to affine functions using a slightly modified form
 of the \emph{Decomposable Affine Randomized Encodings} (DAREs) from
 \emph{Garbled Arithmetic Circuits} by Applebaum et al.\ \cite{gac2012}. The
-modification is necessary because this thesis uses OAFEs to evaluate the DAREs
+change is necessary because this thesis uses OAFEs to evaluate the DAREs
 and does therefore not depend on the \emph{learning with errors} (LWE) problem.
 This leads to further changes: The \emph{affinization gadget} \cite{gac2012} is
 modified and the \emph{key--shrinking gadget} \cite{gac2012} is not needed.

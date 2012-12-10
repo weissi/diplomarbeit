@@ -35,7 +35,7 @@ dual core processor at \emph{2.26 GHz}. It has \emph{8 GB} system memory.
 Both machines run the three programs (\JWBpOne{}, \JWBpTwo{}, \JWBtoken{})
 simultaneously, the programs are compiled single--threaded. The programs
 communicate to each other using local TCP/IP networking. Chapter
-\ref{sec:communication-channels} has a in depth description about the
+\ref{sec:communication-channels} has an in depth description about the
 communication that takes part in the implementation that comes with this thesis.
 The running time includes the DRAC building and transmitting, the OAFE
 configuration and the successful evaluation of a random polynomial. The
@@ -58,7 +58,7 @@ both, the theoretical examination and the implementation. Figure
 \ref{fig:poly-deg-t} and table \ref{tab:poly-deg-t} show this for the finite
 field $\mathbb{F}_{97}$ (implementation from the \JWTLhaskellForMaths{}
 package). The implementation for the field $\mathbb{F}_{2^{256}}$ does not seem
-to perform in linear time, the cause is the unoptimal implementation and the
+have linear time complexity, the cause is the unoptimal implementation and the
 Haskell binding of the library used for the calculations in
 $\mathbb{F}_{2^{256}}$. The problem is that the library includes a rather
 complex routine for object destruction that takes most of the evaluation time.
@@ -72,8 +72,8 @@ high performance (such as the pure Haskell implementation for $\mathbb{F}_{97}$)
 another library should be interfaced or developed entirely in Haskell, but this
 is not the main concern of this thesis. For futher details see chapter
 \ref{sec:finite-field-calcs}. For smaller degrees the current implementation for
-$\mathbb{F}_{2^{256}}$ does perform in linear time. Figure
-\ref{fig:poly-deg-t-small} and table \ref{tab:poly-deg-t-small} demonstrate
+$\mathbb{F}_{2^{256}}$ has linear time complexity. Figure
+\ref{fig:poly-deg-t-small} and table \ref{tab:poly-deg-t-small} show
 this. It is also noteworthy that the first test machine (see chapter
 \ref{sec:test-machines}) outperforms the second test machine despite the
 inferior hardware. The cause has not been investigated, a possible cause could
@@ -207,7 +207,7 @@ calculations in large finite fields such as $\mathbb{F}_{2^{k}}$ for $k > 128$.
 Additionally, the David \& Goliath protocol \cite{davidgoliath} should be
 implemented as a component the implementation of this thesis can use. The
 current implementation assumes a tamper--proof hardware token that implements
-the OAFE functionality (currently the program \JWBtoken{} that comes with this
-thesis implements the functionality naively but insecure).
+the OAFE functionality (the program \JWBtoken{} that comes with this thesis
+implements the functionality naively but insecure).
 
 % vim: set spell spelllang=en_us fileencoding=utf8 :

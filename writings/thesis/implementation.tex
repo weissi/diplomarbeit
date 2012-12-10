@@ -9,9 +9,9 @@ functional programming language \JWTLhaskell{}. More specifically \JWThaskell{}
 as implemented by the major \JWThaskell{} compiler the \JWTXLghc{} (\JWTghc{})
 version \JWTVghc{}.
 
-The implementation was designed to match the descriptions in the above chapters
-as closely as possible. The implementation implements Oblivious Polynomial
-Evaluation as explained in chapter \ref{def:OPE}.
+The implementation is designed to match the descriptions in chapter
+\ref{sec:methods} as closely as possible. The implementation implements
+Oblivious Polynomial Evaluation as explained in chapter \ref{def:OPE}.
 
 Even the Haskell data--types such as \JWcode{DRAC}, \JWcode{DRAE}, \JWcode{RAE},
 \JWcode{LinearExpr} match the names of the constructs described in chapter
@@ -29,7 +29,7 @@ program called \JWBpOne{}), the receiving party \JWpTwo{} (\JWBpTwo{}) and the
 tamper--proof hardware \JWtoken{} (\JWBtoken{}). The individual programs talk to
 each other using TCP/IP networking. The \JWtoken{} implements the OAFE
 functionality \JWfuncSym{seq-ot}{OAFE} as provided by the David \& Goliath
-protocol \cite{davidgoliath}. The \JWtoken{} does not actually implement the
+protocol \cite{davidgoliath}. The \JWtoken{} does not implement the
 David \& Goliath protocol but only it's interface. A real implementation using a
 tamper--proof hardware token is left open to potential future works.
 
@@ -46,7 +46,7 @@ tamper--proof hardware token is left open to potential future works.
 \label{sec:comm:goliath2Token}
 
 On TCP port \JWport{23120} \JWpOne{} initiates a connection to the \JWtoken{}.
-This connection is used to transfer the OAFE configuration. After having
+This connection serves to transfer the OAFE configuration. After having
 successfully received the OAFE configuration, the \JWtoken{} accepts OAFE
 evaluation requests (usually from \JWpTwo{}) but no more OAFE configurations.
 One \JWtoken{} process can be committed to a OAFE configuration exactly once.
@@ -57,7 +57,7 @@ One \JWtoken{} process can be committed to a OAFE configuration exactly once.
 \label{sec:comm:david2token}
 
 On TCP port \JWport{23021} \JWpTwo{} initiates a connection to the \JWtoken{}.
-This connection is used to evaluate the OAFEs. \JWpTwo{} sends a tells which
+This connection serves to evaluate the OAFEs. \JWpTwo{} sends a tells which
 OAFE to evaluate and the value, the \JWtoken{} then replies with a vector
 consisting of the evaluated linear expressions.
 
@@ -67,7 +67,7 @@ consisting of the evaluated linear expressions.
 \label{sec:comm:david2goliath}
 
 On TCP port \JWport{23201} \JWpTwo{} initiates a connection to \JWpOne{}. This
-connection is not necessary for the protocol itself but is used to exchange
+connection is not necessary for the protocol itself but serves to exchange
 settings between \JWpOne{} and \JWpTwo{}. \JWpOne{} tells \JWpTwo{} the host
 name and the TCP port of the \JWtoken{} and \JWpTwo{} tells \JWpOne{} the port
 on which \JWpTwo{} accepts the DRAC.
@@ -105,23 +105,23 @@ that \JWpTwo{} does not verify the polynomial degree it evaluates.
 \JWlthree{Calculations in Finite Fields}
 \label{sec:finite-field-calcs}
 
-For the calculation in the finite fields (chapter \ref{sec:field}) the
-\JWTcpp{} library \JWTLntl{} (\emph{Number Theory Library}) has been interfaced
-to \JWThaskell{} for the purpose of developing the implementation of this
-thesis. The interface has been developed using \JWThaskell{}'s \JWdef{Foreign
-Function Interface}{FFI} \cite{haskell2010} and \JWdef{C $\longrightarrow$
-Haskell}{C2Hs} \cite{c2hs}. Prior to interfacing the library to Haskell a very
-lightweight \JWTc{} wrapper has been developed because the library is written in
-\JWTcpp{} which cannot directly be interfaced using the FFI.
+For the calculation in the finite fields (chapter \ref{sec:field}) the \JWTcpp{}
+library \JWTLntl{} (\emph{Number Theory Library}) has been interfaced to
+\JWThaskell{} for developing the implementation of this thesis. The interface
+has been developed using \JWThaskell{}'s \JWdef{Foreign Function Interface}{FFI}
+\cite{haskell2010} and \JWdef{C $\longrightarrow$ Haskell}{C2Hs} \cite{c2hs}.
+Before interfacing the library to Haskell a very lightweight \JWTc{} wrapper
+has been developed because the library is written in \JWTcpp{} which cannot
+directly be interfaced using the FFI.
 
 Although \JWTntl{} does its work fast and without problems, the library has some
 implementation problems and is not optimally designed for exposing its
-functionality to functional programming languages. First of all, the library is
+functionality to functional programming languages. First, the library is
 neither thread--safe nor reentrant because it globally stores internal state
 that can be modified using library functions. The small \JWTc{} wrapper library
 therefore tries to provide a thread--safe interface to \JWTntl{} by limiting its
 functionality.  Another problem is that \JWTntl{} is designed for mutable
-objects, e.g.\ arithmetic operations are implemented using destructive
+objects, e.g., arithmetic operations are implemented using destructive
 assignment.  Since \JWThaskell{} is a pure functional language
 \cite{haskell2010} and destructive assignment is referentially opaque the
 \JWTc{} wrapper changes that and offers only an interface that obeys referential
@@ -200,7 +200,7 @@ endianness, and other parameters.
 % Other Libraries
 \JWlthree{Other Libraries}
 
-This thesis uses a lot of other libraries mainly from \JWTLhackage{}. The
+This thesis uses many other libraries mainly from \JWTLhackage{}. The
 complete list of packages can be extracted from the file
 \JWpath{diplomarbeit.cabal} that comes with the source code of this thesis.
 
@@ -271,7 +271,7 @@ cabal build
 \JWltwo{User Input/Output}
 \label{sec:user-io}
 
-Whenever field elements in large fields that are no prime fields (e.g.\ %
+Whenever field elements in large fields that are no prime fields (e.g.,
 $\mathbb{F}_{2^{256}}$) are read from user input or are outputted to the user,
 the following format (given as a regular expression) is used:
 
@@ -302,8 +302,8 @@ the string \JWcode{[]} which represents the polynomial \JWcode{0}. Examples:
 The default implementation uses $\mathbb{F}_{2^{256}}$ specified by the
 irreducible polynomial $1 + x^2 + x^5 + x^{10} + x^{256}$. The $\mathbb{F}_{97}$
 implementation uses regular digits to read and write the field elements because
-it is a prime field. Examples: $1 \hat{=} 1 (mod 97) = 1_{\mathbb{F}_{97}}$, $98
-\hat{=} 98 (mod 97) = 1_{\mathbb{F}_{97}}$.
+it is a prime field. Examples: $1 \entspricht 1 (mod 97) = 1_{\mathbb{F}_{97}}$,
+$98 \entspricht 98 (mod 97) = 1_{\mathbb{F}_{97}}$.
 
 
 %
