@@ -4,7 +4,6 @@ module Main where
 -- # STDLIB
 import Control.Concurrent (forkIO)
 import Control.Concurrent.STM.TChan (TChan, newTChan, readTChan, writeTChan)
-import Control.Exception.Base (IOException, catch)
 import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (atomically)
@@ -12,6 +11,7 @@ import Data.List (partition)
 import System.Environment (getArgs)
 import System.Exit (exitWith, ExitCode(..))
 import System.IO (hFlush, stdout)
+import qualified Control.Exception.Base as E
 import qualified Data.ByteString as BS
 
 -- # SITE PACKAGES
@@ -85,8 +85,8 @@ configureDavid :: SetupDavidToGoliath
 configureDavid sd2g rac =
    let davidNetConf = clientSettingsFromSetupD2G sd2g
    in runResourceT (CN.runTCPClient davidNetConf connected)
-        `catch` (\e -> putStrLn $ "Connect to David failed: " ++
-                                show (e :: IOException))
+        `E.catch` (\e -> putStrLn $ "Connect to David failed: " ++
+                                    show (e :: E.IOException))
    where connected appData =
              let sink = CN.appSink appData
               in CL.sourceList rac

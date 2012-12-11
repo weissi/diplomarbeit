@@ -6,12 +6,12 @@ import Control.Concurrent (forkIO, myThreadId, killThread)
 import Control.Concurrent.STM.TMVar ( TMVar, newEmptyTMVar
                                     , takeTMVar, tryPutTMVar
                                     )
-import Control.Exception.Base (finally, catch, IOException)
 import Control.Monad (liftM, when, void)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.STM (atomically)
 import Data.List (partition)
 import System.Environment (getArgs)
+import qualified Control.Exception.Base as E
 
 -- # SITE PACKAGES
 import Control.Concurrent.STM.TBMChan (TBMChan, newTBMChan, closeTBMChan)
@@ -71,8 +71,8 @@ spawnCommThreads :: CN.ClientSettings RMonad
 spawnCommThreads tokenSettings reqs rsps =
     do _ <- forkIO $
               runResourceT (runTCPClientNoWait tokenSettings commApp)
-              `finally` do atomically $ closeTBMChan reqs
-                           atomically $ closeTBMChan rsps
+              `E.finally` do atomically $ closeTBMChan reqs
+                             atomically $ closeTBMChan rsps
        return ()
     where commApp appData =
               do let netSrc = CN.appSource appData
@@ -104,10 +104,10 @@ runEvaluator varMap reqs rsps vResult logMsg die =
        cRACFrag <- atomically $ newTBMChan _INCOMING_ARE_CHAN_SIZE_
        _ <- forkIO $
              (runRACEvaluation varMap reqs rsps cRACFrag vResult logMsg)
-               `catch` (\e -> die $ show (e :: IOException))
+               `E.catch` (\e -> die $ show (e :: E.IOException))
        runResourceT
            (CN.runTCPServer _SRV_CONF_DAVID_FROM_GOLIATH_ (conn vStop cRACFrag))
-         `catch` (\e -> die $ show (e :: IOException))
+         `E.catch` (\e -> die $ show (e :: E.IOException))
        return ()
     where conn vStop cRACFrag appData =
               do let src = CN.appSource appData
@@ -129,7 +129,7 @@ exchangeConfWithGoliath :: IO (Either String SetupGoliathToDavid)
 exchangeConfWithGoliath =
     do vSettings <- atomically newEmptyTMVar
        res <- tryConnect _CLIENT_CONF_DAVID_TO_GOLIATH_ vSettings
-              `catch` (\e -> return $ Left $ show (e :: IOException))
+              `E.catch` (\e -> return $ Left $ show (e :: E.IOException))
        case res of
          Left err -> return $ Left err
          Right () ->
