@@ -1,6 +1,7 @@
 -- | Mathematical fields.
 module Data.FieldTypes (Field(..)) where
 
+-- | Basic mathematical field class.
 class (Eq a, Num a) => Field a where
     -- | Invert a field element.
     invert :: a -> a

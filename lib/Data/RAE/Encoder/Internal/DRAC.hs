@@ -76,10 +76,10 @@ getRandomInvertibleElement =
 
 -- |@DRAE@ for a multiplication getting randoms from generator
 draeEncodeMulRnd :: (Monad m, CryptoRandomGen g, Field el, CRandom el)
-                 => DualKey el
-                 -> DualEncPrimExpr el
-                 -> DualEncPrimExpr el
-                 -> CRandT g GenError m (DRAE el)
+                 => DualKey el                    -- ^ The static dual key
+                 -> DualEncPrimExpr el            -- ^ /x1/
+                 -> DualEncPrimExpr el            -- ^ /x2/
+                 -> CRandT g GenError m (DRAE el) -- ^ DRAE encoding /x1 * x2/
 draeEncodeMulRnd skp x1 x2 =
     do r1 <- getRandomElement
        r2 <- getRandomElement
@@ -92,20 +92,19 @@ draeEncodeMulRnd skp x1 x2 =
        return $! draeEncodeMul skp x1 x2 r1 r2 r3 r4 r5 r6 r7 r8
 
 -- |@DRAE@ for a multiplication /f(x1, x2) = x1 * x2/
--- modeled after How to Garble Arithmetic Circuits, p. 13
 draeEncodeMul :: forall el. Field el
-              => DualKey el
-              -> DualEncPrimExpr el
-              -> DualEncPrimExpr el
-              -> el
-              -> el
-              -> el
-              -> el
-              -> el
-              -> el
-              -> el
-              -> el
-              -> DRAE el
+              => DualKey el          -- ^ The static dual key
+              -> DualEncPrimExpr el  -- ^ /x1/
+              -> DualEncPrimExpr el  -- ^ /x2/
+              -> el                  -- ^ /r1/
+              -> el                  -- ^ /r2/
+              -> el                  -- ^ /r3/
+              -> el                  -- ^ /r4/
+              -> el                  -- ^ /r5/
+              -> el                  -- ^ /r6/
+              -> el                  -- ^ /r7/
+              -> el                  -- ^ /r8/
+              -> DRAE el             -- ^ The DRAE encoding /x1 * x2/
 draeEncodeMul skp@(!skL, !skR) !x1 !x2 !r1 !r2 !r3 !r4 !r5 !r6 !r7 !r8 =
     let !le1L = decodeAndApplyL skp skL      x1 (-r1)
         !le2L = decodeAndApplyR skp (skL*r2) x1 r3
@@ -126,11 +125,12 @@ draeEncodeMul skp@(!skL, !skR) !x1 !x2 !r1 !r2 !r3 !r4 !r5 !r6 !r7 !r8 =
                              ]
                 )
 
--- |@DRAE@ for an addition getting randoms from generator
+-- |@DRAE@ for an addition (/f(x1, x2) = x1 + x2/) getting randoms from
+-- generator.
 draeEncodeAddRnd :: (Monad m, CryptoRandomGen g, Field el, CRandom el)
-                 => DualKey el
-                 -> DualEncPrimExpr el
-                 -> DualEncPrimExpr el
+                 => DualKey el         -- ^ The static dual key
+                 -> DualEncPrimExpr el -- ^ /x1/
+                 -> DualEncPrimExpr el -- ^ /x2/
                  -> CRandT g GenError m (DRAE el)
 draeEncodeAddRnd skp x1 x2 =
     do r1 <- getRandomElement
@@ -141,14 +141,14 @@ draeEncodeAddRnd skp x1 x2 =
 
 -- |@DRAE@ for an addition /f(x1, x2) = x1 + x2/
 draeEncodeAdd :: forall el. (Field el)
-              => DualKey el
-              -> DualEncPrimExpr el
-              -> DualEncPrimExpr el
-              -> el
-              -> el
-              -> el
-              -> el
-              -> DRAE el
+              => DualKey el         -- ^ The static dual key
+              -> DualEncPrimExpr el -- ^ /x1/
+              -> DualEncPrimExpr el -- ^ /x2/
+              -> el                 -- ^ /r1/
+              -> el                 -- ^ /r2/
+              -> el                 -- ^ /r3/
+              -> el                 -- ^ /r4/
+              -> DRAE el            -- The DRAE encoding /x1 + x2/
 draeEncodeAdd skp@(!skL, !skR) !x1 !x2 !r1 !r2 !r3 !r4 =
     let !dkpL = r1 + r3
         !dkpR = r2 + r4
@@ -206,12 +206,12 @@ decodeDualEncPrimExpr skp prjVar prjKey depe =
               skInv = (invert . prjKey) skp
            in LinearExpr skInv (prjVar var) (-prjKey dkp * skInv)
 
--- |@DRAE@ for an addition of two @DRAE@s
+-- |@DRAE@ for an addition of two @DRAE@s.
 draeEncodeDRAEAdd :: Field el
-                  => DualKey el
-                  -> DRAE el
-                  -> DRAE el
-                  -> DRAE el
+                  => DualKey el -- ^ The static dual key.
+                  -> DRAE el    -- ^ /D1/
+                  -> DRAE el    -- ^ /D2/
+                  -> DRAE el    -- ^ The DRAE encoding /D1 + D2/
 draeEncodeDRAEAdd skp
                   (DRAE (dlSkp, dlDkp) dlMuls dlAdds)
                   (DRAE (drSkp, drDkp) drMuls drAdds) =
@@ -224,11 +224,11 @@ draeEncodeDRAEAdd skp
                      (dlMuls `DL.append` drMuls)
                      (dlAdds `DL.append` drAdds)
 
--- |@DRAE@ for a @DRAE@ addition getting randoms from generator
+-- |@DRAE@ for a @DRAE@ addition getting randoms from generator.
 draeEncodeDRAEAddRnd :: (Monad m, CryptoRandomGen g, Field el)
-                     => DualKey el
-                     -> DRAE el
-                     -> DRAE el
+                     => DualKey el -- ^ The static dual key.
+                     -> DRAE el    -- ^ /D1/
+                     -> DRAE el    -- ^ /D2/
                      -> CRandT g GenError m (DRAE el)
 draeEncodeDRAEAddRnd skp dl dr =
     return $! draeEncodeDRAEAdd skp dl dr
@@ -244,10 +244,10 @@ draeEncodePrimaryExprRnd skp e =
 
 -- |@DRAE@ encode primary expressions
 draeEncodePrimaryExpr :: Field el
-                      => DualKey el
-                      -> DualEncPrimExpr el
-                      -> el
-                      -> el
+                      => DualKey el          -- ^ The static dual key
+                      -> DualEncPrimExpr el  -- ^ The primary expression
+                      -> el                  -- ^ /r1/
+                      -> el                  -- ^ /r2/
                       -> DRAE el
 draeEncodePrimaryExpr skp@(!skpL, !skpR) e !r1 !r2 =
     case e of
@@ -393,9 +393,9 @@ genSkp =
 
 -- | Encode an @Expr@ as a @DRAC@.
 exprToDRAC :: forall g. forall el. (CryptoRandomGen g, Field el, CRandom el)
-         => g
-         -> Expr el
-         -> (Either GenError g, DRAC el)
+         => g       -- ^ The random number generator
+         -> Expr el -- ^ The arithmetic expression to encode
+         -> (Either GenError g, DRAC el) -- ^ The @DRAC@ encoding the @Expr@
 exprToDRAC g expr =
    let act :: (DRACGenMonad g el) (DRAE el)
        act = do skp <- genSkp

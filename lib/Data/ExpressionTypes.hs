@@ -1,9 +1,9 @@
 module Data.ExpressionTypes (Expr(..), Operator(..)) where
 
 -- | Arithmetic expressions.
-data Expr a = Op Operator (Expr a) (Expr a)
-            | Var String
-            | Literal a
+data Expr a = Op Operator (Expr a) (Expr a) -- ^ Arithmetic Operation Node
+            | Var String                    -- ^ Input Variable Node
+            | Literal a                     -- ^ Literal value
             deriving (Show)
 
 data Operator = Plus | Minus | Times deriving Show

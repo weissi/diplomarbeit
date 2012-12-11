@@ -1,4 +1,10 @@
 {-# LANGUAGE BangPatterns #-}
+
+-- | This module transforms arithmetic expressions (@Expr@) to Linear Bijection
+-- Straight--line Programs (LBS programs) (@LBSProgram@).
+--
+-- This approach has been discontinued. The functionality can still be used by
+-- running the `ExprToMRM` program.
 module Codec.LBS ( InputValues
                  , renderLBSProgram
                  , runLBS, lbsFromExpr, lbsProgramLength
@@ -18,17 +24,23 @@ import qualified Data.DList as DL
 import qualified Data.Map as M
 
 -- Public Data Types
+-- | An LBS program.
 type LBSProgram = DL.DList LBSStmt
 
+-- | A statement of an LBS program.
 data LBSStmt = Offset Register OffsetDirection Register ScaleFactor
 
+-- | A register.
 data Register = Reg { getReg :: Integer } deriving (Eq)
 
+-- | Wheather to offset a register additive or subtractive.
 data OffsetDirection = OffsetPlus | OffsetMinus
 
+-- | Factor to scale a @Register@.
 data ScaleFactor = ScaleFactorConstant Integer
                  | ScaleFactorInput String
 
+-- | The input values for @LBSProgram@ evaluation.
 type InputValues = Map String Integer
 
 type RegisterState = Map Integer Integer
@@ -70,6 +82,7 @@ renderLBSStmt (Offset (Reg o) dir (Reg i) sf) =
                 ScaleFactorConstant c -> show c
                 ScaleFactorInput input -> input
 
+-- | Render an @LBSProgram@ to @Text@.
 renderLBSProgram :: LBSProgram -> Text
 renderLBSProgram lbs = toLazyText $ DL.foldr joinStmts (fromString "") lbs
     where
@@ -140,6 +153,7 @@ lbsFromExpr' dirtyRegs regOut direction regScale e =
       Literal i ->
           DL.singleton $Offset regOut direction regScale (ScaleFactorConstant i)
 
+-- | Transform an arithmetic expression (@Expr@) to an @LBSProgram@.
 lbsFromExpr :: Expr Integer -> LBSProgram
 lbsFromExpr = lbsFromExpr' alwaysDirtyRegs (Reg 1) OffsetPlus _REG_CONST_1_
     where alwaysDirtyRegs = [_REG_CONST_1_, Reg 1]
@@ -192,6 +206,7 @@ execLBSProgram inputs p =
                 [] -> return errs
                 (s:ss') -> s errs >>= combine ss'
 
+-- | Run (evaluate) an @LBSProgram@.
 runLBS :: InputValues -> LBSProgram -> Maybe (Integer, RegisterState)
 runLBS inputs lbs =
     if null $ DL.toList errs
@@ -200,5 +215,6 @@ runLBS inputs lbs =
     where (errs, state) =
               runState (execLBSProgram inputs lbs) _INITIAL_REGISTER_STATE_
 
+-- | Calculate the length of an @LBSProgram@.
 lbsProgramLength :: LBSProgram -> Int
 lbsProgramLength = length . DL.toList

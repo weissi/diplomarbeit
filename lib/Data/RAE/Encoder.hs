@@ -15,9 +15,9 @@ import Data.RAE.Types (RAC)
 
 -- | Directly transform an @Expr@ to a @RAC@.
 exprToRAC :: (CryptoRandomGen g, Field el, CRandom el)
-          => g
-          -> Expr el
-          -> (Either GenError g, RAC el, OAFEConfiguration el)
+          => g       -- ^ The random number generator
+          -> Expr el -- ^ The arithmetic expression to encode
+          -> (Either GenError g, RAC el, OAFEConfiguration el) -- ^ The RAC
 exprToRAC g expr =
        let (errM, drac) = exprToDRAC g expr
            (rac, oac) = singularizeDRAC drac
