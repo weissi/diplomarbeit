@@ -289,8 +289,11 @@ cabal build
 \label{sec:user-io}
 
 Whenever field elements in large fields that are no prime fields (e.g.,
-$\mathbb{F}_{2^{256}}$) are read from user input or are outputted to the user,
-the following format (given as a regular expression) is used:
+$\mathbb{F}_{2^{256}}$) are read from user input or are outputted to the user, a
+special text format is used. Notice that scalar field elements of non--prime
+fields are elements from polynomial rings and therefore written as polynomials.
+This implementation uses the following format (given as a regular expression) to
+denote the polynomials (that represent the scalar field elements):
 
 \JWcode{\textbackslash[([01]( [01])\{0,255\})?\textbackslash]}
 
@@ -318,9 +321,10 @@ the string \JWcode{[]} which represents the polynomial \JWcode{0}.  Examples:
 
 The default implementation uses $\mathbb{F}_{2^{256}}$ specified by the
 irreducible polynomial $1 + x^2 + x^5 + x^{10} + x^{256}$. The $\mathbb{F}_{97}$
-implementation uses regular digits to read and write the field elements because
-it is a prime field. Examples: $1 \entspricht 1 (mod 97) = 1_{\mathbb{F}_{97}}$,
-$98 \entspricht 98 (mod 97) = 1_{\mathbb{F}_{97}}$.
+is a prime field and therefore the elements are regular elements of the ring
+$\mathbb{Z}/2\mathbb{Z}$.  This implementation uses regular numbers for any
+prime field. Examplary for $\mathbb{F}_{97}$: $1 \entspricht 1 (mod 97) =
+1_{\mathbb{F}_{97}}$, $98 \entspricht 98 (mod 97) = 1_{\mathbb{F}_{97}}$.
 
 
 %
@@ -333,7 +337,13 @@ The three main programs are \JWBpOne{}, \JWBpTwo{} and \JWBtoken{}. \JWBtoken{}
 does not accept any command line parameters. \JWpOne{} expects exactly one
 command line parameter: The file for the polynomial to evaluate, one coefficient
 per line. \JWpTwo{} expects exactly one parameter, too: The field element to
-evaluate the polynomial. Example:
+evaluate the polynomial. The following example would evaluate the polynomial
+$f(x) = a \cdot 1 + b \cdot x + c \cdot x^2$ where $a = 1 \entspricht
+\text{\JWcode{[1]}}$, $b = 1 + p^2 \entspricht \text{\JWcode{[1 0 1]}}$,
+$c = (1 + p^2 + p^4) \entspricht \text{\JWcode{[1 0 1 0 1]}}$, and $x = 1 + p^2
++ p^3 + p^4 + p^6 \entspricht \text{\JWcode{[1 0 1 1 1 0 1]}}$:
+
+\JWcmd{(echo [1]; echo [1 0 1]; echo [1 0 1 0 1]) > /tmp/my-poly}
 
 \JWcmd{Goliath /tmp/my-polynomial.txt}
 
