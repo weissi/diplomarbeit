@@ -7,7 +7,16 @@ protocol in the UC framework (chapter \ref{sec:security}), this thesis contains
 an implementation of the protocol. The implementation is written in the lazy,
 functional programming language \JWTLhaskell{}. More specifically \JWThaskell{}
 as implemented by the major \JWThaskell{} compiler the \JWTXLghc{} (\JWTghc{})
-version \JWTVghc{}.
+version \JWTVghc{}. Whenever feasible, standard \emph{Haskell 2010}
+\cite{haskell2010} features have been preferred. However the following
+extensions have been used: \JWhsExt{BangPatterns},
+\JWhsExt{ScopedTypeVariables}, \JWhsExt{Rank2Types}, and
+\JWhsExt{FlexibleContexts}.  The automatically generated code by
+\JWbinary{hprotoc} (\JWTprotobuf{} parsing) additionally uses
+\JWhsExt{DeriveDataTypeable}, \JWhsExt{FlexibleInstances}, and
+\JWhsExt{MultiParamTypeClasses}. The code should therefore be compilable by any
+\JWThaskell{} compiler that supports these extensions and is able to compile the
+external libraries.
 
 The implementation is designed to match the descriptions in chapter
 \ref{sec:methods} as closely as possible. The implementation implements
