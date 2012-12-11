@@ -1,0 +1,21 @@
+{-# LANGUAGE BangPatterns, DeriveDataTypeable, FlexibleInstances, MultiParamTypeClasses #-}
+module Data.ProtoBufs.Setup (protoInfo, fileDescriptorProto) where
+import Prelude ((+), (/))
+import qualified Prelude as Prelude'
+import qualified Data.Typeable as Prelude'
+import qualified Data.Data as Prelude'
+import qualified Text.ProtocolBuffers.Header as P'
+import Text.DescriptorProtos.FileDescriptorProto (FileDescriptorProto)
+import Text.ProtocolBuffers.Reflections (ProtoInfo)
+import qualified Text.ProtocolBuffers.WireMessage as P' (wireGet,getFromBS)
+ 
+protoInfo :: ProtoInfo
+protoInfo
+ = Prelude'.read
+    "ProtoInfo {protoMod = ProtoName {protobufName = FIName \".Setup\", haskellPrefix = [MName \"Data\",MName \"ProtoBufs\"], parentModule = [], baseName = MName \"Setup\"}, protoFilePath = [\"Data\",\"ProtoBufs\",\"Setup.hs\"], protoSource = \"Setup.proto\", extensionKeys = fromList [], messages = [DescriptorInfo {descName = ProtoName {protobufName = FIName \".Setup.SetupGoliathToDavid\", haskellPrefix = [MName \"Data\",MName \"ProtoBufs\"], parentModule = [MName \"Setup\"], baseName = MName \"SetupGoliathToDavid\"}, descFilePath = [\"Data\",\"ProtoBufs\",\"Setup\",\"SetupGoliathToDavid.hs\"], isGroup = False, fields = fromList [FieldInfo {fieldName = ProtoFName {protobufName' = FIName \".Setup.SetupGoliathToDavid.tokenHost\", haskellPrefix' = [MName \"Data\",MName \"ProtoBufs\"], parentModule' = [MName \"Setup\",MName \"SetupGoliathToDavid\"], baseName' = FName \"tokenHost\"}, fieldNumber = FieldId {getFieldId = 1}, wireTag = WireTag {getWireTag = 10}, packedTag = Nothing, wireTagLength = 1, isPacked = False, isRequired = True, canRepeat = False, mightPack = False, typeCode = FieldType {getFieldType = 9}, typeName = Nothing, hsRawDefault = Nothing, hsDefault = Nothing},FieldInfo {fieldName = ProtoFName {protobufName' = FIName \".Setup.SetupGoliathToDavid.tokenPort\", haskellPrefix' = [MName \"Data\",MName \"ProtoBufs\"], parentModule' = [MName \"Setup\",MName \"SetupGoliathToDavid\"], baseName' = FName \"tokenPort\"}, fieldNumber = FieldId {getFieldId = 2}, wireTag = WireTag {getWireTag = 16}, packedTag = Nothing, wireTagLength = 1, isPacked = False, isRequired = True, canRepeat = False, mightPack = False, typeCode = FieldType {getFieldType = 5}, typeName = Nothing, hsRawDefault = Nothing, hsDefault = Nothing}], keys = fromList [], extRanges = [], knownKeys = fromList [], storeUnknown = False, lazyFields = False},DescriptorInfo {descName = ProtoName {protobufName = FIName \".Setup.SetupDavidToGoliath\", haskellPrefix = [MName \"Data\",MName \"ProtoBufs\"], parentModule = [MName \"Setup\"], baseName = MName \"SetupDavidToGoliath\"}, descFilePath = [\"Data\",\"ProtoBufs\",\"Setup\",\"SetupDavidToGoliath.hs\"], isGroup = False, fields = fromList [FieldInfo {fieldName = ProtoFName {protobufName' = FIName \".Setup.SetupDavidToGoliath.host\", haskellPrefix' = [MName \"Data\",MName \"ProtoBufs\"], parentModule' = [MName \"Setup\",MName \"SetupDavidToGoliath\"], baseName' = FName \"host\"}, fieldNumber = FieldId {getFieldId = 1}, wireTag = WireTag {getWireTag = 10}, packedTag = Nothing, wireTagLength = 1, isPacked = False, isRequired = True, canRepeat = False, mightPack = False, typeCode = FieldType {getFieldType = 9}, typeName = Nothing, hsRawDefault = Nothing, hsDefault = Nothing},FieldInfo {fieldName = ProtoFName {protobufName' = FIName \".Setup.SetupDavidToGoliath.port\", haskellPrefix' = [MName \"Data\",MName \"ProtoBufs\"], parentModule' = [MName \"Setup\",MName \"SetupDavidToGoliath\"], baseName' = FName \"port\"}, fieldNumber = FieldId {getFieldId = 2}, wireTag = WireTag {getWireTag = 16}, packedTag = Nothing, wireTagLength = 1, isPacked = False, isRequired = True, canRepeat = False, mightPack = False, typeCode = FieldType {getFieldType = 5}, typeName = Nothing, hsRawDefault = Nothing, hsDefault = Nothing}], keys = fromList [], extRanges = [], knownKeys = fromList [], storeUnknown = False, lazyFields = False}], enums = [], knownKeyMap = fromList []}"
+ 
+fileDescriptorProto :: FileDescriptorProto
+fileDescriptorProto
+ = P'.getFromBS (P'.wireGet 11)
+    (P'.pack
+      "}\n\vSetup.proto\";\n\DC3SetupGoliathToDavid\DC2\DC1\n\ttokenHost\CAN\SOH \STX(\t\DC2\DC1\n\ttokenPort\CAN\STX \STX(\ENQ\"1\n\DC3SetupDavidToGoliath\DC2\f\n\EOThost\CAN\SOH \STX(\t\DC2\f\n\EOTport\CAN\STX \STX(\ENQ")
