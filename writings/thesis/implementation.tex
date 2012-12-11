@@ -1,22 +1,23 @@
 \JWlone{Implementation}
 \label{sec:implementation}
 
-In addition to the mathematical methods (chapter \ref{sec:methods}), the
-protocol description (chapter \ref{sec:protocol}) and the security proof of the
-protocol in the UC framework (chapter \ref{sec:security}), this thesis contains
-an implementation of the protocol. The implementation is written in the lazy,
+In addition to the formal methodology (chapter \ref{sec:methods}), the protocol
+description (chapter \ref{sec:protocol}) and the security proof of the protocol
+in the UC framework (chapter \ref{sec:security}), this thesis contains an
+implementation of the protocol. The implementation is written in the lazy,
 functional programming language \JWTLhaskell{}. More specifically \JWThaskell{}
 as implemented by the major \JWThaskell{} compiler the \JWTXLghc{} (\JWTghc{})
 version \JWTVghc{}. Whenever feasible, standard \emph{Haskell 2010}
 \cite{haskell2010} features have been preferred. However the following
-extensions have been used: \JWhsExt{BangPatterns},
-\JWhsExt{ScopedTypeVariables}, \JWhsExt{Rank2Types}, and
-\JWhsExt{FlexibleContexts}.  The automatically generated code by
-\JWbinary{hprotoc} (\JWTprotobuf{} parsing) additionally uses
-\JWhsExt{DeriveDataTypeable}, \JWhsExt{FlexibleInstances}, and
-\JWhsExt{MultiParamTypeClasses}. The code should therefore be compilable by any
-\JWThaskell{} compiler that supports these extensions and is able to compile the
-external libraries.
+extensions have been used: \JWhsExt{Bang\-Patterns},
+\JWhsExt{Scoped\-Type\-Variables}, \JWhsExt{Rank2\-Types}, and
+\JWhsExt{Flexible\-Contexts}.  The \JWTprotobuf{} (see chapter
+\ref{sec:net-comm}) serialization and parsing code that is generated
+automatically by \JWbinary{hprotoc} additionally uses
+\JWhsExt{Derive\-Data\-Typeable}, \JWhsExt{Flexible\-Instances}, and
+\JWhsExt{Multi\-Param\-Type\-Classes}. The code should therefore be compilable
+by any \JWThaskell{} compiler that supports these extensions and is able to
+compile the external libraries.
 
 The implementation is designed to match the descriptions in chapter
 \ref{sec:methods} as closely as possible. The implementation implements
@@ -198,12 +199,19 @@ random number generator.
 
 
 % Communication Layer
-\JWlthree{Communication Layer}
+\JWlthree{Network Communication Layer}
+\label{sec:net-comm}
 
 The communication between the different binaries is done using the schrieblesque
 \JWTXLprotobuf{}. This library easily allows network communication with complex
 data types independent of the programming language, operating system, machine
-endianness, and other parameters.
+endianness, and other parameters. The \JWThaskell{} \JWTprotobuf{} compiler
+\JWbinary{hprotoc} that comes with the \JWThaskell{} \JWTprotobuf{} library
+(\JWTprotobufLib{}) automatically generates the \JWThaskell{} source the code
+that serializes the data structures to \JWTprotobuf{} and code that parses
+\JWTprotobuf{} to \JWThaskell{} data structures. The automatically generated
+code can be found in the directory \JWpath{gen-src/} in this thesis' source
+tree.
 
 
 % Other Libraries
@@ -290,7 +298,7 @@ Intuitively that is between $0$ and $256$ digits (each \JWcode{0} or \JWcode{1})
 separated by spaces and surrounded by square brackets. The meaning of such a
 string is $\sum_{i=1}^P d \cdot x^p$ where $p$ is the position of the digit in
 the string and $P$ is the maximal position (counted from $0$). And exception is
-the string \JWcode{[]} which represents the polynomial \JWcode{0}. Examples:
+the string \JWcode{[]} which represents the polynomial \JWcode{0}.  Examples:
 
 \begin{itemize}
 
