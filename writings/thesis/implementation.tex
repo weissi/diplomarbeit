@@ -272,14 +272,13 @@ can be found below.
 
 The implementation can be easily built using \JWTLcabal{} by typing:
 
-\begin{lstlisting}
+\JWcmd{cd diplomarbeit/}
 
-cd diplomarbeit/
-cabal install --only-dependencies
-cabal configure
-cabal build
+\JWcmd{cabal install --only-dependencies}
 
-\end{lstlisting}
+\JWcmd{cabal configure}
+
+\JWcmd{cabal build}
 
 
 %
@@ -351,6 +350,16 @@ $c = (1 + p^2 + p^4) \entspricht \text{\JWcode{[1 0 1 0 1]}}$, and $x = 1 + p^2
 
 \JWcmd{David '[1 0 1 1 1 0 1]'}
 
+\noindent{}The same procedure can be run by the provided
+\JWpath{run-evaluation.sh} script that comes with this thesis:
+
+\JWcmd{run-evaluation.sh /tmp/my-polynomial.txt '[1 0 1 1 1 0 1]'}
+
+\noindent{}Additionally, there is an implementation of the procedure in only one
+binary, that \emph{does not} use TCP/IP networking. This optional version can be
+used in the following way:
+
+\JWcmd{AllInOne /tmp/my-polynomial.txt '[1 0 1 1 1 0 1]'}
 
 %
 % DOCUMENTATION
@@ -373,9 +382,7 @@ All of the code is open--sourced and available at
 \JWnamedlink{https://github.com/weissi/diplomarbeit.git}{GitHub}. The code can
 be obtained by typing:
 
-\begin{lstlisting}
-git clone https://github.com/weissi/diplomarbeit.git
-\end{lstlisting}
+\JWcmd{git clone https://github.com/weissi/diplomarbeit.git}
 
 
 % vim: set spell spelllang=en_us fileencoding=utf8 :
