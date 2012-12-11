@@ -2,7 +2,8 @@
 # Normal F97 vs. F2Pow256 und Linux vs. Mac #
 #############################################
 # scripts/benchmark-poly-degrees.sh -m 500 -M 10000 -s 500 -r 5 \
-#   -b "../run-sample.sh" -f -o ../evaluation/linux-F97-bench-500-10000-500.out
+#   -b "../run-evaluation.sh" -f \
+#   -o ../evaluation/linux-F97-bench-500-10000-500.out
 # ...
 #R
 tlf97 <- read.table('linux-F97-bench-500-10000-500.out', header=T)
