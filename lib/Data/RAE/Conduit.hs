@@ -32,7 +32,7 @@ import Data.Conduit.ProtoBufConduit (pbufParse, pbufSerialize)
 import Data.OAFE ( OAFEEvaluationRequest, OAFEEvaluationResponse
                  , OAFEReference(..)
                  )
-import Data.RAE.Types (RAE(..), RACFragment)
+import Data.RAE.Types (RAE(..), RACFragment, Radicals(..))
 import Data.FieldTypes (Field(..))
 import Data.LinearExpression (VariableName)
 import Math.FiniteFields.F2Pow256 (F2Pow256, f2Pow256FromBytes, f2Pow256ToBytes)
@@ -45,6 +45,7 @@ import qualified Data.ProtoBufs.OAFE.OAFEEvaluationResponse as Pb
 import qualified Data.ProtoBufs.RAE.RAE as PbRAE
 import qualified Data.ProtoBufs.RAE.MulTerm as PbRAE
 import qualified Data.ProtoBufs.RAE.OAFEReference as PbRAE
+import qualified Data.ProtoBufs.RAE.OAFERefRadicals as PbRAE
 
 class ByteSerializable el where
     serializeBytes :: el -> BSL.ByteString
@@ -168,15 +169,31 @@ encodeOAFERef :: OAFEReference -> PbRAE.OAFEReference
 encodeOAFERef (OAFERef var idx) =
    PbRAE.OAFEReference (uFromText var) (fromIntegral idx)
 
+encodeOAFERefRadicals :: Radicals OAFEReference -> PbRAE.OAFERefRadicals
+encodeOAFERefRadicals (ORR (or1, or2)) =
+    let or1enc = encodeOAFERef or1
+        or2enc = encodeOAFERef or2
+     in PbRAE.OAFERefRadicals or1enc or2enc
+
 decodeOAFERef :: PbRAE.OAFEReference -> OAFEReference
 decodeOAFERef (PbRAE.OAFEReference var idx) =
     OAFERef (uToText var) (fromIntegral idx)
 
-encodeMulTerm :: (OAFEReference, OAFEReference) -> PbRAE.MulTerm
-encodeMulTerm (l, r) = PbRAE.MulTerm (encodeOAFERef l) (encodeOAFERef r)
+decodeOAFERefRadicals :: PbRAE.OAFERefRadicals -> Radicals OAFEReference
+decodeOAFERefRadicals (PbRAE.OAFERefRadicals orr1 orr2) =
+    let orr1dec = decodeOAFERef orr1
+        orr2dec = decodeOAFERef orr2
+     in ORR (orr1dec, orr2dec)
 
-decodeMulTerm :: PbRAE.MulTerm -> (OAFEReference, OAFEReference)
-decodeMulTerm (PbRAE.MulTerm l r) = (decodeOAFERef l, decodeOAFERef r)
+encodeMulTerm :: (Radicals OAFEReference, Radicals OAFEReference)
+              -> PbRAE.MulTerm
+encodeMulTerm (l, r) = PbRAE.MulTerm (encodeOAFERefRadicals l)
+                                     (encodeOAFERefRadicals r)
+
+decodeMulTerm :: PbRAE.MulTerm
+              -> (Radicals OAFEReference, Radicals OAFEReference)
+decodeMulTerm (PbRAE.MulTerm l r) =
+    (decodeOAFERefRadicals l, decodeOAFERefRadicals r)
 
 encodeRAE :: ByteSerializable el => RACFragment el -> PbRAE.RAE
 encodeRAE (var, RAE muls adds cnst) =

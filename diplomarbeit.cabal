@@ -77,6 +77,7 @@ Library
                       Data.ProtoBufs.RAE.RAE,
                       Data.ProtoBufs.RAE.MulTerm,
                       Data.ProtoBufs.RAE.OAFEReference,
+                      Data.ProtoBufs.RAE.OAFERefRadicals,
                       Data.ProtoBufs.Setup.SetupDavidToGoliath,
                       Data.ProtoBufs.Setup.SetupGoliathToDavid
     include-dirs:     lib/Math/FiniteFields/Foreign

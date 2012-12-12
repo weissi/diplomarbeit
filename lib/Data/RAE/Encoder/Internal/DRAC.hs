@@ -46,6 +46,9 @@ import Data.RAE.Types ( VariableName, DRAE(..), DRAC
                       , Key, DualKey, DualKeyPair
                       , DualVarName(..)
                       , genDualVarName
+                      , LinearRadicals(..)
+                      , DualLinearRadicals(..)
+                      , MulTermRadicals(..)
                       )
 import qualified Data.LinearExpression as LE
 
@@ -89,7 +92,25 @@ draeEncodeMulRnd skp x1 x2 =
        r6 <- getRandomElement
        r7 <- getRandomElement
        r8 <- getRandomElement
+       rk1 <- getRandomInvertibleElement
+       rk2 <- getRandomInvertibleElement
+       rk3 <- getRandomInvertibleElement
+       rk4 <- getRandomInvertibleElement
+       rk5 <- getRandomInvertibleElement
+       rk6 <- getRandomInvertibleElement
+       rk7 <- getRandomInvertibleElement
+       rk8 <- getRandomInvertibleElement
+       rg1 <- getRandomElement
+       rg2 <- getRandomElement
+       rg3 <- getRandomElement
+       rg4 <- getRandomElement
+       rg5 <- getRandomElement
+       rg6 <- getRandomElement
+       rg7 <- getRandomElement
+       rg8 <- getRandomElement
        return $! draeEncodeMul skp x1 x2 r1 r2 r3 r4 r5 r6 r7 r8
+                                   rk1 rg1 rk2 rg2 rk3 rg3 rk4 rg4
+                                   rk5 rg5 rk6 rg6 rk7 rg7 rk8 rg8
 
 -- |@DRAE@ for a multiplication /f(x1, x2) = x1 * x2/
 draeEncodeMul :: forall el. Field el
@@ -104,24 +125,66 @@ draeEncodeMul :: forall el. Field el
               -> el                  -- ^ /r6/
               -> el                  -- ^ /r7/
               -> el                  -- ^ /r8/
+              -> el                  -- ^ /kappa1/
+              -> el                  -- ^ /gamma1/
+              -> el                  -- ^ /kappa2/
+              -> el                  -- ^ /gamma2/
+              -> el                  -- ^ /kappa3/
+              -> el                  -- ^ /gamma3/
+              -> el                  -- ^ /kappa4/
+              -> el                  -- ^ /gamma4/
+              -> el                  -- ^ /kappa5/
+              -> el                  -- ^ /gamma5/
+              -> el                  -- ^ /kappa6/
+              -> el                  -- ^ /gamma6/
+              -> el                  -- ^ /kappa7/
+              -> el                  -- ^ /gamma7/
+              -> el                  -- ^ /kappa8/
+              -> el                  -- ^ /gamma8/
               -> DRAE el             -- ^ The DRAE encoding /x1 * x2/
-draeEncodeMul skp@(!skL, !skR) !x1 !x2 !r1 !r2 !r3 !r4 !r5 !r6 !r7 !r8 =
-    let !le1L = decodeAndApplyL skp skL      x1 (-r1)
-        !le2L = decodeAndApplyR skp (skL*r2) x1 r3
-        !le3L = decodeAndApplyL skp one      x2 (-r2)
-        !le4L = decodeAndApplyR skp r1       x2 r4
-        !le1R = decodeAndApplyR skp skR      x1 (-r5)
-        !le2R = decodeAndApplyL skp (skR*r6) x1 r7
-        !le3R = decodeAndApplyR skp one      x2 (-r6)
-        !le4R = decodeAndApplyL skp r5       x2 r8
+draeEncodeMul skp@(!skL, !skR) !x1 !x2 !r1 !r2 !r3 !r4 !r5 !r6 !r7 !r8
+                               !rk1 !rg1 !rk2 !rg2 !rk3 !rg3 !rk4 !rg4
+                               !rk5 !rg5 !rk6 !rg6 !rk7 !rg7 !rk8 !rg8 =
+    let !le1Ldom=decodeAndApplyL skp ((one-rk1)*skL)    x1 ((one-rk1)*(-r1)+rg1)
+        !le1Lrez=decodeAndApplyR skp (rk1*skL)          x1 (rk1*(-r1)-rg1)
+        !lr1L   =LinearRadicals (le1Ldom, le1Lrez)
+        --
+        !le2Ldom=decodeAndApplyR skp ((one-rk2)*skL*r2) x1 ((one-rk2)*r3+rg2)
+        !le2Lrez=decodeAndApplyL skp (rk2*skL*r2)       x1 (rk2*r3-rg2)
+        --
+        !le3Ldom=decodeAndApplyL skp (one-rk3)          x2 ((one-rk3)*(-r2)+rg3)
+        !le3Lrez=decodeAndApplyR skp rk3                x2 (rk3*(-r2)-rg3)
+        !lr3L   =LinearRadicals (le3Ldom, le3Lrez)
+        --
+        !le4Ldom=decodeAndApplyR skp ((one-rk4)*r1)     x2 ((one-rk4)*r4+rg4)
+        !le4Lrez=decodeAndApplyL skp (rk4*r1)           x2 (rk4*r4-rg4)
+        --
+        !le1Rdom=decodeAndApplyR skp ((one-rk5)*skR)    x1 ((one-rk5)*(-r5)+rg5)
+        !le1Rrez=decodeAndApplyL skp (rk5*skR)          x1 (rk5*(-r5)-rg5)
+        !lr1R   =LinearRadicals (le1Rdom, le1Rrez)
+        --
+        !le2Rdom=decodeAndApplyL skp ((one-rk6)*skR*r6) x1 ((one-rk6)*r7+rg6)
+        !le2Rrez=decodeAndApplyR skp (rk6*skR*r6)       x1 (rk6*r7-rg6)
+        --
+        !le3Rdom=decodeAndApplyR skp (one-rk7)          x2 ((one-rk7)*(-r6)+rg7)
+        !le3Rrez=decodeAndApplyL skp rk7                x2 (rk7*(-r6)-rg7)
+        !lr3R   =LinearRadicals (le3Rdom, le3Rrez)
+        --
+        !le4Rdom=decodeAndApplyL skp ((one-rk8)*r5)     x2 ((one-rk8)*r8+rg8)
+        !le4Rrez=decodeAndApplyR skp (rk8*r5)           x2 (rk8*r8-rg8)
+        --
         !dkpL = r1*r2+r3+r4
         !dkpR = r5*r6+r7+r8
         bkp :: DualKeyPair el
         !bkp = (skp, (dkpL, dkpR))
-        in DRAE bkp                                         -- < the DualKeyPair
-                (DL.singleton ((le1L, le1R), (le3L, le3R))) -- < multiplc. term
-                (DL.fromList [ (le2L, le2R)                 -- / the additive
-                             , (le4L, le4R)                 -- \    terms
+        in DRAE bkp
+                (DL.singleton $ MulTermRadicals { mtrLeft  = DLR (lr1L, lr3L)
+                                                , mtrRight = DLR (lr1R, lr3R)
+                                                })
+                (DL.fromList [ (le2Ldom, le2Rdom)
+                             , (le2Lrez, le2Rrez)
+                             , (le4Ldom, le4Rdom)
+                             , (le4Lrez, le4Rrez)
                              ]
                 )
 
@@ -379,7 +442,7 @@ initialVarDRAE :: (CryptoRandomGen g, Field el, CRandom el)
 initialVarDRAE skp@(skL, skR) (v, dkp@(dkL, dkR)) =
     let drae = DRAE (skp, dkp)
                     DL.empty
-                    (DL.singleton (LinearExpr skL v dkL, LinearExpr skR v dkR))
+                    (DL.singleton (LinearExpr skL v dkL,  LinearExpr skR v dkR))
      in lift $ tell $! DL.singleton (genDualVarName v, drae)
 
 genSkp :: (CryptoRandomGen g, Field el, CRandom el)

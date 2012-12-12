@@ -42,12 +42,12 @@ import Data.RAE.Types (RACFragment)
 -- requests get pushed to 'reqs', after the Token has returned the evaluations,
 -- they are received from 'rsps' and saved in a 'Map'.
 runRACEvaluation :: forall el. Field el
-                 => VarMapping el
-                 -> TBMChan (OAFEEvaluationRequest el)
-                 -> TBMChan (OAFEEvaluationResponse el)
-                 -> TBMChan (RACFragment el)
-                 -> TMVar (Maybe el)
-                 -> (String -> IO ())
+                 => VarMapping el                        -- ^ the initial vars
+                 -> TBMChan (OAFEEvaluationRequest el)   -- ^ channel to F_OAFE
+                 -> TBMChan (OAFEEvaluationResponse el)  -- ^ chan. from F_OAFE
+                 -> TBMChan (RACFragment el)             -- ^ RAC streaming
+                 -> TMVar (Maybe el)                     -- ^ final result
+                 -> (String -> IO ())                    -- ^ logger function
                  -> IO ()
 runRACEvaluation varMap reqs rsps cRACFrag vResult logMsg =
     do oaeRef <- newIORef =<< evaluateInitialVars (M.toList varMap)

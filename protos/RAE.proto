@@ -9,10 +9,14 @@ message RAE {
 }
 
 message MulTerm {
-  required OAFEReference left = 1;
-  required OAFEReference right = 2;
+  required OAFERefRadicals left = 1;
+  required OAFERefRadicals right = 2;
 }
 
+message OAFERefRadicals {
+  required OAFEReference one = 1;
+  required OAFEReference two = 2;
+}
 
 # OAFE reference
 message OAFEReference {

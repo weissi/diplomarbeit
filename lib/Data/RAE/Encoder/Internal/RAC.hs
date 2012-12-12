@@ -21,35 +21,41 @@ import Data.RAE.Evaluation ( _SPECIAL_VAR_OUT_LEFT_, _SPECIAL_VAR_OUT_RIGHT_
                            , _SPECIAL_VAR_PRE_OUT_LEFT_
                            , _SPECIAL_VAR_PRE_OUT_RIGHT_
                            )
-import Data.RAE.Types ( DRAE(..), DRAC, RAE(..), RAC, DualVarName(..))
+import Data.RAE.Types ( DRAE(..), DRAC, RAE(..), RAC
+                      , DualVarName(..)
+                      , MulTermRadicals(..)
+                      , Radicals(..)
+                      , LinearRadicals(..)
+                      , DualLinearRadicals(..)
+                      )
 
 instance Show a => Show (DList a) where
     show = show . DL.toList
 
 type OAFEConfigGen el = HashMap VariableName (Int, DList (el, el))
 
-_EMPTY_RAE_ :: Field el => RAE OAFEReference el
+_EMPTY_RAE_ :: Field el => RAE Radicals OAFEReference el
 _EMPTY_RAE_ = RAE [] [] zero
 
 raeModifyConst :: Field el
-               => RAE OAFEReference el
+               => RAE Radicals OAFEReference el
                -> (el -> el -> el)
                -> el
-               -> RAE OAFEReference el
+               -> RAE Radicals OAFEReference el
 raeModifyConst rae op el =
     rae { raeConst = el `seq` raeConst rae `op` el }
 
 raeAddAddTerm :: Field el
-              => RAE OAFEReference el
+              => RAE Radicals OAFEReference el
               -> OAFEReference
-              -> RAE OAFEReference el
+              -> RAE Radicals OAFEReference el
 raeAddAddTerm rae oaref =
     rae { raeAddTerms = oaref : raeAddTerms rae }
 
 raeAddMulTerm :: Field el
-              => RAE OAFEReference el
-              -> (OAFEReference, OAFEReference)
-              -> RAE OAFEReference el
+              => RAE Radicals OAFEReference el
+              -> (Radicals OAFEReference, Radicals OAFEReference)
+              -> RAE Radicals OAFEReference el
 raeAddMulTerm rae oarefs =
     rae { raeMulTerms = oarefs : raeMulTerms rae }
 
@@ -66,7 +72,8 @@ singularizeDRAC drac =
         (varNames, origDRAEs) = unzip $ DL.toList drac
         toRAEs :: [DRAE el]
                -> OAFEConfigGen el
-               -> Writer (DList (RAE OAFEReference el)) (OAFEConfigGen el)
+               -> Writer (DList (RAE Radicals OAFEReference el))
+                         (OAFEConfigGen el)
         toRAEs draes !oac =
             case draes of
               [] -> return $! oac
@@ -75,9 +82,9 @@ singularizeDRAC drac =
                      tell $! DL.singleton raeL
                      tell $! DL.singleton raeR
                      toRAEs draes' oac'
-        raes :: (OAFEConfigGen el, DList (RAE OAFEReference el))
+        raes :: (OAFEConfigGen el, DList (RAE Radicals OAFEReference el))
         raes = runWriter $ toRAEs origDRAEs HM.empty
-        finalRAEs :: DList (RAE OAFEReference el)
+        finalRAEs :: DList (RAE Radicals OAFEReference el)
         finalRAEs = snd raes
         finalOAC :: OAFEConfigGen el
         finalOAC = fst raes `HM.union`
@@ -93,8 +100,8 @@ singularizeDRAC drac =
 singularizeDRAE :: forall el. Field el
                 => DRAE el
                 -> OAFEConfigGen el
-                -> ( RAE OAFEReference el
-                   , RAE OAFEReference el
+                -> ( RAE Radicals OAFEReference el
+                   , RAE Radicals OAFEReference el
                    , OAFEConfigGen el
                    )
 singularizeDRAE (DRAE _ draeMuls draeAdds) !oafeCfg =
@@ -118,9 +125,9 @@ singularizeDRAE (DRAE _ draeMuls draeAdds) !oafeCfg =
                   error $ "singularizeDRAE: constant expressions "
                           ++ "don't need OAFEs"
         processAdds :: Field el
-                    => (RAE OAFEReference el, OAFEConfigGen el)
+                    => (RAE Radicals OAFEReference el, OAFEConfigGen el)
                     -> LinearExpr el
-                    -> (RAE OAFEReference el, OAFEConfigGen el)
+                    -> (RAE Radicals OAFEReference el, OAFEConfigGen el)
         processAdds (!rae, !oac) !le =
             case le of
               LinearExpr {} ->
@@ -129,53 +136,73 @@ singularizeDRAE (DRAE _ draeMuls draeAdds) !oafeCfg =
               ConstLinearExpr cle ->
                   (raeModifyConst rae (+) cle, oac)
         processMuls :: Field el
-                    => (RAE OAFEReference el, OAFEConfigGen el)
-                    -> (LinearExpr el, LinearExpr el)
-                    -> (RAE OAFEReference el, OAFEConfigGen el)
-        processMuls (!rae, !oac) !les =
+                    => (RAE Radicals OAFEReference el, OAFEConfigGen el)
+                    -> DualLinearRadicals el
+                    -> (RAE Radicals OAFEReference el, OAFEConfigGen el)
+        processMuls (!rae, !oac) !dlr =
             let -- | Turn a multiplication involving a scalar to an addition
                 -- because that's an ordinary linear expression.
                 processScalarMul :: Field el
                                  => LinearExpr el
+                                 -> LinearExpr el
                                  -> el
-                                 -> (RAE OAFEReference el, OAFEConfigGen el)
-                processScalarMul le el =
-                    let le' = scalarMul le el
-                        (!oaref, !oac') = oafeReference oac le'
-                     in (raeAddAddTerm rae oaref, oac')
+                                 -> el
+                                 -> ( RAE Radicals OAFEReference el
+                                    , OAFEConfigGen el
+                                    )
+                processScalarMul le1 le2 el1 el2 =
+                    let !elsAdd = el1 + el2
+                        le1' = scalarMul le1 elsAdd
+                        le2' = scalarMul le2 elsAdd
+                        (!oaref1, !oac') = oafeReference oac le1'
+                        (!oaref2, !oac'') = oafeReference oac' le2'
+                        pre = raeAddAddTerm rae oaref1
+                     in (raeAddAddTerm pre oaref2, oac'')
+                (DLR (dlrl, dlrr)) = dlr
+                (LinearRadicals (dlrl1, dlrl2)) = dlrl
+                (LinearRadicals (dlrr1, dlrr2)) = dlrr
+                les = (dlrl1, dlrl2, dlrr1, dlrr2)
              in case les of
-                  (ConstLinearExpr clel, ConstLinearExpr cler) ->
-                      processAdds (rae, oac) (ConstLinearExpr (clel * cler))
-                  (ConstLinearExpr clel, ler@(LinearExpr {})) ->
-                      processScalarMul ler clel
-                  (lel@(LinearExpr {}), ConstLinearExpr cler) ->
-                      processScalarMul lel cler
-                  (lel, ler) ->
-                      let (oarefl, oac')  = oafeReference oac  lel
-                          (oarefr, oac'') = oafeReference oac' ler
-                       in (raeAddMulTerm rae (oarefl, oarefr), oac'')
+                  (   ConstLinearExpr clel1, ConstLinearExpr clel2
+                    , ConstLinearExpr cler1, ConstLinearExpr cler2) ->
+                      processAdds (rae, oac)
+                                  (ConstLinearExpr ((clel1 + clel2) *
+                                                    (cler1 + cler2)))
+                  (   ConstLinearExpr clel1 , ConstLinearExpr clel2
+                    , ler1@(LinearExpr {}) , ler2@(LinearExpr {})) ->
+                      processScalarMul ler1 ler2 clel1 clel2
+                  (   lel1@(LinearExpr {}), lel2@(LinearExpr{})
+                    , ConstLinearExpr cler1, ConstLinearExpr cler2) ->
+                      processScalarMul lel1 lel2 cler1 cler2
+                  (   lel1@(LinearExpr {}), lel2@(LinearExpr {})
+                    , ler1@(LinearExpr {}), ler2@(LinearExpr {})) ->
+                      let (oarefl1, oac')  = oafeReference oac  lel1
+                          (oarefl2, oac'')  = oafeReference oac'  lel2
+                          (oarefr1, oac''') = oafeReference oac'' ler1
+                          (oarefr2, oac'''') = oafeReference oac''' ler2
+                       in (raeAddMulTerm rae ( ORR (oarefl1, oarefl2)
+                                             , ORR (oarefr1, oarefr2))
+                          , oac''''
+                          )
+                  _ -> error "singularizeDRAC: different cons at LE radicals"
         draeMulsList = DL.toList draeMuls
         draeAddsList = DL.toList draeAdds
-        fstMul :: ((a, b), (c, d)) -> (a, c)
-        fstMul (l, r) = (fst l, fst r)
-        sndMul :: ((a, b), (c, d)) -> (b, d)
-        sndMul (l, r) = (snd l, snd r)
-        raeAfterMulsL :: RAE OAFEReference el
+        raeAfterMulsL :: RAE Radicals OAFEReference el
         (!raeAfterMulsL, !oafeCfg') =
             foldl' processMuls
                    (_EMPTY_RAE_, oafeCfg)
-                   (map fstMul draeMulsList)
-        raeAfterAddsL :: RAE OAFEReference el
+                   (map mtrLeft draeMulsList)
+        raeAfterAddsL :: RAE Radicals OAFEReference el
         (!raeAfterAddsL, !oafeCfg'') =
             foldl' processAdds
                    (raeAfterMulsL, oafeCfg')
                    (map fst draeAddsList)
-        raeAfterMulsR :: RAE OAFEReference el
+        raeAfterMulsR :: RAE Radicals OAFEReference el
         (!raeAfterMulsR, !oafeCfg''') =
             foldl' processMuls
                    (_EMPTY_RAE_, oafeCfg'')
-                   (map sndMul draeMulsList)
-        raeAfterAddsR :: RAE OAFEReference el
+                   (map mtrRight draeMulsList)
+        raeAfterAddsR :: RAE Radicals OAFEReference el
         (!raeAfterAddsR, !oafeCfg'''') =
             foldl' processAdds
                    (raeAfterMulsR, oafeCfg''')
