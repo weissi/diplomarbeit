@@ -12,7 +12,7 @@ alf97 <- aggregate(tlf97$Time, list(degree=tlf97$Polynomial.Degree), median)
 tlf256 <- read.table('linux-rad-bench-500-10000-500.out', header=T)
 alf256 <- aggregate(tlf256$Time, list(degree=tlf256$Polynomial.Degree), median)
 
-tmf97 <- read.table('mac-rad-bench-F97-500-10000-500.out', header=T)
+tmf97 <- read.table('mac-rad-F97-bench-500-10000-500.out', header=T)
 amf97 <- aggregate(tmf97$Time, list(degree=tmf97$Polynomial.Degree), median)
 
 tmf256 <- read.table('mac-rad-bench-500-10000-500.out', header=T)
@@ -32,7 +32,7 @@ packages=c("\\usepackage{tikz}",
 
 plot(data.frame(degree=alf97$degree, time=alf97$x/1000),
      xlab='Polynomial Degree', ylab='Running Time [s]',
-     main='', type='o', pch=21, ylim=c(0, 121))
+     main='', type='o', pch=21, ylim=c(0, 250))
 lines(data.frame(degree=alf256$degree, time=alf256$x/1000),
       type='o', pch=21, lty=2)
 lines(data.frame(degree=amf97$degree, time=amf97$x/1000),
@@ -40,7 +40,7 @@ lines(data.frame(degree=amf97$degree, time=amf97$x/1000),
 lines(data.frame(degree=amf256$degree, time=amf256$x/1000),
       type='o', pch=22, lty=4)
 
-legend(300, 120, c("Test Machine 1, $\\mathbb{F}_{97}\\qquad$",
+legend(300, 250, c("Test Machine 1, $\\mathbb{F}_{97}\\qquad$",
                    "Test Machine 1, $\\mathbb{F}_{2^{256}}\\qquad$",
                    "Test Machine 2, $\\mathbb{F}_{97}\\qquad$",
                    "Test Machine 2, $\\mathbb{F}_{2^{256}}\\qquad$"),
