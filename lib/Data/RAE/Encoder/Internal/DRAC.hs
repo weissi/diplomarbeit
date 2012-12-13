@@ -46,8 +46,8 @@ import Data.RAE.Types ( VariableName, DRAE(..), DRAC
                       , Key, DualKey, DualKeyPair
                       , DualVarName(..)
                       , genDualVarName
-                      , LinearRadicals(..)
                       , DualLinearRadicals(..)
+                      , RadicalTuple(..)
                       , MulTermRadicals(..)
                       )
 import qualified Data.LinearExpression as LE
@@ -147,28 +147,28 @@ draeEncodeMul skp@(!skL, !skR) !x1 !x2 !r1 !r2 !r3 !r4 !r5 !r6 !r7 !r8
                                !rk5 !rg5 !rk6 !rg6 !rk7 !rg7 !rk8 !rg8 =
     let !le1Ldom=decodeAndApplyL skp ((one-rk1)*skL)    x1 ((one-rk1)*(-r1)+rg1)
         !le1Lrez=decodeAndApplyR skp (rk1*skL)          x1 (rk1*(-r1)-rg1)
-        !lr1L   =LinearRadicals (le1Ldom, le1Lrez)
+        !lr1L   = RT (le1Ldom, le1Lrez)
         --
         !le2Ldom=decodeAndApplyR skp ((one-rk2)*skL*r2) x1 ((one-rk2)*r3+rg2)
         !le2Lrez=decodeAndApplyL skp (rk2*skL*r2)       x1 (rk2*r3-rg2)
         --
         !le3Ldom=decodeAndApplyL skp (one-rk3)          x2 ((one-rk3)*(-r2)+rg3)
         !le3Lrez=decodeAndApplyR skp rk3                x2 (rk3*(-r2)-rg3)
-        !lr3L   =LinearRadicals (le3Ldom, le3Lrez)
+        !lr3L   = RT (le3Ldom, le3Lrez)
         --
         !le4Ldom=decodeAndApplyR skp ((one-rk4)*r1)     x2 ((one-rk4)*r4+rg4)
         !le4Lrez=decodeAndApplyL skp (rk4*r1)           x2 (rk4*r4-rg4)
         --
         !le1Rdom=decodeAndApplyR skp ((one-rk5)*skR)    x1 ((one-rk5)*(-r5)+rg5)
         !le1Rrez=decodeAndApplyL skp (rk5*skR)          x1 (rk5*(-r5)-rg5)
-        !lr1R   =LinearRadicals (le1Rdom, le1Rrez)
+        !lr1R   = RT (le1Rdom, le1Rrez)
         --
         !le2Rdom=decodeAndApplyL skp ((one-rk6)*skR*r6) x1 ((one-rk6)*r7+rg6)
         !le2Rrez=decodeAndApplyR skp (rk6*skR*r6)       x1 (rk6*r7-rg6)
         --
         !le3Rdom=decodeAndApplyR skp (one-rk7)          x2 ((one-rk7)*(-r6)+rg7)
         !le3Rrez=decodeAndApplyL skp rk7                x2 (rk7*(-r6)-rg7)
-        !lr3R   =LinearRadicals (le3Rdom, le3Rrez)
+        !lr3R   = RT (le3Rdom, le3Rrez)
         --
         !le4Rdom=decodeAndApplyL skp ((one-rk8)*r5)     x2 ((one-rk8)*r8+rg8)
         !le4Rrez=decodeAndApplyR skp (rk8*r5)           x2 (rk8*r8-rg8)

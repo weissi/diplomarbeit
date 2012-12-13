@@ -15,13 +15,13 @@ import qualified Data.DList as DL
 -- # LOCAL
 import Data.FieldTypes (Field)
 import Data.LinearExpression (LinearExpr(..))
-import Data.RAE.Types ( DRAE(..), VarMapping, LinearRadicals(..)
+import Data.RAE.Types ( DRAE(..), VarMapping, RadicalTuple(..)
                       , MulTermRadicals(..), DualLinearRadicals(..)
                       )
 import qualified Data.LinearExpression as LE
 
-eval2 :: Field el => VarMapping el -> LinearRadicals el -> Maybe el
-eval2 varMap (LinearRadicals (le1, le2)) =
+eval2 :: Field el => VarMapping el -> RadicalTuple (LinearExpr el) -> Maybe el
+eval2 varMap (RT (le1, le2)) =
     do v1 <- LE.evaluate varMap le1
        v2 <- LE.evaluate varMap le2
        return $! v1 + v2

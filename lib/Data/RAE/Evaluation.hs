@@ -40,7 +40,7 @@ import Data.OAFE (OAFEConfiguration, OAFEEvaluation, OAFEReference(..))
 import Data.RAE.Decoder (decodeDRAE)
 import Data.RAE.Types ( DRAC, DRACFragment, RACFragment
                       , RAE(..), RAC, DualVarName(..), genDualVarName
-                      , Radicals(..), Completes(..)
+                      , RadicalTuple(..), RadicalSingleton(..)
                       )
 
 
@@ -134,23 +134,23 @@ evaluateOAFE oac curEval (var, val) =
 
 evaluateRAE' :: forall f. forall el.
                  (Failure RAEEvaluationFailure f, Field el)
-              => RAE Radicals OAFEReference el
+              => RAE RadicalTuple OAFEReference el
               -> OAFEEvaluation el
-              -> f (RAE Completes el el)
+              -> f (RAE RadicalSingleton el el)
 evaluateRAE' (RAE muls adds c) oafeVals =
     do adds' <- mapM resolve adds
        muls' <- mapM resolveTuple muls
        return $! RAE muls' adds' c
-    where resolveTuple :: (Radicals OAFEReference, Radicals OAFEReference)
-                       -> f (Completes el, Completes el)
-          resolveTuple (ORR (oarefl1, oarefl2), ORR (oarefr1, oarefr2)) =
+    where resolveTuple:: (RadicalTuple OAFEReference,RadicalTuple OAFEReference)
+                      -> f (RadicalSingleton el, RadicalSingleton el)
+          resolveTuple (RT (oarefl1, oarefl2), RT (oarefr1, oarefr2)) =
               do l1 <- resolve oarefl1
                  l2 <- resolve oarefl2
                  r1 <- resolve oarefr1
                  r2 <- resolve oarefr2
                  let !l = l1 + l2
                      !r = r1 + r2
-                 return $! (C l, C r)
+                 return $! (RS l, RS r)
           resolve :: OAFEReference
                   -> f el
           resolve (OAFERef var idx) =
@@ -166,7 +166,7 @@ evaluateRAE' (RAE muls adds c) oafeVals =
 --
 -- In real-world use by the functionality David.
 evalRAE :: Field el
-         => RAE Radicals OAFEReference el
+         => RAE RadicalTuple OAFEReference el
          -> OAFEEvaluation el
          -> Either RAEEvaluationFailure el
 evalRAE = evaluateRAE
@@ -178,7 +178,7 @@ evalRAE = evaluateRAE
 -- (same as @evalRAE@ but not exported and with @Failure@ type)
 evaluateRAE :: forall f. forall el.
                 (Failure RAEEvaluationFailure f, Field el)
-             => RAE Radicals OAFEReference el
+             => RAE RadicalTuple OAFEReference el
              -> OAFEEvaluation el
              -> f el
 evaluateRAE rae vals =
@@ -186,8 +186,8 @@ evaluateRAE rae vals =
       let (RAE muls adds c) = rae'
           muls' :: [el]
           muls' = map multiplyRadicals muls
-          multiplyRadicals :: (Completes el, Completes el) -> el
-          multiplyRadicals (C l, C r) = l * r
+          multiplyRadicals :: (RadicalSingleton el, RadicalSingleton el) -> el
+          multiplyRadicals (RS l, RS r) = l * r
           rMuls :: el
           rMuls = foldl' (+) zero muls'
           rAdds :: el

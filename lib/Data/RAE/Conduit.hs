@@ -32,7 +32,7 @@ import Data.Conduit.ProtoBufConduit (pbufParse, pbufSerialize)
 import Data.OAFE ( OAFEEvaluationRequest, OAFEEvaluationResponse
                  , OAFEReference(..)
                  )
-import Data.RAE.Types (RAE(..), RACFragment, Radicals(..))
+import Data.RAE.Types (RAE(..), RACFragment, RadicalTuple(..))
 import Data.FieldTypes (Field(..))
 import Data.LinearExpression (VariableName)
 import Math.FiniteFields.F2Pow256 (F2Pow256, f2Pow256FromBytes, f2Pow256ToBytes)
@@ -169,8 +169,8 @@ encodeOAFERef :: OAFEReference -> PbRAE.OAFEReference
 encodeOAFERef (OAFERef var idx) =
    PbRAE.OAFEReference (uFromText var) (fromIntegral idx)
 
-encodeOAFERefRadicals :: Radicals OAFEReference -> PbRAE.OAFERefRadicals
-encodeOAFERefRadicals (ORR (or1, or2)) =
+encodeOAFERefRadicals :: RadicalTuple OAFEReference -> PbRAE.OAFERefRadicals
+encodeOAFERefRadicals (RT (or1, or2)) =
     let or1enc = encodeOAFERef or1
         or2enc = encodeOAFERef or2
      in PbRAE.OAFERefRadicals or1enc or2enc
@@ -179,19 +179,19 @@ decodeOAFERef :: PbRAE.OAFEReference -> OAFEReference
 decodeOAFERef (PbRAE.OAFEReference var idx) =
     OAFERef (uToText var) (fromIntegral idx)
 
-decodeOAFERefRadicals :: PbRAE.OAFERefRadicals -> Radicals OAFEReference
+decodeOAFERefRadicals :: PbRAE.OAFERefRadicals -> RadicalTuple OAFEReference
 decodeOAFERefRadicals (PbRAE.OAFERefRadicals orr1 orr2) =
     let orr1dec = decodeOAFERef orr1
         orr2dec = decodeOAFERef orr2
-     in ORR (orr1dec, orr2dec)
+     in RT (orr1dec, orr2dec)
 
-encodeMulTerm :: (Radicals OAFEReference, Radicals OAFEReference)
+encodeMulTerm :: (RadicalTuple OAFEReference, RadicalTuple OAFEReference)
               -> PbRAE.MulTerm
 encodeMulTerm (l, r) = PbRAE.MulTerm (encodeOAFERefRadicals l)
                                      (encodeOAFERefRadicals r)
 
 decodeMulTerm :: PbRAE.MulTerm
-              -> (Radicals OAFEReference, Radicals OAFEReference)
+              -> (RadicalTuple OAFEReference, RadicalTuple OAFEReference)
 decodeMulTerm (PbRAE.MulTerm l r) =
     (decodeOAFERefRadicals l, decodeOAFERefRadicals r)
 

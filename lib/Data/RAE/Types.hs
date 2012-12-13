@@ -1,4 +1,3 @@
-{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE BangPatterns #-}
@@ -6,8 +5,8 @@
 module Data.RAE.Types
     ( -- * Basic Data Types
       RAE(..), DRAE(..), RAC, RACFragment, DRAC, DRACFragment
-    , LinearRadicals(..), MulTermRadicals(..)
-    , Radicals(..), Completes(..), DualLinearRadicals(..)
+    , MulTermRadicals(..)
+    , RadicalTuple(..), RadicalSingleton(..), DualLinearRadicals(..)
       -- * Encryption Key Data Types
     , Key, DualKey, DualKeyPair
       -- * Other Types
@@ -40,30 +39,19 @@ type Key el = el
 -- | A dual encryption key (e.g. the dynamic keys or the static keys)
 type DualKey el = (Key el, Key el)
 
-data family Radicals a :: *
+-- | The radicals travelling separated from each other in tuples
+newtype RadicalTuple a = RT (a, a) deriving Show
 
-newtype instance Radicals (LinearExpr el) =
-    LER (LinearExpr el, LinearExpr el) deriving Show
-newtype instance Radicals OAFEReference =
-    ORR (OAFEReference, OAFEReference) deriving Show
-
-data family Completes a
-
-data instance Completes a = C a
-
-newtype LinearRadicals el =
-    LinearRadicals { unLR :: (LinearExpr el, LinearExpr el) }
-instance (Show el, Field el) => Show (LinearRadicals el) where
-    show (LinearRadicals (le1, le2)) =
-        "[" ++ show le1 ++ " (+) " ++ show le2 ++ "]"
-
---newtype OAFERadicalsRef =
---    OAFERadicalsRef { unORR :: (OAFEReference, OAFEReference) } deriving Show
+-- | The radicals already unified to one element
+newtype RadicalSingleton a = RS a
 
 -- | A dual linear expression.
 type DualLinearExpr el = (LinearExpr el, LinearExpr el)
 newtype DualLinearRadicals el =
-    DLR { unDLR :: (LinearRadicals el, LinearRadicals el) }
+    DLR { unDLR :: ( RadicalTuple (LinearExpr el)
+                   , RadicalTuple (LinearExpr el)
+                   )
+        }
 instance (Show el, Field el) => Show (DualLinearRadicals el) where
     show (DLR (lrl, lrr)) =
         "{DLR L: " ++ show lrl ++ "; DLR R: " ++ show lrr ++ "}"
@@ -99,7 +87,7 @@ data RAE r val el =
         }
 
 -- | /R/andomized /A/ffine /C/ircuit fragment.
-type RACFragment el = (VariableName, RAE Radicals OAFEReference el)
+type RACFragment el = (VariableName, RAE RadicalTuple OAFEReference el)
 
 -- | /R/andomized /A/ffine /C/ircuit.
 type RAC el = [RACFragment el]
