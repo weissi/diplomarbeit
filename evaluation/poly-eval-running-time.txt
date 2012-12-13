@@ -6,10 +6,10 @@
 #   -o ../evaluation/linux-F97-bench-500-10000-500.out
 # ...
 #R
-tlf97 <- read.table('linux-F97-bench-500-10000-500.out', header=T)
+tlf97 <- read.table('linux-rad-F97-bench-500-10000-500.out', header=T)
 alf97 <- aggregate(tlf97$Time, list(degree=tlf97$Polynomial.Degree), median)
 
-tlf256 <- read.table('linux-bench-500-10000-500.out', header=T)
+tlf256 <- read.table('linux-rad-bench-500-10000-500.out', header=T)
 alf256 <- aggregate(tlf256$Time, list(degree=tlf256$Polynomial.Degree), median)
 
 tmf97 <- read.table('mac-bench-F97-500-10000-500.out', header=T)
