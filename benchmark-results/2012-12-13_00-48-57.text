@@ -1,0 +1,413 @@
+Versions
+--------
+Linux flybook 3.1.7 #1 SMP PREEMPT Wed Jan 4 22:34:07 CET 2012 i686 GNU/Linux
+The Glorious Glasgow Haskell Compilation System, version 7.6.1
+
+Last patch
+----------
+commit f56ae111f8f974f7fe93871e6e05841976d7b68f
+Author: Johannes Weiß <weiss@tux4u.de>
+Date:   Thu Dec 13 00:44:45 2012 +0100
+
+    MAJOR: Radical Encoding
+
+Modifications
+-------------
+# On branch master
+# Changes not staged for commit:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   programs/StaticConfiguration.hs
+#
+# Untracked files:
+#   (use "git add <file>..." to include in what will be committed)
+#
+#	benchmark-results/2012-12-13_00-48-57.text
+no changes added to commit (use "git add" and/or "git commit -a")
+
+Benchmark
+---------
+Running 1 benchmarks...
+Benchmark BenchRAE: RUNNING...
+warming up
+estimating clock resolution...
+mean is 4.978019 us (160001 iterations)
+found 286488 outliers among 159999 samples (179.1%)
+  154347 (96.5%) low severe
+  132141 (82.6%) high severe
+estimating cost of a clock call...
+mean is 1.242953 us (41 iterations)
+found 1 outliers among 41 samples (2.4%)
+  1 (2.4%) high severe
+
+benchmarking DRAC direct F97/x ^ 1
+mean: 138.3130 us, lb 136.4581 us, ub 140.8259 us, ci 0.950
+std dev: 11.01606 us, lb 8.677878 us, ub 13.85334 us, ci 0.950
+found 16 outliers among 100 samples (16.0%)
+  4 (4.0%) high mild
+  12 (12.0%) high severe
+variance introduced by outliers: 70.723%
+variance is severely inflated by outliers
+
+benchmarking DRAC direct F97/x ^ 10
+mean: 4.859349 ms, lb 4.840290 ms, ub 4.885419 ms, ci 0.950
+std dev: 113.7288 us, lb 90.19263 us, ub 144.6829 us, ci 0.950
+found 15 outliers among 100 samples (15.0%)
+  4 (4.0%) high mild
+  11 (11.0%) high severe
+variance introduced by outliers: 17.076%
+variance is moderately inflated by outliers
+
+benchmarking DRAC direct F97/x ^ 100
+collecting 100 samples, 1 iterations each, in estimated 5.362201 s
+mean: 54.49449 ms, lb 54.16809 ms, ub 55.08193 ms, ci 0.950
+std dev: 2.175879 ms, lb 1.432425 ms, ub 3.908739 ms, ci 0.950
+found 10 outliers among 100 samples (10.0%)
+  8 (8.0%) high mild
+  2 (2.0%) high severe
+variance introduced by outliers: 37.509%
+variance is moderately inflated by outliers
+
+benchmarking DRAC direct F97/x ^ 1000
+collecting 100 samples, 1 iterations each, in estimated 61.75182 s
+mean: 568.6290 ms, lb 566.5862 ms, ub 571.1144 ms, ci 0.950
+std dev: 11.56382 ms, lb 9.718718 ms, ub 14.85326 ms, ci 0.950
+found 2 outliers among 100 samples (2.0%)
+  2 (2.0%) high mild
+variance introduced by outliers: 13.259%
+variance is moderately inflated by outliers
+
+benchmarking DRAC direct F97/x * 1
+mean: 182.5594 us, lb 182.2769 us, ub 183.0695 us, ci 0.950
+std dev: 1.900967 us, lb 1.239680 us, ub 3.444540 us, ci 0.950
+
+benchmarking DRAC direct F97/x * 10
+mean: 571.8395 us, lb 569.6958 us, ub 578.7650 us, ci 0.950
+std dev: 17.77030 us, lb 6.297088 us, ub 39.36653 us, ci 0.950
+found 11 outliers among 100 samples (11.0%)
+  8 (8.0%) high mild
+  3 (3.0%) high severe
+variance introduced by outliers: 25.820%
+variance is moderately inflated by outliers
+
+benchmarking DRAC direct F97/x * 100
+mean: 4.794267 ms, lb 4.766111 ms, ub 4.827239 ms, ci 0.950
+std dev: 156.1968 us, lb 136.4585 us, ub 176.3617 us, ci 0.950
+found 1 outliers among 100 samples (1.0%)
+variance introduced by outliers: 27.762%
+variance is moderately inflated by outliers
+
+benchmarking DRAC direct F97/x * 1000
+mean: 49.49728 ms, lb 49.25611 ms, ub 49.76944 ms, ci 0.950
+std dev: 1.312127 ms, lb 1.082584 ms, ub 1.631455 ms, ci 0.950
+found 14 outliers among 100 samples (14.0%)
+  5 (5.0%) low mild
+  7 (7.0%) high mild
+  2 (2.0%) high severe
+variance introduced by outliers: 20.924%
+variance is moderately inflated by outliers
+
+benchmarking DRAC direct F97/x * 10000
+collecting 100 samples, 1 iterations each, in estimated 53.65059 s
+mean: 543.9754 ms, lb 542.7983 ms, ub 545.4721 ms, ci 0.950
+std dev: 6.741715 ms, lb 5.052383 ms, ub 9.037036 ms, ci 0.950
+
+benchmarking DRAC direct F2Pow256/x ^ 1
+mean: 103.2821 us, lb 96.50151 us, ub 116.4238 us, ci 0.950
+std dev: 45.62090 us, lb 23.93188 us, ub 68.24970 us, ci 0.950
+found 5 outliers among 100 samples (5.0%)
+  5 (5.0%) high severe
+variance introduced by outliers: 98.922%
+variance is severely inflated by outliers
+
+benchmarking DRAC direct F2Pow256/x ^ 10
+mean: 7.346453 ms, lb 7.253970 ms, ub 7.487268 ms, ci 0.950
+std dev: 579.4613 us, lb 415.0372 us, ub 841.9285 us, ci 0.950
+found 4 outliers among 100 samples (4.0%)
+  3 (3.0%) high severe
+variance introduced by outliers: 69.734%
+variance is severely inflated by outliers
+
+benchmarking DRAC direct F2Pow256/x ^ 100
+collecting 100 samples, 1 iterations each, in estimated 8.100796 s
+mean: 88.48399 ms, lb 87.80850 ms, ub 89.22916 ms, ci 0.950
+std dev: 3.639960 ms, lb 3.247845 ms, ub 4.126985 ms, ci 0.950
+variance introduced by outliers: 38.523%
+variance is moderately inflated by outliers
+
+benchmarking DRAC direct F2Pow256/x ^ 1000
+collecting 100 samples, 1 iterations each, in estimated 110.2916 s
+mean: 1.263485 s, lb 1.242694 s, ub 1.283953 s, ci 0.950
+std dev: 105.9133 ms, lb 98.11799 ms, ub 115.8851 ms, ci 0.950
+variance introduced by outliers: 72.782%
+variance is severely inflated by outliers
+
+benchmarking DRAC direct F2Pow256/x * 1
+mean: 181.2021 us, lb 179.3693 us, ub 182.9203 us, ci 0.950
+std dev: 9.075542 us, lb 7.405169 us, ub 11.18295 us, ci 0.950
+found 21 outliers among 100 samples (21.0%)
+  10 (10.0%) low severe
+  2 (2.0%) low mild
+  6 (6.0%) high mild
+  3 (3.0%) high severe
+variance introduced by outliers: 48.443%
+variance is moderately inflated by outliers
+
+benchmarking DRAC direct F2Pow256/x * 10
+mean: 350.2855 us, lb 348.2387 us, ub 352.4168 us, ci 0.950
+std dev: 10.71761 us, lb 9.811655 us, ub 11.83560 us, ci 0.950
+variance introduced by outliers: 25.783%
+variance is moderately inflated by outliers
+
+benchmarking DRAC direct F2Pow256/x * 100
+mean: 2.346592 ms, lb 2.321243 ms, ub 2.382939 ms, ci 0.950
+std dev: 153.8974 us, lb 112.4828 us, ub 228.0057 us, ci 0.950
+found 3 outliers among 100 samples (3.0%)
+  2 (2.0%) high severe
+variance introduced by outliers: 61.558%
+variance is severely inflated by outliers
+
+benchmarking DRAC direct F2Pow256/x * 1000
+mean: 29.81181 ms, lb 29.66006 ms, ub 29.98362 ms, ci 0.950
+std dev: 828.1214 us, lb 659.5661 us, ub 1.068035 ms, ci 0.950
+found 5 outliers among 100 samples (5.0%)
+  3 (3.0%) high mild
+  1 (1.0%) high severe
+variance introduced by outliers: 21.929%
+variance is moderately inflated by outliers
+
+benchmarking DRAC direct F2Pow256/x * 10000
+collecting 100 samples, 1 iterations each, in estimated 38.51602 s
+mean: 379.9490 ms, lb 377.7279 ms, ub 382.9358 ms, ci 0.950
+std dev: 13.10734 ms, lb 10.35696 ms, ub 16.71713 ms, ci 0.950
+found 15 outliers among 100 samples (15.0%)
+  2 (2.0%) low mild
+  6 (6.0%) high mild
+  7 (7.0%) high severe
+variance introduced by outliers: 30.656%
+variance is moderately inflated by outliers
+
+benchmarking DRAC via RAC F97/x ^ 1
+mean: 171.3926 us, lb 167.5259 us, ub 178.8818 us, ci 0.950
+std dev: 26.59955 us, lb 16.43885 us, ub 43.99935 us, ci 0.950
+found 18 outliers among 100 samples (18.0%)
+  4 (4.0%) high mild
+  14 (14.0%) high severe
+variance introduced by outliers: 90.463%
+variance is severely inflated by outliers
+
+benchmarking DRAC via RAC F97/x ^ 10
+mean: 5.340957 ms, lb 5.230016 ms, ub 5.564396 ms, ci 0.950
+std dev: 773.4354 us, lb 385.7050 us, ub 1.288727 ms, ci 0.950
+found 19 outliers among 100 samples (19.0%)
+  18 (18.0%) high severe
+variance introduced by outliers: 89.396%
+variance is severely inflated by outliers
+
+benchmarking DRAC via RAC F97/x ^ 100
+collecting 100 samples, 1 iterations each, in estimated 5.489397 s
+mean: 56.25768 ms, lb 55.97144 ms, ub 56.61523 ms, ci 0.950
+std dev: 1.636881 ms, lb 1.385732 ms, ub 2.323528 ms, ci 0.950
+found 1 outliers among 100 samples (1.0%)
+variance introduced by outliers: 23.846%
+variance is moderately inflated by outliers
+
+benchmarking DRAC via RAC F97/x ^ 1000
+collecting 100 samples, 1 iterations each, in estimated 58.02219 s
+mean: 607.2531 ms, lb 600.4794 ms, ub 622.1264 ms, ci 0.950
+std dev: 49.09986 ms, lb 27.64320 ms, ub 94.81248 ms, ci 0.950
+found 11 outliers among 100 samples (11.0%)
+  4 (4.0%) high mild
+  7 (7.0%) high severe
+variance introduced by outliers: 70.761%
+variance is severely inflated by outliers
+
+benchmarking DRAC via RAC F97/x * 1
+mean: 211.3592 us, lb 210.2423 us, ub 214.1967 us, ci 0.950
+std dev: 8.508267 us, lb 4.195599 us, ub 17.68677 us, ci 0.950
+found 17 outliers among 100 samples (17.0%)
+  6 (6.0%) high mild
+  11 (11.0%) high severe
+variance introduced by outliers: 37.533%
+variance is moderately inflated by outliers
+
+benchmarking DRAC via RAC F97/x * 10
+mean: 703.9978 us, lb 686.3119 us, ub 725.4001 us, ci 0.950
+std dev: 99.76399 us, lb 85.58023 us, ub 122.7533 us, ci 0.950
+found 2 outliers among 100 samples (2.0%)
+  2 (2.0%) high mild
+variance introduced by outliers: 88.384%
+variance is severely inflated by outliers
+
+benchmarking DRAC via RAC F97/x * 100
+mean: 5.084991 ms, lb 5.032839 ms, ub 5.154799 ms, ci 0.950
+std dev: 307.9542 us, lb 245.2881 us, ub 371.4381 us, ci 0.950
+found 14 outliers among 100 samples (14.0%)
+  14 (14.0%) high severe
+variance introduced by outliers: 57.517%
+variance is severely inflated by outliers
+
+benchmarking DRAC via RAC F97/x * 1000
+mean: 51.07323 ms, lb 50.69234 ms, ub 51.48791 ms, ci 0.950
+std dev: 2.027674 ms, lb 1.788305 ms, ub 2.412440 ms, ci 0.950
+found 1 outliers among 100 samples (1.0%)
+variance introduced by outliers: 36.569%
+variance is moderately inflated by outliers
+
+benchmarking DRAC via RAC F97/x * 10000
+collecting 100 samples, 1 iterations each, in estimated 58.48758 s
+mean: 599.6803 ms, lb 593.0544 ms, ub 610.6455 ms, ci 0.950
+std dev: 42.83523 ms, lb 29.06788 ms, ub 66.37457 ms, ci 0.950
+found 7 outliers among 100 samples (7.0%)
+  3 (3.0%) high mild
+  4 (4.0%) high severe
+variance introduced by outliers: 65.625%
+variance is severely inflated by outliers
+
+benchmarking DRAC via RAC F2Pow256/x ^ 1
+mean: 139.4509 us, lb 137.9717 us, ub 141.4606 us, ci 0.950
+std dev: 8.733501 us, lb 7.009269 us, ub 12.59605 us, ci 0.950
+found 3 outliers among 100 samples (3.0%)
+  2 (2.0%) high mild
+  1 (1.0%) high severe
+variance introduced by outliers: 59.518%
+variance is severely inflated by outliers
+
+benchmarking DRAC via RAC F2Pow256/x ^ 10
+mean: 8.717968 ms, lb 8.516511 ms, ub 8.935906 ms, ci 0.950
+std dev: 1.070008 ms, lb 946.8086 us, ub 1.239816 ms, ci 0.950
+found 1 outliers among 100 samples (1.0%)
+variance introduced by outliers: 85.233%
+variance is severely inflated by outliers
+
+benchmarking DRAC via RAC F2Pow256/x ^ 100
+collecting 100 samples, 1 iterations each, in estimated 8.402514 s
+mean: 97.04071 ms, lb 95.79820 ms, ub 98.47612 ms, ci 0.950
+std dev: 6.826153 ms, lb 5.904023 ms, ub 8.009663 ms, ci 0.950
+found 1 outliers among 100 samples (1.0%)
+variance introduced by outliers: 64.624%
+variance is severely inflated by outliers
+
+benchmarking DRAC via RAC F2Pow256/x ^ 1000
+collecting 100 samples, 1 iterations each, in estimated 146.8011 s
+mean: 1.371836 s, lb 1.353221 s, ub 1.391566 s, ci 0.950
+std dev: 98.75601 ms, lb 87.75028 ms, ub 120.3514 ms, ci 0.950
+found 1 outliers among 100 samples (1.0%)
+variance introduced by outliers: 66.606%
+variance is severely inflated by outliers
+
+benchmarking DRAC via RAC F2Pow256/x * 1
+mean: 219.3381 us, lb 217.8495 us, ub 221.4131 us, ci 0.950
+std dev: 8.948357 us, lb 6.916827 us, ub 11.62458 us, ci 0.950
+found 8 outliers among 100 samples (8.0%)
+  4 (4.0%) high mild
+  4 (4.0%) high severe
+variance introduced by outliers: 38.498%
+variance is moderately inflated by outliers
+
+benchmarking DRAC via RAC F2Pow256/x * 10
+mean: 404.8123 us, lb 402.2715 us, ub 407.8547 us, ci 0.950
+std dev: 14.19892 us, lb 11.86187 us, ub 17.07398 us, ci 0.950
+found 10 outliers among 100 samples (10.0%)
+  6 (6.0%) high mild
+  4 (4.0%) high severe
+variance introduced by outliers: 31.617%
+variance is moderately inflated by outliers
+
+benchmarking DRAC via RAC F2Pow256/x * 100
+mean: 2.744629 ms, lb 2.684784 ms, ub 2.823536 ms, ci 0.950
+std dev: 347.5371 us, lb 274.7237 us, ub 444.2308 us, ci 0.950
+found 8 outliers among 100 samples (8.0%)
+  4 (4.0%) high mild
+  4 (4.0%) high severe
+variance introduced by outliers: 86.262%
+variance is severely inflated by outliers
+
+benchmarking DRAC via RAC F2Pow256/x * 1000
+mean: 34.09270 ms, lb 33.32249 ms, ub 35.79696 ms, ci 0.950
+std dev: 5.603782 ms, lb 2.577594 ms, ub 10.46705 ms, ci 0.950
+found 6 outliers among 100 samples (6.0%)
+  4 (4.0%) high mild
+  2 (2.0%) high severe
+variance introduced by outliers: 91.510%
+variance is severely inflated by outliers
+
+benchmarking DRAC via RAC F2Pow256/x * 10000
+collecting 100 samples, 1 iterations each, in estimated 45.47930 s
+mean: 464.7868 ms, lb 460.6365 ms, ub 470.7796 ms, ci 0.950
+std dev: 25.16183 ms, lb 19.18361 ms, ub 39.96128 ms, ci 0.950
+found 4 outliers among 100 samples (4.0%)
+  3 (3.0%) high mild
+  1 (1.0%) high severe
+variance introduced by outliers: 52.445%
+variance is severely inflated by outliers
+
+benchmarking Horner Poly Building F97/1..100
+mean: 13.68812 us, lb 13.43918 us, ub 14.12924 us, ci 0.950
+std dev: 1.643819 us, lb 1.061680 us, ub 2.603630 us, ci 0.950
+found 6 outliers among 100 samples (6.0%)
+  2 (2.0%) high mild
+  4 (4.0%) high severe
+variance introduced by outliers: 85.199%
+variance is severely inflated by outliers
+
+benchmarking Horner Poly Building F97/1..1000
+mean: 134.3313 us, lb 132.6182 us, ub 138.7269 us, ci 0.950
+std dev: 13.13095 us, lb 6.470025 us, ub 27.77927 us, ci 0.950
+found 1 outliers among 100 samples (1.0%)
+  1 (1.0%) high severe
+variance introduced by outliers: 78.953%
+variance is severely inflated by outliers
+
+benchmarking Horner Poly Building F97/1..10000
+mean: 1.466674 ms, lb 1.453119 ms, ub 1.480534 ms, ci 0.950
+std dev: 70.30680 us, lb 63.50090 us, ub 79.78981 us, ci 0.950
+variance introduced by outliers: 46.433%
+variance is moderately inflated by outliers
+
+benchmarking Horner Poly Building F97/1..100000
+mean: 22.70270 ms, lb 21.57007 ms, ub 24.62393 ms, ci 0.950
+std dev: 7.389483 ms, lb 5.169427 ms, ub 13.21360 ms, ci 0.950
+found 1 outliers among 100 samples (1.0%)
+  1 (1.0%) high severe
+variance introduced by outliers: 97.858%
+variance is severely inflated by outliers
+
+benchmarking Horner Poly Building F2Pow256/1..100
+mean: 276.0164 us, lb 237.0612 us, ub 352.3366 us, ci 0.950
+std dev: 276.3437 us, lb 171.4987 us, ub 398.4828 us, ci 0.950
+found 8 outliers among 100 samples (8.0%)
+  2 (2.0%) high mild
+  6 (6.0%) high severe
+variance introduced by outliers: 98.985%
+variance is severely inflated by outliers
+
+benchmarking Horner Poly Building F2Pow256/1..1000
+mean: 9.664389 ms, lb 9.527766 ms, ub 9.866683 ms, ci 0.950
+std dev: 839.8573 us, lb 584.0971 us, ub 1.270930 ms, ci 0.950
+found 2 outliers among 100 samples (2.0%)
+  2 (2.0%) high severe
+variance introduced by outliers: 73.836%
+variance is severely inflated by outliers
+
+benchmarking Horner Poly Building F2Pow256/1..10000
+collecting 100 samples, 1 iterations each, in estimated 29.91269 s
+mean: 310.0259 ms, lb 306.0158 ms, ub 316.6878 ms, ci 0.950
+std dev: 26.00881 ms, lb 17.81027 ms, ub 37.88854 ms, ci 0.950
+found 20 outliers among 100 samples (20.0%)
+  6 (6.0%) high mild
+  14 (14.0%) high severe
+variance introduced by outliers: 72.784%
+variance is severely inflated by outliers
+
+benchmarking Horner Poly Building F2Pow256/1..100000
+collecting 100 samples, 1 iterations each, in estimated 335.6682 s
+mean: 3.327934 s, lb 3.320058 s, ub 3.338301 s, ci 0.950
+std dev: 45.93415 ms, lb 36.73801 ms, ub 66.14457 ms, ci 0.950
+found 3 outliers among 100 samples (3.0%)
+  2 (2.0%) high mild
+  1 (1.0%) high severe
+variance introduced by outliers: 6.598%
+variance is slightly inflated by outliers
+Benchmark BenchRAE: FINISH
