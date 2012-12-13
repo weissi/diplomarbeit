@@ -5,8 +5,14 @@ cd "$HERE"
 
 if [ "$1" = "-c" ]; then
     echo "Building in continuous mode"
-    iwatch -e modify -t '\.tex$' -c ./build.sh .
+    shift
+    iwatch -e modify -t '\.tex$' -c "./build.sh $@" .
     exit 0
+fi
+
+GRIVE=1
+if [ "$1" = "-n" ]; then
+    GRIVE=0
 fi
 
 STEP="main program"
@@ -65,8 +71,12 @@ case "$(uname -s)" in
         if pgrep -f 'evince (.+\/)?thesis.pdf' > /dev/null; then
             export PATH="$PATH:/home/weissi/local/bin/"
             evince thesis.pdf
-            pgrep grive && echo "NOTICE: grive already uploading" || \
-                { ( cd ~/gdrive/ && date && grive )&>>/tmp/grive.log & }
+            if [ $GRIVE -eq 1 ]; then
+                pgrep grive && echo "NOTICE: grive already uploading" || \
+                    { ( cd ~/gdrive/ && date && grive )&>>/tmp/grive.log & }
+            else
+                echo "not uploading"
+            fi
         fi
         ;;
     *)
