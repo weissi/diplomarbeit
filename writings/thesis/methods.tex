@@ -327,13 +327,15 @@ of the DRAV that was expected to be decoded (see also Lemma
 
 % WELL-FORMED DRAVs
 \JWlthree{Well--Formed DRAVs}
+\label{sec:well-formed-DRAV}
 
-A DRAV $\widetilde{v}$ is well--formed iff $D(\widetilde{v}) \neq \bot$.
-Therefore, if $D(\widetilde{\chi}) = \bot$, $\chi$ is non--well--formed.
-Obviously the well--formedness of a DRAV depends on the encryption keys used to
-decrypt. Decoding well--formed DRAVs using any other decoding function will
-lead to $\bot$ because the well--formed DRAV looks non--well--formed to the
-other decoding function.
+A DRAV $\widetilde{v}$ is well--formed iff $D(\widetilde{v}) \neq \bot
+\Leftrightarrow D_l(\widetilde{v}) = D_r(\widetilde{v})$. Therefore, if
+$D(\widetilde{\chi}) = \bot$, $\chi$ is non--well--formed. Obviously the
+well--formedness of a DRAV depends on the encryption keys used to decrypt.
+Decoding well--formed DRAVs using any other decoding function will lead to
+$\bot$ because the well--formed DRAV looks non--well--formed to the other
+decoding function.
 
 \begin{lem}
   \label{lem:well-formed-fun-of-dec-fun}
@@ -732,126 +734,22 @@ arbitrary complex arithmetic expressions, as a rule of thumb: As soon as a
 (non--trivial) multiplication is part of the original arithmetic, one DRAE is
 not enough to evaluate it.
 
-
-% FORMAL DESCRIPTION
-\JWlthree{Formal Description}
-
-Because DRAEs are tightly related to DRAVs, they fulfill similar properties:
-
-\begin{enumerate}
-
-  \item \label{prop:drae-encrypted} DRAEs are encrypted: Without the encryption
-    keys, they do not reveal any information.
-
-  \item \label{prop:drae-signed} DRAEs are signed: If someone tries to forge a
-    DRAE, it will become non--well--formed and operations with that DRAE result
-    in non--well--formed DRAVs.
-
-  \item DRAEs are not exchangeable with other DRAEs because every DRAE is
-    encrypted with fresh keys.
-
-  \item \label{prop:drae-oafe} DRAEs can be securely evaluated using OAFEs.
-
-\end{enumerate}
-
-\noindent{}Informally, a DRAE is composed of two finite multi--sets and a
-constant DRAV\@. The first multi--set, called the \emph{multiplicative terms}
-contains tuples of computations. The second multi--set, called the
-\emph{additive terms} contains computations that evaluate to DRAVs. The constant
-DRAV represents the constant terms in the arithmetic expression. The
-component--wise multiplication of each of the computation tuples (from the
-multiplicative terms) yields DRAVs, too. The sum of the constant DRAV, the DRAVs
-obtained from the additive terms and the DRAVs obtained from the multiplicative
-terms is the evaluated value of this DRAE\@. Again the evaluated value is a
-valid DRAV\@.
-
-More formally, a DRAE can be described as follows where
-$\mathcal{E}_\mathcal{C}$ represents the DRAEs, $\mathcal{C}$ the affine
-computations, $\mathcal{V}$ the set of all DRAVs and $\mathcal{V}_\mathcal{C}$
-the computations that lead to DRAVs.
-
-\begin{align}
-%
-  &\text{The static keys } \alpha_l, \alpha_r \in K \setminus \{0\}, \alpha_l +
-  \alpha_r \neq 0\nonumber\\
-%
-  &\text{The dynamic keys } \beta, \beta' \in K \nonumber\\
-%
-  &s, x, x', i \in K \nonumber\\
-%
-  \mathcal{C} = & \{ c(x) = s \cdot x + i \} \nonumber\\
-%
-  \mathcal{V}_\mathcal{C} = & \{ (\alpha_l \cdot f(x) + \beta,
-                      \alpha_r \cdot f'(x') + \beta' )
-                    \mid f, f' \in \mathcal{C} \} \nonumber\\
-%
-  \label{rel:DRAE}
-  \mathcal{E}_\mathcal{C} = & \{ (M, A, k) \mid
-      M \subseteq \mathcal{V}_\mathcal{C} \times
-      \mathcal{V}_\mathcal{C}; A \subseteq \mathcal{V}_\mathcal{C};
-      k \in \mathcal{V};
-      A, M~\text{finite multi--sets} \}
-%
-\end{align}
-
-As stated in the introduction to this chapter, the calculations are hidden
-inside OAFEs. When the party that built the DRAE transmits it to the evaluating
-party, it obviously replaces the concrete affine computations by references to
-the OAFEs that calculate them obliviously.  Because of the definition of OAFEs
-(see chapter \ref{def:OAFE}) the evaluating party will only learn exactly one
-evaluation $c(x)$ for each variable $x$. A \emph{pre--evaluated DRAE} is the
-entity that the evaluating party obtains after successfully having evaluated all
-the computations (using the OAFEs). The pre--evaluated DRAEs ($\mathcal{E}$) are
-defined as follows:
-
-\begin{align}
-  \mathcal{V} = & \{ (v_l, v_r) \mid v_l, v_r \in K \}
-  &\text{, the DRAVs (chapter \ref{def:DRAV})} \nonumber\\
-%
-  \label{rel:pre-eval-DRAE}
-  \mathcal{E} = & \{ (M, A, k) \mid
-      M \subseteq \mathcal{V} \times \mathcal{V};
-      A \subseteq \mathcal{V};
-      k \in \mathcal{V} \}
-      &\text{, the pre--evaluated DRAEs}
-\end{align}
+The next chapters describe in depth how arithmetic operations can be safely
+encoded and how a DRAE describes this encoding. Since DRAEs evaluate to DRAVs
+and DRAVs can be easily added (see chapter \ref{sec:DRAV-addition}), DRAE
+addition is easy, too: A DRAE that encodes the addition of two DRAEs can be
+built practically costless. But DRAE multiplication is more complex: To multiply
+two DRAEs, both DRAEs have to be evaluated separately, their results have to be
+assigned to intermediate variables and a third DRAE has to be built that solely
+multiplies the intermediate variables. In contrast to general DRAE
+multiplication, a DRAE can encode the multiplication of two DRAVs and assigning
+intermediate values to variables is just giving intermediate DRAVs a temporary
+name.
 
 
-% DECODING DRAEs
-\JWlthree{Decoding DRAEs}
-\label{sec:DRAE-decoding}
-
-Entirely evaluating a pre--evaluated DRAE to obtain the DRAV is straightforward:
-A pre--evaluated DRAE $e \in \mathcal{E} = (M,A, k)$ evaluates to its
-single resulting DRAV $r \in \mathcal{V}$ as follows (all additions performed
-component--wise):
-
-\begin{align*}
-M' &= \Bigg\{ m_1 \cdot m_2\ \Bigg|\ \begin{pmatrix}m_1\\m_2\end{pmatrix}
-\in M \Bigg\} \\
-r & = \sum_{a \in A}a + \sum_{m \in M'}m + k
-\end{align*}
-
-
-% DRAE ARITHMETIC
-\JWlthree{DRAE Arithmetic}
-
-The purpose of DRAEs is to specify arithmetic operations. This chapter describes
-how arithmetic operations can be safely encoded using DRAEs. Since DRAEs
-evaluate to DRAVs and DRAVs can be easily added (see chapter
-\ref{sec:DRAV-addition}), DRAE addition is easy, too: A DRAE that encodes the
-addition of two DRAEs can be built practically costless. But DRAE multiplication
-is more complex: To multiply two DRAEs, both DRAEs have to be
-evaluated separately, their results have to be assigned to intermediate
-variables and a third DRAE has to be built that solely multiplies the
-intermediate variables. In contrast to general DRAE multiplication, a DRAE can
-encode the multiplication of two DRAVs and assigning intermediate values to
-variables is just giving intermediate DRAVs a temporary name.
-
-
-%Direct Addition
-\JWlfour{Addition}
-\label{sec:DRAE-addition}
+% ADDITION
+\JWlthree{Encoding Additions}
+\label{sec:enc-adds}
 
 Since two DRAVs can directly be added as explained in chapter
 \ref{sec:DRAV-addition}, two DRAEs can be added by adding the constants and
@@ -865,9 +763,9 @@ keys lead to non--well--formed DRAVs because wrong encryption keys will be used
 to decode them.
 
 
-%Multiplication
-\JWlfour{Multiplication}
-\label{sec:DRAE-multiplication}
+% MULTIPLICATION
+\JWlthree{Encoding Multiplications}
+\label{sec:enc-muls}
 
 Since neither a DRAV (chapter \ref{def:DRAV}) nor a DRAE (see above) can be
 multiplied directly, most multiplications have to be performed using a
@@ -877,72 +775,184 @@ arithmetic expressions. This chapter describes multiplications that can directly
 be expressed as a DRAE: A single multiplication of two DRAVs $\widetilde{x}$ and
 $\widetilde{y}$ (each assigned to a variable) to a DRAE $E \in \mathcal{E}$.
 
-To ensure the security, the multiplication encoding was chosen carefully.  For
-example, a final DRAE $\psi$ that evaluates to $0$ and encodes the
-multiplication of two intermediate variables $\zeta$ and $\xi$: $\psi
-\entspricht \zeta \cdot \xi$ should not reveal any information but $\psi
-\entspricht 0 \Rightarrow \zeta \entspricht 0 \vee \xi\ \entspricht\ 0$.  But an
-attacker could forge the tuple components of the DRAV $\zeta$ to some random
-values. As shown in chapter \ref{def:DRAV} this means $\zeta = \bot$ as $\bot$
-is represented as randomness. Because the multiplication of a value with
-randomness is randomness as well, the property $\forall x: \bot \cdot x = \bot$
-holds.  Except for the multiplication of randomness to $0$ ($\forall x \in K: 0
-\cdot x = 0$). If $\psi$ still evaluates to $0$ despite the forging of $\zeta$,
-it is very likely (especially in large finite fields) that $\xi\ \entspricht\
-0$. But this information should not leak to an attacker. To ensure the
-propagation of the randomness (encoding $\bot$) the multiplication is done by
-mixing both components of the DRAV tuples. Due to the mixing, even $0 \cdot
-\zeta = \bot$ except when the attacker manages to two random numbers such that
-their decoding is the same number. Without knowledge of the encryption keys,
-this probability is negligible and particularly the attacker cannot know if it
-managed to choose to random numbers with an equal decoding.
+
+% Towards Secure Multiplications
+\JWlfour{Towards Secure Multiplications}
+\label{sec:toward-sec-muls}
+
+This chapter describes the iterations this thesis made until reaching the goal
+of secure multiplications. The description is from ground up, it starts with
+basic finite field mathematics, without DRAVs and DRAEs that will be introduced
+differently in the process.
+
+\paragraph{The general construction} is inspired by the paper \emph{How to
+Garble Arithmetic Circuits} \cite{gac2012}. After the description of the
+construction, the extensions that were developed for this thesis will be
+described.
 
 \begin{align*}
-  E & \in \mathcal{E}; \widetilde{x}, \widetilde{y} \in \mathcal{V};
-  r_1, r_2, r_3, r_4, r_5, r_6, r_7, r_8 \in K;
-  \alpha_l, \alpha_r \in K \setminus \{0\} \\
   %
-  E & = \widetilde{x} \otimes \widetilde{y} \\
+\begin{pmatrix}\mathfrak{A}\\\mathfrak{C}\end{pmatrix} & =
+\begin{pmatrix}1\\r_2\end{pmatrix} \cdot x +
+\begin{pmatrix}-r_1\\-r_1r_2+r_3\end{pmatrix} &
   %
-  E & = \Bigg(\left\{\left(
-            \begin{pmatrix}
-              \alpha_l \cdot D_l(\widetilde{x}) - r_1 \\
-              \alpha_r \cdot D_r(\widetilde{x}) - r_5
-            \end{pmatrix},
-            \begin{pmatrix}
-              1        \cdot D_l(\widetilde{y}) - r_2 \\
-              1        \cdot D_r(\widetilde{y}) - r_6
-            \end{pmatrix}
-        \right)\right\}, \\
-    &   \qquad\bigg\{
-        \begin{pmatrix}
-            \alpha_lr_2 \cdot D_r(\widetilde{x}) + r_3 \\
-            \alpha_rr_6 \cdot D_l(\widetilde{x}) + r_7
-          \end{pmatrix} \\
-    &  \qquad,
-        \ \begin{pmatrix}
-            r_1        \cdot D_r(\widetilde{y}) + r_4 \\
-            r_5        \cdot D_l(\widetilde{y}) + r_8
-          \end{pmatrix}
-        \bigg\} \\
-    &  \qquad, (0, 0)
-        \Bigg) \\
+\begin{pmatrix}\mathfrak{B}\\\mathfrak{D}\end{pmatrix} & =
+\begin{pmatrix}1\\r_1\end{pmatrix} \cdot y +
+\begin{pmatrix}-r_2\\-r_3\end{pmatrix}\\
+  %
+  z & = \mathfrak{A} \cdot \mathfrak{B} + \mathfrak{C} + \mathfrak{D} =
+  x \cdot y\\
 \end{align*}
 
-\noindent{}In the relation above, the first curly bracket contains the
-multiplicative terms, the second contains the additive terms and the constant is
-set to $(0, 0)$ since no constant addition is performed.
+For uniformly random numbers $r1, r2, r3, r4 \in K$ all the terms
+$\mathfrak{A}$, $\mathfrak{B}$, $\mathfrak{C}$, and $\mathfrak{D}$ can be
+calculated using two OAFEs and every term alone does not reveal any information
+because each is one--time encrypted. But their composition ($\mathfrak{A} \cdot
+\mathfrak{B} + \mathfrak{C} + \mathfrak{D}$) evaluates to the desired result $x
+\cdot y$. Because of the one--time encryption, a simple two party evaluation
+could be realized easily by calculating $\mathfrak{A}$ and $\mathfrak{C}$ or
+$\mathfrak{B}$ and $\mathfrak{D}$ a priori and delivering the terms to the other
+party. Using one OAFE configured by the first party, the second party is then
+able to calculate the other terms and therefore the result $x \cdot y$. This
+construction is not yet feasible for composable computations because the second
+party learns the result of intermediate calculations. This flaw can be removed
+by simple modifications.
 
-The following equations show that the multiplication of two well--formed
-DRAVs will evaluate to the desired result. Additionally it shows that
-non--well--formed DRAV operands will turn the result to a non--well--formed DRAV
-as well. In the following the decoding of a DRAE will be analyzed and it will
-become apparent that every DRAV forgery propagates through a
-multiplication. The DRAE $E$ gets decoded (as defined in chapter
-\ref{sec:DRAE-decoding}) to a DRAV $\widetilde{e}$.
+
+\paragraph{Encrypted Variables} are introduced not to reveal intermediate
+calculations. The basic idea is to have bar variables $\bar{x}$, an encrypted
+form of $x$. Usually, $x$ is encrypted (boxed) as $\bar{x} = \alpha x + \beta$.
+For the sake of simplicity, two functions $B(x) = \alpha x + \beta = \bar{x}$
+and $U(\bar{x}) = (\bar{x}-\beta)*(1/\alpha)$ are assumed that box and unbox
+variables by implicitly generating/knowing the encryption keys $\alpha$ and
+$\beta$ from the context. Using the encrypted form, the multiplication above can
+be revised, the first step is to encrypt the input variables $x$ and $y$.
 
 \begin{align*}
-  \widetilde{e} & =
+  %
+  \bar{x} & = B(x) = \alpha_x x + \beta_x &
+  \bar{y} & = B(x) = \alpha_x y + \beta_y \\
+  %
+\begin{pmatrix}\mathfrak{A}\\\mathfrak{C}\end{pmatrix} & =
+\begin{pmatrix}\alpha_z\\\alpha_z r_2\end{pmatrix} \cdot U(\bar{x}) +
+\begin{pmatrix}-r_1\\-r_1r_2+r_3+\beta_z\end{pmatrix} &
+  %
+\begin{pmatrix}\mathfrak{B}\\\mathfrak{D}\end{pmatrix} & =
+\begin{pmatrix}1\\r_1\end{pmatrix} \cdot U(\bar{y}) +
+\begin{pmatrix}-r_2\\-r_3\end{pmatrix}\\
+  %
+  \bar{z} & = \mathfrak{A} \cdot \mathfrak{B} + \mathfrak{C} + \mathfrak{D} \\
+  & = B(U(x) \cdot U(y)) = \alpha_z xy + \beta_z\\
+\end{align*}
+
+Because the composition of affine functions leads to affine functions as well,
+every calculation above can be evaluated using OAFEs. The calculations above
+need four OAFEs, two to encrypt the inputs $x$ and $y$ and two for the
+multiplication $x \cdot y$. The first party which generated the OAFEs and chose
+the random numbers in named \emph{Goliath} in the following. The party which
+performs the evaluation but has no knowledge of the encryption keys is named
+\emph{David}. Again, $\alpha_x, \alpha_y, \alpha_z, \beta_x, \beta_y, \beta_z,
+r_1, r_2, r_3 \in K$ and uniformly at random. Obviously the $\alpha$s have to be
+invertible. After the multiplication, $\bar{z}$ is encrypted using the
+encryption keys $\alpha_z$ and $\beta_z$. For two party calculations, Goliath
+can evaluate the terms depending on $x$ (or $y$) the same way (without using
+OAFEs) and transfer the evaluated terms to David. Given the OAFEs and the terms
+Goliath evaluated a priori, David can then calculate the other expressions,
+depending on its input. By commissioning additional tasks to David, this
+construction is composable: When David can be instructed to store (encrypted)
+intermediate values that it provides in further calculations, arbitrary
+multiplicative expressions can be modeled with this construction. Exemplary, the
+evaluation of the expression $(x \cdot y) \cdot z$ is discussed. Assuming David
+provides $x$ and Goliath provides $y$ and $z$, the expression can be evaluated
+by first boxing David's input $\bar{x} = B(x)$ using one OAFE. Using the
+construction described above, David can now calculate the encrypted intermediate
+result $\bar{t} = B(x \cdot y)$ without knowing anything about $y$ or the
+intermediate result $t$. Both one--time encrypted (boxed) variables. In the next
+step, David can be commissioned to calculate $\bar{o} = E(t \cdot z$ similarly.
+And $\bar{o}$ is the final result. Using one additional OAFE, Goliath can allow
+David to execute $o = U(\bar{o})$ yielding the result of $o = (x \cdot y) \cdot
+z$.  David will not learn anything from $y$, $t$ or $z$ that it cannot calculate
+from $o$ (and his input $x$) directly. David could try to forge the value of
+$\bar{t}$ before calculating $\bar{t} \cdot \bar{z}$ but because it has no
+information about the encryption keys of $\bar{t}$ or $\bar{z}$ it will render
+$o = U(\bar{o})$ to randomness because it will contain random terms depending on
+some encryption key ($\forall \bar{v} \in \{B(v) \mid v \in K\}, \Delta \in K
+\setminus \{0\}: U(\bar{v}+\Delta) \neq U(\bar{v})+\Delta$). However, there is a
+security flaw: Usually, from $o = (x \cdot y) \cdot z = 0$, David can learn $x =
+0 \vee y = 0 \vee z = 0$. Because $x$ is its own input, when knowing $x \neq 0$
+from $o = 0$ it should learn $y = 0 \vee z = 0$. Unfortunately, David could
+choose $\bar{t}$ randomly and with overwhelming probability, $U(\bar{t}) \neq
+0$. So forging $\bar{t}$ to a random number will reveal additional information
+to David: $o = 0 \Rightarrow U(\bar{t} \cdot \bar{z}) = 0 \Rightarrow z = 0$
+with overwhelming probability. This means David does not know what it changes
+when it forges, but it can reveal additional information when the result of a
+multiplication is $0$. Therefore, this thesis underwent the next iteration.
+
+\paragraph{Using Message Authentication Codes} illicit modifications can be
+prevented. The original proposal of Carter and Wegman\cite{carter79} to hash
+integers is to choose a prime $p$ (and random keys $a \neq 0$ and $b$) and use
+
+\begin{align*}
+  %
+  h_{a,b}(x) = ((ax + b) \bmod p) \bmod m
+  %
+\end{align*}
+
+In finite fields (such as $K$) the modulus can be removed and the hashing
+function can be adapted to $h_{a,b}(x) = (ax + b)$ being an universal hashing
+function. For $a$s and $b$s only used once, the hashing function is a one--time
+encryption as well. Because this thesis used $\bar{x} = B(x) = \alpha x + \beta$
+with fresh $\alpha$s and $\beta$s for every variable, this is an one--time a
+one--time encryption of $x$. Because of the flaw that additional information can
+be revealed when multiplications result in $0$, this iteration replaces boxed
+values by DRAVs (chapter \ref{def:DRAV}). DRAVs are twofold one--time
+encryptions, which are valid if the decryption of the one--time encryptions
+equal. Therefore DRAVs are encrypted values with \JWdef{Message Authentication
+Code}{MAC}{s} build--in. To be able to multiply two DRAVs, the multiplication
+construction is adapted (for the exact definitions of DRAVs, see chapter
+\ref{def:DRAV}):
+
+\begin{align*}
+  %
+  \widetilde{x} & = E(x) = (\alpha_l x + \beta_1, \alpha_r x + \beta_2) &
+  \widetilde{y} & = E(x) = (\alpha_l y + \beta_3, \alpha_r y + \beta_4) \\
+  %
+\begin{pmatrix}\mathfrak{A}\\\mathfrak{G}\end{pmatrix} & =
+\begin{pmatrix}\alpha_l\\\alpha_r r_6\end{pmatrix} \cdot D_l(\widetilde{x}) +
+\begin{pmatrix}-r_1\\-r_7\end{pmatrix} &
+  %
+\begin{pmatrix}\mathfrak{B}\\\mathfrak{H}\end{pmatrix} & =
+\begin{pmatrix}1\\r_5\end{pmatrix} \cdot D_l(\widetilde{y}) +
+\begin{pmatrix}-r_2\\r_8\end{pmatrix}\\
+  %
+\begin{pmatrix}\mathfrak{E}\\\mathfrak{C}\end{pmatrix} & =
+\begin{pmatrix}\alpha_r\\\alpha_l r_2\end{pmatrix} \cdot D_r(\widetilde{x}) +
+\begin{pmatrix}-r_5\\r_3\end{pmatrix} &
+  %
+\begin{pmatrix}\mathfrak{F}\\\mathfrak{D}\end{pmatrix} & =
+\begin{pmatrix}1\\r_1\end{pmatrix} \cdot D_r(\widetilde{y}) +
+\begin{pmatrix}-r_6\\r_4\end{pmatrix}\\
+  %
+  \beta_5 & = r1r_2 + r_3 + r_4 \\
+  %
+  \beta_6 & = r_5r_6 + r_7 + r_8 \\
+  %
+  \widetilde{z} & = (\mathfrak{A} \cdot \mathfrak{B}+\mathfrak{C}+\mathfrak{D}
+                    ,\mathfrak{E} \cdot \mathfrak{F}+\mathfrak{G}+\mathfrak{H})
+                    \\
+  %
+                    & = E(D(\widetilde{x}) \cdot d(\widetilde{y})) \\
+                    & = (\alpha_l xy + \beta_5, \alpha_r xy + \beta_6) \\
+\end{align*}
+
+Again, all terms can be evaluated using OAFEs and the construction is composable
+by commissioning David to store the resulting DRAV $\widetilde{z}$. This
+construction also assures that the MAC is checked by rendering all illicit
+changes to DRAVs that David can do to uniform, uncorrelated randomness. The
+following equations map Davids cheating possibilities to the $\Delta$s.
+
+\begin{align*}
+  \widetilde{z} & =
   \begin{pmatrix}
     (\alpha_l D_l(\widetilde{x})-r_1)
     (         D_l(\widetilde{y})-r_2) \\
@@ -1027,27 +1037,26 @@ the same variable are evaluated using one and the same OAFE, the attacker has to
 commit itself to one value for one variable (see chapters \ref{def:OAFE} and
 \ref{def:OPE}).
 
-\paragraph{The DRAVs $\widetilde{x}$ and $\widetilde{y}$ are well--formed}
-
+Possibility 1: The DRAVs $\widetilde{x}$ and $\widetilde{y}$ are well--formed.
 This leads to a DRAV encoding the desired result $E(x \cdot y)$. The resulting
-encryption keys for $\widetilde{e}$ are $\alpha_l$, $\alpha_r$ (static keys) and
+encryption keys for $\widetilde{z}$ are $\alpha_l$, $\alpha_r$ (static keys) and
 $\beta = r_1r_2 + r_3 + r_4$, $\beta' = r_5r_6 + r_7 + r_8$ (dynamic keys).
 
 \begin{align*}
   %
   \Delta_1=\Delta_2=\Delta_3=\Delta_4=0 \Rightarrow
-  \widetilde{e} =
+  \widetilde{z} =
   \begin{pmatrix}
     \alpha_l(xy) + (r_1r_2 + r_3 + r_4) \\
     \alpha_r(xy) + (r_5r_6 + r_7 + r_8)
   \end{pmatrix} \\
 \end{align*}
 
-\noindent{}The decrypted value is $e = D(\widetilde{e}) = xy$ as expected.
+\noindent{}The decrypted value is $z = D(\widetilde{z}) = xy$ as expected.
 
 
-\paragraph{At least one of the DRAVs $\widetilde{x}$ and $\widetilde{y}$ is
-non--well--formed} If at least one DRAV is non--well--formed, at least one
+Possibility 2: At least one of the DRAVs $\widetilde{x}$ and $\widetilde{y}$ is
+non--well--formed. If at least one DRAV is non--well--formed, at least one
 $\Delta$ is non--zero. This leads to a non--well--formed DRAV $\widetilde{e}$
 whose both components are uniformly at random.
 
@@ -1058,7 +1067,7 @@ whose both components are uniformly at random.
   \Rightarrow \\
   %
   &
-  \widetilde{e} =
+  \widetilde{z} =
   \begin{pmatrix}
     \alpha_l(xy) + (r_1r_2 + r_3 + r_4)
     + \Delta_3x + \Delta_1y
@@ -1079,11 +1088,357 @@ whose both components are uniformly at random.
 \end{align*}
 
 \noindent{}As one can easily see, if at least one $\Delta \neq 0$ the decoded
-result ($e = D(\widetilde{e})$) will comprise at least one term that depends on
-fresh, uniform randomness ($r_{1 \cdots 8}$). In a finite field this means that
-both components are uniformly at random. Since the random values $r_{1 \cdots
-8}$ were---per definition---fresh random values, the resulting term will
-additionally be uncorrelated to any term in the process.
+result ($z = D(\widetilde{z})$) will comprise at least one term that depends on
+fresh, uniform randomness ($r_{1 \ldots 8}$). In a finite field this means that
+both components are uniformly at random. Additionally the problem with
+multiplications that evaluate to $0$ is fixed in this version.
+
+However, this process still has one potential flaw: The resulting term is
+potentially not uncorrelated to the OAFE outputs ($\mathfrak{A}$ to
+$\mathfrak{H}$) even when the attacker forged a DRAV. Assuming, David forged at
+least $\widetilde{x_l}$. This means $\Delta_1 \neq 0$ and from $\mathfrak{A}$
+an attacker can learn:
+
+\begin{align*}
+  %
+  \mathfrak{A} = \alpha_l (x+\frac{\Delta_1}{\alpha_l}) - r_1
+  \Leftrightarrow r_1 = \alpha_l x + \Delta_1 - \mathfrak{A} &
+  %
+\end{align*}
+
+Because an attacker knows $\Delta_1$,  $\mathfrak{A}$ (OAFE output) and the
+environment may know $x$, there is a correlation between the random number $r_1$
+and the error term that should be uncorrelated to any thing else. Similar
+arguments hold for the other secret random numbers $r_{2 \ldots 8}$. Therefore,
+the secure multiplication construction used for this thesis is another further
+development. Chapter \ref{sec:sec-muls} explains the final construction in
+depth.
+
+
+% SECURE MULTIPLICATION CONSTRUCTION
+\JWlfour{Secure Multiplication Construction}
+\label{sec:sec-muls}
+
+The security flaw of the last vulnerable multiplication construction (see
+last construction in chapter \ref{sec:enc-muls}) is a potential correlation
+between OAFE outputs and the errors terms when David forges DRAVs. This final
+multiplication construction therefore adds uncorrelated random values to every
+OAFE output when the input was forged. The general idea is to split the OAFE
+output in two parts called \emph{radicals}. The sum of the two radicals that
+belong together has the same value as the OAFE outputs in the last vulnerable
+construction. Obviously the value is only the same iff David did not try to
+forge the DRAVs.
+
+\paragraph{The \emph{radicals} trick} is to modify OAFE calculations such as
+$\Phi \cdot D_\delta(\widetilde{v}) + \Psi$, $\delta \in \{l, r\}$ being the
+tuple component (left/right), $\widetilde{v}$ a DRAV, and $\Phi, \Psi \in K$ the
+OAFE parameters. The calculations get changed to two calculations ($!\delta$
+being two other tuple component, $!\delta = l \Leftrightarrow \delta = r \wedge
+!\delta = r \Leftrightarrow \delta = l$) $R_1$ and $R_2$ in the equations below.
+The values $\kappa$ and $\gamma$ are fresh values uniformly at random, that are
+only used to protect one OAFE calculation $\Phi \cdot D_\delta(\widetilde{v}) +
+\Psi$.
+
+\begin{align*}
+  %
+  R_1 & = (\kappa -1)\cdot(\Phi \cdot D_\delta(\widetilde{v})+\Psi) + \gamma \\
+  R_2 & = (\kappa)\cdot(\Phi \cdot D_{!\delta}(\widetilde{v})+\Psi) - \gamma \\
+  %
+\end{align*}
+
+The benefit of $R_1$ and $R_2$ is their sum: $R_1 + R_2 = \Phi \cdot
+D_\delta(\widetilde{v}) + \Psi$ if and only if $D_\delta(\widetilde{v}) =
+D_{!\delta}(\widetilde{v})$. And this condition is the condition whether
+$\widetilde{v}$ is well--formed or not (see chapter \ref{sec:well-formed-DRAV}).
+If $\widetilde{v}$ is non--well--formed , $R_1 + R_2$ will contain terms
+depending on $\kappa$.
+
+\paragraph{The combination of the radicals trick and the former version} is
+given in the equations below ($\odot$ denotes component--wise multiplication).
+The is the last iteration in the development of secure multiplication for this
+thesis.
+
+\begin{align*}
+  %
+  \widetilde{x} & = E(x) = (\alpha_l x + \beta_1, \alpha_r x + \beta_2) \\
+  %
+  \widetilde{y} & = E(x) = (\alpha_l y + \beta_3, \alpha_r y + \beta_4) \\
+  %
+\begin{pmatrix}
+  \mathfrak{A}_1\\\mathfrak{G}_1\\\mathfrak{E}_2\\\mathfrak{C}_2
+\end{pmatrix} & =
+\begin{pmatrix}1-\kappa_1\\1-\kappa_2\\\kappa_5\\\kappa_6\end{pmatrix} \odot
+  \left(
+  \begin{pmatrix}\alpha_l\\\alpha_r r_6\\\alpha_r\\\alpha_l r_2\end{pmatrix}
+    \cdot D_l(\widetilde{x}) +
+  \begin{pmatrix}-r_1\\-r_7\\-r_5\\r_3\end{pmatrix}
+  \right) +
+\begin{pmatrix}\gamma_1\\\gamma_2\\-\gamma_5\\-\gamma_6\end{pmatrix}\\
+  %
+\begin{pmatrix}
+  \mathfrak{B}_1\\\mathfrak{H}_1\\\mathfrak{F}_2\\\mathfrak{D}_2
+\end{pmatrix} & =
+\begin{pmatrix}1-\kappa_3\\1-\kappa_4\\\kappa_7\\\kappa_8\end{pmatrix} \odot
+  \left(
+  \begin{pmatrix}1\\r_5\\1\\r_1\end{pmatrix}
+    \cdot D_l(\widetilde{y}) +
+  \begin{pmatrix}-r_2\\r_8\\-r_6\\r_4\end{pmatrix}
+  \right) +
+\begin{pmatrix}\gamma_3\\\gamma_4\\-\gamma_7\\-\gamma_8\end{pmatrix}\\
+  %
+\begin{pmatrix}
+  \mathfrak{E}_1\\\mathfrak{C}_1\\\mathfrak{A}_2\\\mathfrak{G}_2
+\end{pmatrix} & =
+\begin{pmatrix}1-\kappa_5\\1-\kappa_6\\\kappa_1\\\kappa_2\end{pmatrix} \odot
+  \left(
+  \begin{pmatrix}\alpha_r\\\alpha_l r_2\\\alpha_l\\\alpha_r r_6\end{pmatrix}
+    \cdot D_r(\widetilde{x}) +
+  \begin{pmatrix}-r_5\\r_3\\-r_1\\-r_7\end{pmatrix}
+  \right) +
+\begin{pmatrix}\gamma_5\\\gamma_6\\-\gamma_1\\-\gamma_2\end{pmatrix}\\
+  %
+\begin{pmatrix}
+  \mathfrak{F}_1\\\mathfrak{D}_1\\\mathfrak{B}_2\\\mathfrak{H}_2
+\end{pmatrix} & =
+\begin{pmatrix}1-\kappa_7\\1-\kappa_8\\\kappa_3\\\kappa_4\end{pmatrix} \odot
+  \left(
+  \begin{pmatrix}1\\r_1\\1\\r_5\end{pmatrix}
+    \cdot D_r(\widetilde{y}) +
+  \begin{pmatrix}-r_6\\r_4\\-r_2\\r_8\end{pmatrix}
+  \right) +
+\begin{pmatrix}\gamma_7\\\gamma_8\\-\gamma_3\\-\gamma_4\end{pmatrix}\\
+  %
+  \beta_5 & = r1r_2 + r_3 + r_4 \\
+  %
+  \beta_6 & = r_5r_6 + r_7 + r_8 \\
+  %
+  \widetilde{z} & =
+  \begin{pmatrix}%
+    %
+    (\mathfrak{A}_1+\mathfrak{A}_2) \cdot
+    (\mathfrak{B}_1+\mathfrak{B}_2) +
+    (\mathfrak{C}_1+\mathfrak{C}_2) +
+    (\mathfrak{D}_1+\mathfrak{D}_2)\\
+    %
+    (\mathfrak{E}_1+\mathfrak{E}_2) \cdot
+    (\mathfrak{F}_1+\mathfrak{F}_2) +
+    (\mathfrak{G}_1+\mathfrak{G}_2) +
+    (\mathfrak{H}_1+\mathfrak{H}_2)
+    %
+  \end{pmatrix} \\
+  %
+  & = E(D(\widetilde{x}) \cdot d(\widetilde{y})) \\
+  & = (\alpha_l xy + \beta_5, \alpha_r xy + \beta_6) \\
+\end{align*}
+
+The following equations analyze the term ($\mathfrak{A}_1 + \mathfrak{A}_2$)
+when David is not honest and either the left side ($\Rightarrow \Delta_1 \neq
+0$) or the right side ($\Rightarrow \Delta_2 \neq 0$) of the tuple
+$\widetilde{x}$ is forged.
+
+\begin{align*}
+%
+  \mathfrak{A}_1 &=
+  (1 - \kappa_1) \cdot
+  (\alpha_l \cdot D_l(\widetilde{x}) - r_1) +
+  \gamma_1 \\
+  & =
+  (1 - \kappa_1) \cdot
+  \left(\alpha_l \cdot \left(x + \frac{\Delta_1}{\alpha_l}\right) - r_1\right) +
+  \gamma_1 \\
+  & =
+  (1 - \kappa_1) \cdot
+  \left(\alpha_l x + \Delta_1 - r_1\right) +
+  \gamma_1 \\
+  & =
+  (1 - \kappa_1) \cdot
+  \left(\alpha_l x - r_1\right) +
+  \gamma_1 +
+  (\Delta_1 - \kappa_1\Delta_1)\\
+  %
+  \mathfrak{A}_2 &=
+  \kappa_1 \cdot
+  (\alpha_l \cdot D_l(\widetilde{x}) - r_1) +
+  -\gamma_1 \\
+  & =
+  \kappa_1 \cdot
+  \left(\alpha_l \cdot \left(x + \frac{\Delta_2}{\alpha_r}\right) - r_1\right) +
+  -\gamma_1 \\
+  & =
+  \kappa_1 \cdot
+  \left(\alpha_l x + \frac{\alpha_l\Delta_2}{\alpha_r} - r_1\right) +
+  -\gamma_1 \\
+  & =
+  \kappa_1 \cdot
+  \left(\alpha_l x - r_1\right) +
+  -\gamma_1 +
+  \left(\frac{\kappa_1\alpha_1\Delta_2}{\alpha_r}\right)\\
+  %
+\mathfrak{A}_1 + \mathfrak{A}_2 &=
+  \alpha_l x - r_1 +
+  \left(
+    \Delta_1 - \kappa_1\Delta_1 +
+    \frac{\kappa_1\alpha_1}{\alpha_r}\Delta_2
+  \right)\\
+  &=
+  \alpha_l x - r_1 +
+  \left(
+    \kappa_1 \cdot \left(\frac{\Delta_1}{\kappa_1} - \Delta_1 +
+    \frac{\alpha_l}{\alpha_r}\Delta_2\right)
+  \right)\\
+%
+\end{align*}
+
+Because an attacker cannot know $\alpha_l$, $\alpha_r$, or $\kappa_1$, the error
+term will (except for the negligible probability) contain $\kappa_1$. Obviously,
+if $\Delta_1 = \Delta_2 = 0$ the attacker was honest and no error term gets
+generated. Because $\kappa_1$ is uncorrelated to any other term in the whole
+process, the DRAV will be made of uniform randomness, if an attacker tires to
+cheat. This is the DRAE executing the multiplication of the DRAVs
+$\widetilde{x}$ and $\widetilde{y}$ in the formal notation (see chapter
+\ref{sec:DRAE-formal}).
+
+\begin{align*}
+  %
+  E & = \widetilde{x} \cdot \widetilde{y} \\
+  %
+  E & =
+  \Bigg(\left\{\left(
+      \begin{pmatrix}
+        (\mathfrak{A}_1, \mathfrak{A}_2) \\
+        (\mathfrak{E}_1, \mathfrak{E}_2)
+      \end{pmatrix},
+      \begin{pmatrix}
+        (\mathfrak{B}_1, \mathfrak{B}_2) \\
+        (\mathfrak{F}_1, \mathfrak{F}_2)
+      \end{pmatrix}
+  \right)\right\},
+  \bigg\{
+    \begin{pmatrix}
+      \mathfrak{C}_1 \\
+      \mathfrak{G}_1
+    \end{pmatrix},
+    \begin{pmatrix}
+      \mathfrak{C}_2 \\
+      \mathfrak{G}_2
+    \end{pmatrix},
+    \begin{pmatrix}
+      \mathfrak{D}_1 \\
+      \mathfrak{H}_1
+    \end{pmatrix},
+    \begin{pmatrix}
+      \mathfrak{D}_2 \\
+      \mathfrak{H}_2
+    \end{pmatrix}
+  \bigg\}
+  , (0, 0)
+  \Bigg)
+  %
+\end{align*}
+
+
+% FORMAL DESCRIPTION
+\JWlthree{Formal Description}
+\label{sec:DRAE-formal}
+
+Because DRAEs are tightly related to DRAVs, they fulfill similar properties:
+
+\begin{enumerate}
+
+  \item \label{prop:drae-encrypted} DRAEs are encrypted: Without the encryption
+    keys, they do not reveal any information.
+
+  \item \label{prop:drae-signed} DRAEs are signed: If someone tries to forge a
+    DRAE, it will become non--well--formed and operations with that DRAE result
+    in non--well--formed DRAVs.
+
+  \item DRAEs are not exchangeable with other DRAEs because every DRAE is
+    encrypted with fresh keys.
+
+  \item \label{prop:drae-oafe} DRAEs can be securely evaluated using OAFEs.
+
+\end{enumerate}
+
+\JWtodo{Hier Radicals einbauen}
+
+\noindent{}Informally, a DRAE is composed of two finite multi--sets and a
+constant DRAV\@. The first multi--set, called the \emph{multiplicative terms}
+contains tuples of computations. The second multi--set, called the
+\emph{additive terms} contains computations that evaluate to DRAVs. The constant
+DRAV represents the constant terms in the arithmetic expression. The
+component--wise multiplication of each of the computation tuples (from the
+multiplicative terms) yields DRAVs, too. The sum of the constant DRAV, the DRAVs
+obtained from the additive terms and the DRAVs obtained from the multiplicative
+terms is the evaluated value of this DRAE\@. Again the evaluated value is a
+valid DRAV\@.
+
+More formally, a DRAE can be described as follows where
+$\mathcal{E}_\mathcal{C}$ represents the DRAEs, $\mathcal{C}$ the affine
+computations, $\mathcal{V}$ the set of all DRAVs and $\mathcal{V}_\mathcal{C}$
+the computations that lead to DRAVs.
+
+\begin{align}
+%
+  &\text{The static keys } \alpha_l, \alpha_r \in K \setminus \{0\}, \alpha_l +
+  \alpha_r \neq 0\nonumber\\
+%
+  &\text{The dynamic keys } \beta, \beta' \in K \nonumber\\
+%
+  &s, x, x', i \in K \nonumber\\
+%
+  \mathcal{C} = & \{ c(x) = s \cdot x + i \} \nonumber\\
+%
+  \mathcal{V}_\mathcal{C} = & \{ (\alpha_l \cdot f(x) + \beta,
+                      \alpha_r \cdot f'(x') + \beta' )
+                    \mid f, f' \in \mathcal{C} \} \nonumber\\
+%
+\label{rel:DRAE}
+\mathcal{E}_\mathcal{C} = & \{ (M, A, k) \mid
+M \subseteq (\mathcal{V}_\mathcal{C}, \mathcal{V}_\mathcal{C}) \times
+(\mathcal{V}_\mathcal{C}, \mathcal{V}_\mathcal{C});
+A \subseteq \mathcal{V}_\mathcal{C};
+k \in \mathcal{V};
+      A, M~\text{finite multi--sets} \}
+%
+\end{align}
+
+As stated in the introduction to this chapter, the calculations are hidden
+inside OAFEs. When the party that built the DRAE transmits it to the evaluating
+party, it obviously replaces the concrete affine computations by references to
+the OAFEs that calculate them obliviously.  Because of the definition of OAFEs
+(see chapter \ref{def:OAFE}) the evaluating party will only learn exactly one
+evaluation $c(x)$ for each variable $x$. A \emph{pre--evaluated DRAE} is the
+entity that the evaluating party obtains after successfully having evaluated all
+the computations (using the OAFEs). The pre--evaluated DRAEs ($\mathcal{E}$) are
+defined as follows:
+
+\begin{align}
+  \mathcal{V} = & \{ (v_l, v_r) \mid v_l, v_r \in K \}
+  &\text{, the DRAVs (chapter \ref{def:DRAV})} \nonumber\\
+%
+  \label{rel:pre-eval-DRAE}
+  \mathcal{E} = & \{ (M, A, k) \mid
+      M \subseteq \mathcal{V} \times \mathcal{V};
+      A \subseteq \mathcal{V};
+      k \in \mathcal{V} \}
+      &\text{, the pre--evaluated DRAEs}
+\end{align}
+
+
+% DECODING DRAEs
+\JWlthree{Decoding DRAEs}
+\label{sec:DRAE-decoding}
+
+Entirely evaluating a pre--evaluated DRAE to obtain the DRAV is straightforward:
+A pre--evaluated DRAE $e \in \mathcal{E} = (M,A, k)$ evaluates to its
+single resulting DRAV $r \in \mathcal{V}$ as follows (all additions performed
+component--wise):
+
+\begin{align*}
+M' &= \Bigg\{ m_1 \cdot m_2\ \Bigg|\ \begin{pmatrix}m_1\\m_2\end{pmatrix}
+\in M \Bigg\} \\
+r & = \sum_{a \in A}a + \sum_{m \in M'}m + k
+\end{align*}
 
 
 % MAXIMAL POLYNOMIAL DEGREE
@@ -1207,4 +1562,4 @@ The DRAC that evaluates to the polynomial has the same degree as the DRAE that
 evaluates the final value. Chapter \ref{sec:max-poly-degree} describes how
 to derive the maximal polynomial degree from a given DRAE\@.
 
-% vim: set spell spelllang=en_us fileencoding=utf8 :
+% vim: set spell spelllang=en_us fileencoding=utf8 formatoptions=tcroql : %
