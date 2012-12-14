@@ -53,6 +53,13 @@
 \newcommand{\JWmsgTP}[2]{(\texttt{#1}, #2)}
 \newcommand{\JWpath}[1]{\texttt{#1}}
 
+\DeclareDocumentCommand\JWdefn{mmg}{%
+  {\emph{#1\IfNoValueF{#3}{#3}}%
+  } (#2%
+  \IfNoValueF{#3}{#3}%
+  )%
+}
+
 \DeclareDocumentCommand\JWdef{mmg}{%
   {\label{def:#2}\emph{#1\IfNoValueF{#3}{#3}}%
   } (#2%

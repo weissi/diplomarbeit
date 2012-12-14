@@ -1,55 +1,85 @@
 \JWlone{Introduction}
 \label{sec:introduction}
 
-\JWtodo{Erklärung was OAFEs sind}
+A \JWdef{Secure Multi--party Computation}{MPC} or \JWdef{Secure Function
+Evaluation}{SFE} is the joint calculation of an arbitrary function $f$ with
+private inputs from a set of mutually distrusting parties. The function has to
+be evaluated correctly and the inputs have to be kept privately.  When the size
+of the set of parties for a MPC is $2$, the computation is also called a
+\emph{secure two--party computation}. The area of research of secure
+multi--party computations was founded by \emph{Yao's Millionaires' Problem}
+\cite{yao82}. The famous Millionaires' Problem discusses two millionaires, who
+are interested in knowing which of them is richer without revealing the actual
+values of their wealth. The problem is evaluating the function $f(a, b) = a \geq
+b$, where the first millionaire inputs the value of his wealth as $a$ and the
+second inputs $b$. The result of the evaluation is either $false$ so the second
+millionaire is richer or $true$ meaning the opposite. From the result and the
+own input, neither party is able to calculate the wealth of the other
+millionaire. Another example for real--world multi--party computations are
+democratic elections. The eligible voters input their private vote and the
+result of the calculations is the percentage breakdown.
 
-\JWtodo{Effizienz, also lineare Zeit irgendwie reinbringen}
+\JWdefn{Oblivious Polynomial Evaluation}{OPE} \cite{naor99,naor06} is a special
+case of SFE. In contrast to arbitrary functions that are known by the involved
+parties, OPE only allows the first party to privately submit a polynomial $p$
+and another party to evaluate the polynomial at one node $x$. The second party
+obtains the result $p(x)$ without revealing $x$ to the first party or revealing
+the polynomial $p$ to the second party. We find a secure and efficient OPE
+protocol a useful and interesting primitive.
 
-\JWtodo{Eigentlich neu schreiben, Kapitel ist totaler Schrott}
-
-This thesis describes how two parties can securely evaluate an arithmetic
-function such as $f(x_G,x_D) = ...$ over large finite fields. The main building
-block are OAFEs as provided by the David \& Goliath protocol
-\cite{davidgoliath}. However, the first step is to securely express the input
-function $f(x_G, x_D)$ in terms of affine functions. These affine functions can
-then be securely evaluated using OAFEs. At a first glance, the task of
-expressing an arbitrary function $f(x_G, x_D)$ using affine functions may seem a
-rather easy task. The challenge is to do it securely: The other party should not
-be able to learn $G$ when it is given the affine functions expressing the partly
-evaluated function $f(G, x_D)$ (value $G$ already set).  Additionally, the
-process should work non--interactively: The first party fixes its input $x_G =
-G$, partly evaluates $f(G, x_D)$, transforms it to affine functions and sends
-them as OAFEs to the second party. The affine functions themselves are either
-constant or hidden inside an OAFE calculation. After the second party provided
-their input $x_D$ to the OAFEs, it gets (from the OAFEs) the evaluated results
-of the affine functions. Using the described protocol, the second party is now
-able to securely and fully evaluate $f(x_G, x_D)$. The whole computation is
-expressed in terms of OAFE computations. Neither party will learn more of the
-other party's input than the final result will tell it anyway.
+\JWdefn{Oblivious Affine Function Evaluation}{OAFE} \cite{davidgoliath} is a
+primitive that allows---similar to OPE---to obliviously evaluate affine
+functions. This thesis works out an efficient, secure and implemented protocol
+for OPE based on OAFE. This thesis also works out approaches for general SFE.
+The security of the protocol is information--theoretically proved in the
+\JWdefn{Universal Composability}{UC} framework \cite{canetti05}.
 
 
+%
+% RELATED WORK
+%
 \JWltwo{Related Work}
 \label{sec:related-work}
 
-\JWtodo{Hauptsächlich das von chapter \ref{sec:discontinued}}
+The notion of security used in this thesis is \emph{universal composability} as
+defined by Canetti \cite{canetti05}. The benefit of this notion is that
+UC--secure protocols can be composed and ran concurrently while still staying
+safe without the necessity of additional security proofs. Besides the notion of
+security, Yao's \JWdefn{Garbled Circuit}{GC} approach \cite{yao86} is also
+related to this thesis because Yao garbles boolean circuits to garbled circuits.
+Despite the wide range of adoptions of Yao's garbled circuits, the approach is
+not suitable for arithmetic functions on large fields. Because the GC approach
+requires embedded truth tables in every gate, an adoption to larger finite
+fields would have the cost of a quadratic blowup of every truth table in every
+gate (cf.\ \cite{naor99privacy}).
+
+Besides the GC approch
+
+\begin{itemize}
+  \item Efficient Multi--Party Computation Over Rings \cite{cramer03}: Leicht
+    polynomiell und kein square \& multiply
+
+  \item Garbled Arithmetic Circuits \cite{gac2012}, computational assumptions
+
+  \item OPE in \cite{naor99,naor06}: Ist bisher immer polynomiell, wir zeigen
+    linear
+
+  \item Oblivious Affine Function Evaluation \cite{davidgoliath}, warum das so
+    toll ist und was ich damit tun will
+
+\end{itemize}
 
 
 \JWltwo{High--level Description}
 
-\begin{JWtodoBox}
-
 \begin{itemize}
 
-\item Motivation
+  \item Describe Problem
 
-\item Praktischer Anwendungsfall
+  \item Shortly describe OAFEs
 
-\item Was ist das Problem?
-
-\item Was will ich erreichen?
-
-\item High--level description of my thesis
+  \item Describe transformation idea
 
 \end{itemize}
 
-\end{JWtodoBox}
+% vim: set spell spelllang=en_us fileencoding=utf8 formatoptions=tcroql : %
