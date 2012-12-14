@@ -14,7 +14,13 @@ Both test machines are regular home computer systems thus the benchmarks were
 not run under laboratory conditions. Though, most background services and other
 programs that could interfere with the benchmarks have been stopped. The
 implementation has been compiled using full optimizations turned on
-(\JWcmd{cabal configure --ghc-options=-O3}).
+(\JWcmd{cabal configure --ghc-options=-O3}). To work out the computing time
+taken for the implementation of the protocol itself, the protocol implementation
+is evaluated using two different implementation of finite field calculations.
+The first implementation is a C++ library (see chapter
+\ref{sec:finite-field-calcs}) for calculations in $\mathbb{F}_{2^{256}}$ and the
+second implementation is a \JWThaskell{} library which calculates in the prime
+field $\mathbb{F}_{97}$.
 
 
 \JWlfour*{Test Maschine 1}
@@ -40,7 +46,7 @@ communication that takes part in the implementation that comes with this thesis.
 The running time includes the DRAC building and transmitting, the OAFE
 configuration and the successful evaluation of a random polynomial. The
 polynomial is evaluated using \emph{Horner's rule}\cite{cormen01}. The data
-points in all figures and tables were obtained by taking the median of
+points in all figures and tables was obtained by taking the median of
 running the same benchmark five times in a row (preceded by a non--accounted
 warm--up run).
 
@@ -64,7 +70,7 @@ $\mathbb{F}_{2^{256}}$. The problem is that the library includes a rather
 complex routine for object destruction that takes most of the evaluation time.
 The root of the problem is that functional languages prefer immutable
 (unchangeable) objects with very fast construction/destruction and the C++
-library that was interfaced is optimized for as few constructions/destructions
+library that is interfaced is optimized for as few constructions/destructions
 as possible and the use of mutable objects. The phenomenon that is observable
 when using this library is that the garbage collector is taking up most of the
 running time (up to $85\%$) waiting for the library destruction routine. For
@@ -202,10 +208,11 @@ contributes a working implementation.
 \label{sec:outlook}
 
 The most important open question is to find an improvement for the current
-technique to support arbitrary arithmetic circuits by maintaining the computing
-time complexity and the UC--security against all actively corrupted parties.
+technique to support arbitrary arithmetic circuits and not just polynomials by
+maintaining the computing time complexity and the UC--security against all
+actively corrupted parties.
 
-The implementation would benefit by a better implementation of a library for
+The implementation would benefit from a better implementation of a library for
 calculations in large finite fields such as $\mathbb{F}_{2^{k}}$ for $k > 128$.
 Additionally, the David \& Goliath protocol \cite{davidgoliath} should be
 implemented as a component the implementation of this thesis can use. The

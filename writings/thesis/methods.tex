@@ -11,37 +11,37 @@ This chapter informally illustrates the key ideas and methods proposed by this
 thesis. The following chapters contain a more formal bottom--up description that
 is rather cumbersome to understand without grasping the overall picture.
 
-The goal is to obliviously evaluate a polynomial by two mutual
-distrusting parties. Informally, that is evaluating $f(x) = \sum a_ix^i$ where
-the first party chooses $f$ and the second party chooses $x$. But neither
-party should learn the choice of the other party. The naive and simple solution
-is to instruct a trusted third party to evaluate the polynomial---provided by
-the first party---at the grid point $x$ provided by the second party.
-Of course, this solution is just as simple as insecure.
+The goal is to obliviously evaluate a polynomial by two mutual distrusting
+parties. Informally, that means to evaluate a polynomial ($f(x) = \sum a_ix^i$)
+where the first party chooses $f$ and the second party chooses $x$. It is
+crucial that neither party learns the choice of the other party. The naive and
+simple solution is to instruct a trusted third party to evaluate the
+polynomial---provided by the first party---at the grid point $x$ provided by the
+second party. Of course, this solution is just as simple as insecure because the
+third party could reveal its secrets at any time.
 
-Since this thesis uses Oblivious Affine Function Evaluation
-(OAFE)\cite{davidgoliath} as the main building block, the general polynomial has
-to be expressed as affine functions that evaluate parts of the complete
-function. The entirety of the affine functions exactly represents the original
-polynomial. To maintain the security property, neither party should be able to
-learn anything by intermediate results.
+Since this thesis uses \JWdefn{Oblivious Affine Function Evaluation} {OAFE}
+\cite{davidgoliath} as the main building block, the general polynomial has to be
+expressed as affine functions that evaluate parts of the complete function. The
+entirety of the affine functions exactly represents the original polynomial. To
+maintain the security property, neither party should be able to learn anything
+by intermediate results.
 
-The role both parties play differs a lot: The first party---usually named
+The role both parties play differs heavily: The first party---usually named
 \JWpOne{}---is in possession of the function to evaluate and sets up the
 tamper--proof hardware token that implements the OAFE functionality. The second
 party---usually named \JWpTwo{}---is less powerful: It does only evaluate
 entities issued by \JWpOne{} and uses the already configured OAFEs. But in the
 end, only \JWpTwo{} obtains the result.  Since the OAFEs play an important role,
-it is crucial to envision that if \JWpOne{} has generated one OAFE, \JWpTwo{}
-will be able to evaluate exactly one affine function at exactly one grid point.
-It is very important, that \JWpTwo{} \emph{does not learn the affine function}
-itself, only its evaluation at one grid point. To prevent a corrupted \JWpOne{}
-from intercepting information when \JWpTwo{} evaluates one of the OAFEs,
-\JWpOne{} is forced to commit itself to a finite number of OAFEs a priori.
-\JWpOne{} is also forced to commit itself to all parameters for the OAFEs and
-program this configuration onto a tamper--proof hardware token. \JWpOne{}
-programs and physically sends the token to \JWpTwo{} before \JWpTwo{} even
-starts the process.
+it is crucial to envision that every OAFE \JWpOne{} generates can be evaluated
+by \JWpTwo{} only once. In other words, an OAFE enables some party to evaluate
+an affine function at one node and guarantees that no further evaluations are
+possible. To prevent a corrupted \JWpOne{} from intercepting information when
+\JWpTwo{} evaluates one of the OAFEs, \JWpOne{} is forced to commit itself to a
+finite number of OAFEs a priori. \JWpOne{} is also forced to commit itself to
+all parameters for the OAFEs and program this configuration onto a tamper--proof
+hardware token. \JWpOne{} programs and physically sends the token to \JWpTwo{}
+before \JWpTwo{} even starts the process.
 
 All following steps will be performed by \JWpTwo{} alone, no further interaction
 with \JWpOne{} is necessary. The tamper--proof hardware token implements the
@@ -50,34 +50,35 @@ every OAFE exactly once. After having evaluated the last OAFE, the tamper--proof
 hardware token can be physically destroyed. An honest \JWpTwo{} acts completely
 deterministically and will receive the function's final evaluated value $f(x)$.
 The following process dividing the function in smaller parts usually uses the
-term (arithmetic) circuit. The term circuit means the evaluation tree (e.g.,
-figure \ref{fig:sample-poly}) of the function where the (arithmetic) gates are
-the nodes that do arithmetic operations.
+term \emph{(arithmetic) circuit}. The term circuit means a rooted evaluation
+tree (e.g., figure \ref{fig:sample-poly}) of a function where the leaf nodes
+contain values or inputs and the inner nodes---called (arithmetic) gates---do
+arithmetic operations.
 
 The approach pursued here is to divide the arithmetic circuit that equals the
 overall function to smaller sub--circuits. Each sub--circuit can be composed of
-arithmetic gates and other sub--circuits. \JWpTwo{} has to evaluate each
-sub--circuit to an intermediate value. \JWpTwo{} has to store all intermediate
-values since they are used to compute the following sub--circuits.  Whenever one
-sub--circuit $A$ contains a node that is another sub--circuit $B$, this node
-gets replaced by the intermediate output value of $B$ before evaluating $A$.
-Obviously the intermediate values are a potential security threat: A passively
-corrupted \JWpTwo{} could try to derive information from these intermediate
-results. An actively corrupted \JWpTwo{} could additionally try to modify the
-intermediate values and gain supplemental information out of that. To not
-directly reveal the value of an evaluated sub--circuit the intermediate values
-have to be \emph{encrypted}. To be able to identify an illicit forgery the
-overall evaluation has to fail when an attacker tries to illicitly modify an
-intermediate result. In this thesis, the intermediate values are tuples of two
-values. The decryption of both values represents---when well--formed---the same
-value. The gain of this technique is that an attacker cannot change the value
-and preserve the well--formedness without knowing the encryption keys. Any
-change to one (or both) tuple values causes the intermediate value to be
-destroyed (formally represented as $\bot$). After having evaluated the last
-sub--circuit, its resulting encrypted tuple undergoes a special procedure
-revealing the unencrypted scalar result value. Details and the formal
-description of the procedures mentioned above can be found in the following
-chapters.
+arithmetic gates and other sub--circuits. \JWpTwo{} is commissioned to evaluate
+each sub--circuit to an intermediate value. \JWpTwo{} then stores all
+intermediate values since they are used to compute the following sub--circuits.
+Whenever one sub--circuit $A$ contains a node that is another sub--circuit $B$,
+this node gets replaced by the intermediate output value of $B$ before
+evaluating $A$.  Obviously the intermediate values are a potential security
+threat: A passively corrupted \JWpTwo{} could try to derive information from
+these intermediate results. An actively corrupted \JWpTwo{} could additionally
+try to modify the intermediate values and gain supplemental information out of
+that. To not directly reveal the value of an evaluated sub--circuit the
+intermediate values have to be \emph{encrypted}. To be able to identify an
+illicit forgery the overall evaluation has to fail when an attacker tries to
+illicitly modify an intermediate result. In this thesis, the intermediate values
+are tuples of two values. The decryption of both values represents---when
+well--formed---the same value. The gain of this technique is that an attacker
+cannot change the value and preserve the well--formedness without knowing the
+encryption keys. Any change to one (or both) tuple values causes the
+intermediate value to be destroyed (formally represented as $\bot$). After
+having evaluated the last sub--circuit, its resulting encrypted tuple undergoes
+a special procedure revealing the unencrypted scalar result value. Details and
+the formal description of the procedures mentioned above can be found in the
+following chapters.
 
 \begin{figure}[htb]
   \centering
@@ -91,14 +92,13 @@ The overall process is very straightforward: \JWpOne{} analyzes the polynomial
 and transforms it into a circuit (the entire figure \ref{fig:sample-poly}). This
 circuit is then divided to sub--circuits (the boxes bounded by dashed lines).
 All the sub--circuits are then encoded in a way that \JWpTwo{} cannot learn
-anything private to \JWpOne{}. To achieve that, \JWpOne{} programs a
-tamper--proof hardware token with an OAFE configuration and physically sends the
-token and a description of the sub--circuits to \JWpTwo{}.  After sending the
-circuits and the token \JWpOne{} can shut down because it is no longer needed in
-the process. As soon as \JWpTwo{} receives the sub--circuit description and the
-token, it starts the evaluation, one sub--circuit after the other. To discuss
-the evaluation the sample polynomial $1 + 2x + 3x^2$ (see figure
-\ref{fig:sample-poly}) is used in the following. In the whole procedure,
+anything private to \JWpOne{}. To achieve that, \JWpOne{} sets up an OAFE and
+hands the OAFE along with a description of the sub--circuits to \JWpTwo{}.
+After sending the circuits and the token \JWpOne{} can shut down because it is
+no longer needed in the process. As soon as \JWpTwo{} receives the sub--circuit
+description and the token, it starts the evaluation, one sub--circuit after the
+other. To discuss the evaluation the sample polynomial $1 + 2x + 3x^2$ (see
+figure \ref{fig:sample-poly}) is used in the following. In the whole procedure,
 \JWpTwo{} should not learn the coefficients ($a_0$, $a_1$ and $a_2$) of the
 polynomial $a_0 + a_1x + a_2x^2$ but is able to learn the degree of the
 polynomial. The first step for \JWpTwo{} is to evaluate the sub--circuit only
@@ -160,8 +160,7 @@ and $\widetilde{a_r}$ \emph{Value}s.
 \JWltwo{Definitions}
 \label{sec:rae-definitions}
 
-This chapter defines important entities that are used to define the more complex
-entities in the following chapters.
+This chapter defines important entities that are used in the following chapters.
 
 % Field K
 \JWlthree{Field $K$}
@@ -180,10 +179,10 @@ The main building block of this thesis are \JWdef{Oblivious Affine Function
 Evaluation}{OAFE}{s}. More precisely, \emph{Sequential one--time OAFE} as
 defined by Döttling, Kraschewski and Müller--Quade \cite{davidgoliath}. The OAFE
 functionality enables to sequentially evaluate $n$ affine functions specified a
-priori. The OAFE functionality is implemented using the David \& Goliath
-protocol and exactly one stateful tamper--proof hardware token. In other words,
-one party can specify $n$ affine functions and another party will be able to
-sequentially evaluate the functions exactly once. The evaluating
+priori. The OAFE functionality is implemented by the David \& Goliath protocol
+\cite{davidgoliath} and exactly one stateful tamper--proof hardware token. In
+other words, one party can specify $n$ affine functions and another party will
+be able to sequentially evaluate the functions exactly once. The evaluating
 party will only learn one evaluation of each function $f_i$ but not their
 definition.
 
@@ -227,8 +226,8 @@ is implicitly parametrized by the static dual key $(\alpha_l, \alpha_r)$ and is
 able to generate a new dynamic dual key $(\beta, \beta')$ uniformly at random.
 Just like $E(v)$, this thesis also assumes $D(\widetilde{v})$, named the
 \emph{universal decoding function}. The universal decoding function is assumed
-to be implicitly parametrized by the encryption keys from the context it is
-used. Both functions are defined below.  The universal encoding and decoding
+to be implicitly parametrized by the encryption keys from the context it is used
+in. Both functions are defined below.  The universal encoding and decoding
 functions only serve the purpose of describing the methodology. In the reality
 especially the function $D$ is never called by anyone. That would not even be
 possible since only the party in possession of the keys (\JWpOne{}) has the
@@ -236,10 +235,12 @@ information to do so but because of the non--interactivity of the protocol,
 \JWpOne{} is not active anymore when the second party (not in possession of the
 keys, usually named \JWpTwo{}) starts the evaluation. The real protocol encodes
 the encryption and decryption into the OAFEs in a way that as soon as \JWpTwo{}
-tries to cheat everything eventually becomes uniform randomness. This is done
-using carefully chosen linear functions realized as OAFEs. The setup of these
-linear functions assures the addition of uncorrelated uniform randomness as soon
-as \JWpTwo{} tries to cheat. One can envision the process as applying a
+tries to cheat everything eventually becomes uniform randomness. To cheat means
+to disrespect the protocol description and to misbehave in any way. The property
+to turn everything to uniform randomness as soon as a party tries to cheat is
+done using carefully chosen linear functions realized as OAFEs. The setup of
+these linear functions assures the addition of uncorrelated uniform randomness
+as soon as \JWpTwo{} tries to cheat. One can envision the process as applying a
 one--time pad encryption that is only correctly removed if the other party did
 not try to cheat. As soon as the second party tries to cheat this resembles the
 attempt to undo a one--time pad encryption using another one--time pad. This
@@ -333,9 +334,12 @@ A DRAV $\widetilde{v}$ is well--formed iff $D(\widetilde{v}) \neq \bot
 \Leftrightarrow D_l(\widetilde{v}) = D_r(\widetilde{v})$. Therefore, if
 $D(\widetilde{\chi}) = \bot$, $\chi$ is non--well--formed. Obviously the
 well--formedness of a DRAV depends on the encryption keys used to decrypt.
-Decoding well--formed DRAVs using any other decoding function will lead to
-$\bot$ because the well--formed DRAV looks non--well--formed to the other
-decoding function.
+Decoding well--formed DRAVs using any other decoding function will highly likely
+lead to $\bot$ because the well--formed DRAV looks non--well--formed to the
+other decoding function. Decoding using another decoding does not lead to
+$\bot$, iff both DRAVs have the same encryption keys. The probability is
+therefore $\frac{1}{2*|K|}$, $K$ (see chapter \ref{sec:field} being the finite
+field and $|K|$ its size.
 
 \begin{lem}
   \label{lem:well-formed-fun-of-dec-fun}
@@ -437,13 +441,12 @@ decoding function.
 \JWlthree{Direct DRAV Addition}
 \label{sec:DRAV-addition}
 
-This thesis referres to DRAV addition as \emph{direct DRAV addition} because is
-has the property that it can be performed without knowledge of a DRAV's
-encryption keys. But (see Lemma \ref{lem:wrong-add}) the addition of DRAVs does
-not lead to additional information. Although direct DRAV addition can be
-performed without the knowledge of a party in possession of the keys, this will
-not reveal additional information or cheating options. Since direct DRAV
-additions do automatically generate new encryption keys, the result will only be
+This thesis refers to DRAV addition as \emph{direct DRAV addition} because it
+has the property to be performable without knowledge of a DRAV's encryption
+keys. But (see Lemma \ref{lem:wrong-add}) the addition of DRAVs does not lead to
+additional information. Although addition can be performed without the knowledge
+of the encryption keys, it will not reveal additional information because the
+encryption keys automatically changes. Therefore, the result will only be
 well--formed iff the addition was intended by the party in possession of the
 keys (see Lemma \ref{lem:well-formed-fun-of-dec-fun}).
 
@@ -475,9 +478,10 @@ From ($\widetilde{x} = \left(\alpha_l \cdot x + \beta_1,
 \begin{lem}
   \label{lem:DRAV-add-bad}
 
-The addition to a non--well--formed DRAV leads to a non--well--formed DRAV\@. It
-is of particular interest the following property holds: $\forall \widetilde{x}:
-\widetilde{x} + \bot = \bot + \widetilde{x} = \bot$.
+The addition of two DRAV leads to a non--well--formed DRAV if at least one
+operand DRAV is non--well--formed. It is of particular interest the following
+property holds: $\forall \widetilde{x}: \widetilde{x} + \bot = \bot +
+\widetilde{x} = \bot$.
 
 \end{lem}
 \begin{proof}
@@ -507,11 +511,11 @@ a similar argument.
   \label{lem:wrong-add}
 
   An addition that was unintended by a party in possession of the encryption
-  keys will not reveal additional information. A party that is not in possession
-  of the keys but that knows three well--formed DRAVs $\widetilde{a}$,
-  $\widetilde{b}$ and $\widetilde{c}$ that is commissioned to execute the
-  addition $\widetilde{y} = \widetilde{a} + \widetilde{b}$ cannot generate a
-  well--formed DRAV $\widetilde{y}' = \widetilde{a} + \widetilde{c}$.
+  keys will not reveal additional information. In other words: A party that is
+  not in possession of the keys but that knows three well--formed DRAVs
+  $\widetilde{a}$, $\widetilde{b}$ and $\widetilde{c}$ and is commissioned to
+  execute the addition $\widetilde{y} = \widetilde{a} + \widetilde{b}$ cannot
+  generate a well--formed DRAV $\widetilde{y}' = \widetilde{a} + \widetilde{c}$.
 
 \end{lem}
 
@@ -621,7 +625,7 @@ that enables the party in possession of the keys to allow other parties to
 decode a specific DRAV\@. Usually it only allows the final DRAV to be decoded,
 otherwise intermediate information would leak.
 
-The overall costs thereof are only one addition and an OAFE call for the
+The overall costs thereof are only one addition and an OAFE evaluation for the
 ordinary party. Of course, the OAFE has to be created by the party that knows
 the encryption keys. The setup of this OAFE can be seen as the authorization to
 decode exactly one specific DRAV\@. The procedure will decode a DRAV to a final
@@ -659,27 +663,27 @@ forged to $\widetilde{x'_1} = \widetilde{x_1} + \Delta_1$ and $\widetilde{x'_2}
   \widehat{x'} = & \widetilde{x'_1} + \widetilde{x'_2} = \widetilde{x_1} +
   \Delta_1 + \widetilde{x_2} + \Delta_2 \\
   %
-  \Rightarrow x' = & \frac{1}{\alpha_l + \alpha_v} \cdot \widehat{x'} -
+  \Rightarrow x' = & \frac{1}{\alpha_l + \alpha_r} \cdot \widehat{x'} -
   \frac{\beta_{x_1} +
-  \beta_{x_2}}{\alpha_l + \alpha_v} \\
+  \beta_{x_2}}{\alpha_l + \alpha_r} \\
   %
   \Leftrightarrow x' = & \frac{\widetilde{x_1} + \Delta_1 +
-  \widetilde{x_2} + \Delta_2}{\alpha_l + \alpha_v} -
-  \frac{\beta_{x_1} +\beta_{x_2}}{\alpha_l + \alpha_v}\\
+  \widetilde{x_2} + \Delta_2}{\alpha_l + \alpha_r} -
+  \frac{\beta_{x_1} +\beta_{x_2}}{\alpha_l + \alpha_r}\\
   %
   \Leftrightarrow x' = & \frac{(\alpha_l x + \beta_{x_1}) + \Delta_1 +
-  (\alpha_v x + \beta_{x_2}) + \Delta_2}{\alpha_v + \alpha_l} -
-  \frac{\beta_{x_1} +\beta_{x_2}}{\alpha_l + \alpha_v} \\
+  (\alpha_r x + \beta_{x_2}) + \Delta_2}{\alpha_r + \alpha_l} -
+  \frac{\beta_{x_1} +\beta_{x_2}}{\alpha_l + \alpha_r} \\
   %
-  \Leftrightarrow x' = & \frac{(\alpha_l+\alpha_v)x + (\beta_{x_1}+\beta_{x_2} +
-  \Delta_1+\Delta_2)}{\alpha_l+\alpha_v} -
-  \frac{\beta_{x_1} +\beta_{x_2}}{\alpha_l + \alpha_v} \\
+  \Leftrightarrow x' = & \frac{(\alpha_l+\alpha_r)x + (\beta_{x_1}+\beta_{x_2} +
+  \Delta_1+\Delta_2)}{\alpha_l+\alpha_r} -
+  \frac{\beta_{x_1} +\beta_{x_2}}{\alpha_l + \alpha_r} \\
   %
-  \Leftrightarrow x' = & x + \frac{\beta_{x_1}+\beta_{x_2}}{\alpha_l+\alpha_v}
-  + \frac{\Delta_1 + \Delta_2}{\alpha_l + \alpha_v} -
-  \frac{\beta_{x_1}+\beta_{x_2}}{\alpha_l + \alpha_v} \\
+  \Leftrightarrow x' = & x + \frac{\beta_{x_1}+\beta_{x_2}}{\alpha_l+\alpha_r}
+  + \frac{\Delta_1 + \Delta_2}{\alpha_l + \alpha_r} -
+  \frac{\beta_{x_1}+\beta_{x_2}}{\alpha_l + \alpha_r} \\
   %
-  \Leftrightarrow x' = & x + \frac{\Delta_1 + \Delta_2}{\alpha_l + \alpha_v}\\
+  \Leftrightarrow x' = & x + \frac{\Delta_1 + \Delta_2}{\alpha_l + \alpha_r}\\
 \end{align*}
 
 Because an attacker is not in possession of the static encryption keys
@@ -719,11 +723,11 @@ references to the OAFEs that were configured to evaluate these functions
 obliviously. The evaluating party finally evaluates the DRAEs with the help of
 the OAFEs provided by the first party.
 
-To easily envision the role of DRAEs and DRAVs, by performing arithmetic
+To easily envision the role of DRAEs and DRAVs: By performing arithmetic
 operations on DRAVs a DRAE evaluates an arithmetic expression to a resulting
-DRAV\@. Just the same, an arithmetic expression performs operations on values
-and evaluates to a result value (e.g., given $x=17$ and $y=23$, the arithmetic
-expression $x*y + 3$ evaluates to $394$).
+DRAV\@. Just the same way, an arithmetic expression performs operations on
+values and evaluates to a result value (e.g., given $x=17$ and $y=23$, the
+arithmetic expression $x*y + 3$ evaluates to $394$).
 
 Summing up, DRAE evaluation is partitioning calculations between the two
 parties: The first that builds the DRAE and sets up the OAFEs and the second
@@ -947,7 +951,7 @@ construction is adapted (for the exact definitions of DRAVs, see chapter
 
 Again, all terms can be evaluated using OAFEs and the construction is composable
 by commissioning David to store the resulting DRAV $\widetilde{z}$. This
-construction also assures that the MAC is checked by rendering all illicit
+construction also assures that the MAC is verified by rendering all illicit
 changes to DRAVs that David can do to uniform, uncorrelated randomness. The
 following equations map Davids cheating possibilities to the $\Delta$s.
 
@@ -1028,14 +1032,14 @@ following equations map Davids cheating possibilities to the $\Delta$s.
 %
 \end{align*}
 
-\noindent{}That leads to two possibilities: Either $E$'s inputs are both
-well--formed or not.  Although the DRAVs $\widetilde{x}$ and $\widetilde{y}$ are
-both used in multiple affine expression, it is safe to assume they have the same
-value. At the first glance, one could think a malicious adversary could use
-different values for the same variable. But since all expressions depending on
-the same variable are evaluated using one and the same OAFE, the attacker has to
-commit itself to one value for one variable (see chapters \ref{def:OAFE} and
-\ref{def:OPE}).
+\noindent{}That leads to two possibilities that will be discussed in detail:
+Either $E$'s inputs are both well--formed or not.  Although the DRAVs
+$\widetilde{x}$ and $\widetilde{y}$ are both used in multiple affine expression,
+it is safe to assume they have the same value. At the first glance, one could
+think a malicious adversary could use different values for the same variable.
+But since all expressions depending on the same variable are evaluated using one
+and the same OAFE, the attacker has to commit itself to one value for one
+variable (see chapters \ref{def:OAFE} and \ref{def:OPE}).
 
 Possibility 1: The DRAVs $\widetilde{x}$ and $\widetilde{y}$ are well--formed.
 This leads to a DRAV encoding the desired result $E(x \cdot y)$. The resulting
@@ -1341,6 +1345,8 @@ $\widetilde{x}$ and $\widetilde{y}$ in the formal notation (see chapter
 \JWlthree{Formal Description}
 \label{sec:DRAE-formal}
 
+\JWtodo{An radical encryption anpassen}
+
 Because DRAEs are tightly related to DRAVs, they fulfill similar properties:
 
 \begin{enumerate}
@@ -1429,6 +1435,7 @@ defined as follows:
 \JWlthree{Decoding DRAEs}
 \label{sec:DRAE-decoding}
 
+\JWtodo{An Radical Encryption anpassen}
 Entirely evaluating a pre--evaluated DRAE to obtain the DRAV is straightforward:
 A pre--evaluated DRAE $e \in \mathcal{E} = (M,A, k)$ evaluates to its
 single resulting DRAV $r \in \mathcal{V}$ as follows (all additions performed
@@ -1439,42 +1446,6 @@ M' &= \Bigg\{ m_1 \cdot m_2\ \Bigg|\ \begin{pmatrix}m_1\\m_2\end{pmatrix}
 \in M \Bigg\} \\
 r & = \sum_{a \in A}a + \sum_{m \in M'}m + k
 \end{align*}
-
-
-% MAXIMAL POLYNOMIAL DEGREE
-\JWlthree{Maximal Polynomial Degree}
-\label{sec:max-poly-degree}
-
-From a given DRAE it is easily possible to calculate the maximal polynomial
-degree of the function the DRAE encodes. Since multiplications of DRAEs are
-performed by the party that evaluates the DRAEs, it is able to keep book of the
-maximal degree of the overall function. The following steps describe the process
-of calculating the maximal degree the function the DRAE encodes.
-
-\begin{itemize}
-
-  \item Constant terms are annotated with maximal degree $0$.
-
-  \item Terms that refer to the function parameters are annotated with maximal
-    degree $1$.
-
-  \item Terms that refer to other DRAEs evaluated before are annotated with the
-    maximal degree of the DRAE they refer to.
-
-  \item The multiplicative DRAE terms are annotated with the sum of both terms
-    they multiply.
-
-  \item The additive DRAE terms are annotated with the maximal degree of the
-    DRAE they refer to.
-
-  \item The last step is to annotate the DRAE itself with the maximal annotation
-    of all its descendants.
-
-\end{itemize}
-
-Since there is always a final DRAE that yields the function's result, the
-annotated maximal degree of this DRAE is the maximal degree the function can be
-of.
 
 
 %
@@ -1522,16 +1493,23 @@ uniform at random (meaning $\bot$).
 \label{sec:OPE}
 
 This section describes the \JWdef{Oblivious Polynomial Evaluation}{OPE} of a
-univariate polynomial $f(x) = \sum_{i=0}^k a_ix^i$. First, the first party
-(\JWpOne{}) fixes the polynomial coefficients and transforms $f$ into a DRAC
-consisting of many DRAEs assigned to variables. The number of DRAEs will be in
-$O(n)$, $n$ being the number of arithmetic operations needed by evaluate $f$ as
-usual. To securely evaluate the DRAC, the OAFE setup is calculated by the first
-party. The first party has to accumulate all OAFE calls using the same variable
-to one OAFE call resulting in a vector. Otherwise, a corrupted party could
-evaluate the OAFEs with different values for one and the same variable $v$.
+univariate polynomial $f(x) = \sum_{i=0}^k a_ix^i$. OPE is the joint evaluation
+of a polynomial that is only known by the first party at a node that is only
+known by the second party. The evaluation should neither reveal the polynomial
+to the second party nor reveal the node to the first party.
 
-After the first party has fixed the DRAC and the OAFE configuration, it sends
+Using technique described in this thesis, the first party (\JWpOne{}) starts the
+process by choosing the polynomial coefficients and transforming  $f$ into a
+DRAC (see chapter \ref{def:DRAC}. The number of DRAEs the DRAC consists of will
+be in $O(n)$, $n$ being the number of arithmetic operations needed by evaluate
+$f$ as usual. When using Horner's \cite{cormen01} evaluating a polynomial of
+degree $n$ only requires $n$ additions and $n$ multiplications. To securely
+evaluate the DRAC, the OAFE setup is calculated by the first party. The first
+party has to accumulate all OAFE calls using the same variable to one OAFE call
+resulting in a vector. Otherwise, a corrupted party could evaluate the OAFEs
+with different values for one and the same variable $v$.
+
+After the first party has chosen the DRAC and the OAFE configuration, it sends
 them to the second party. The DRAEs inside the DRAC that get transmitted to the
 second party resemble the pre--evaluated DRAEs from chapter \ref{def:DRAE}.
 Naturally, every affine function inside the DRAEs is replaced by a OAFE
@@ -1553,13 +1531,41 @@ final DRAV have then to be added and passed to the final OAFE which yields the
 unencrypted evaluated value of the polynomial.
 
 
-% CHECKING THE POLYNOMIAL DEGREE
-\JWlthree{Verifying the Polynomial Degree}
-\label{sec:checking-poly-degree}
+% VERIFYING THE POLYNOMIAL DEGREE
+\JWltwo{Verifying the Polynomial Degree}
+\label{sec:max-poly-degree}
 
-\JWpTwo{} has to verify the degree of the polynomial it is supposed to evaluate.
-The DRAC that evaluates to the polynomial has the same degree as the DRAE that
-evaluates the final value. Chapter \ref{sec:max-poly-degree} describes how
-to derive the maximal polynomial degree from a given DRAE\@.
+From a given DRAE it is easily possible to calculate the maximal polynomial
+degree of the function the DRAE encodes. Since multiplications of DRAEs are
+performed by the party that evaluates the DRAEs, it is able to keep book of the
+maximal degree of the overall function. The following steps describe the process
+of calculating the maximal degree the function the DRAE encodes.
+
+\begin{itemize}
+
+  \item Constant terms are annotated with maximal degree $0$.
+
+  \item Terms that refer to the function parameters are annotated with maximal
+    degree $1$.
+
+  \item Terms that refer to other DRAEs evaluated before are annotated with the
+    maximal degree of the DRAE they refer to.
+
+  \item The multiplicative DRAE terms are annotated with the sum of both terms
+    they multiply.
+
+  \item The additive DRAE terms are annotated with the maximal degree of the
+    DRAE they refer to.
+
+  \item The last step is to annotate the DRAE itself with the maximal annotation
+    of all its descendants.
+
+\end{itemize}
+
+Since there is always a final DRAE that yields the function's result in every
+DRAC, the annotated maximal degree of this DRAE is the maximal degree the
+function the DRAC encodes can be of. Before evaluating a DRAC, \JWpTwo{} has to
+verify the degree of the polynomial it is supposed to evaluate equals the
+parametrized degree.
 
 % vim: set spell spelllang=en_us fileencoding=utf8 formatoptions=tcroql : %

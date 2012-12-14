@@ -5,7 +5,7 @@ In addition to the formal methodology (chapter \ref{sec:methods}), the protocol
 description (chapter \ref{sec:protocol}) and the security proof of the protocol
 in the UC framework (chapter \ref{sec:security}), this thesis contains an
 implementation of the protocol. The implementation is written in the lazy,
-functional programming language \JWTLhaskell{}. More specifically \JWThaskell{}
+functional programming language \JWTLhaskell{}, more specifically \JWThaskell{}
 as implemented by the major \JWThaskell{} compiler the \JWTXLghc{} (\JWTghc{})
 version \JWTVghc{}. Whenever feasible, standard \emph{Haskell 2010}
 \cite{haskell2010} features have been preferred. However the following
@@ -67,8 +67,8 @@ One \JWtoken{} process can be committed to a OAFE configuration exactly once.
 \label{sec:comm:david2token}
 
 On TCP port \JWport{23021} \JWpTwo{} initiates a connection to the \JWtoken{}.
-This connection serves to evaluate the OAFEs. \JWpTwo{} sends a tells which
-OAFE to evaluate and the value, the \JWtoken{} then replies with a vector
+This connection serves to evaluate the OAFEs. \JWpTwo{} tells which
+OAFE to evaluate and the value. The \JWtoken{} then replies with a vector
 consisting of the evaluated linear expressions.
 
 
@@ -141,12 +141,12 @@ otherwise.
 
 The interface that obeys referential transparency makes the binding work well
 inside \JWThaskell{} programs. But for large number of \JWTntl{} objects, there
-is a performance problem: creating and destructing a massive amount of objects
+is a performance problem: Creating and destructing a massive amount of objects
 is slow. The problem is that it is not possible to allocate memory for \JWTntl{}
 objects completely externally because \JWTntl{} allocates memory internally on
 the heap in the constructor. In more detail: The objects the programmer gets
 from the \JWTntl{} library are only one machine word wide that stores a pointer
-to memory on the heap that stores the representation of the elements in the
+to memory on the heap which stores the representation of the elements in the
 finite field. In other words: Allocating memory for an array of field elements
 is not in $O(1)$ as usual (a chunk of stack space or one \JWcode{malloc} call)
 but in $O(n)$ because \JWTntl{} allocates additional memory for every element on
@@ -270,11 +270,13 @@ can be found below.
 % Build System
 \JWlthree{Build System and Building}
 
-The implementation can be easily built using \JWTLcabal{} by typing:
+To build the source code of this thesis, the \JWTLcabal{} is used. \JWTcabal{}
+is the standard building and packaging system used for \JWThaskell{} programs
+and libraries. The build process can be started by typing:
 
 \JWcmd{cd diplomarbeit/}
 
-\JWcmd{cabal install --only-dependencies}
+\JWcmd{cabal install --only-dependencies\ \ \ \#install required packages}
 
 \JWcmd{cabal configure}
 
@@ -367,7 +369,8 @@ used in the following way:
 \JWltwo{Documentation}
 \label{sec:implementation-doc}
 
-The implementation is documented using \JWTLhaddock{}.
+The implementation is documented using \JWTLhaddock{} the standard tool for
+automatically generating documentation from annotated \JWThaskell{} source code.
 
 \JWtodo{Add link to Haddock doc}
 
