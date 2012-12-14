@@ -20,34 +20,39 @@ polynomial---provided by the first party---at the grid point $x$ provided by the
 second party. Of course, this solution is just as simple as insecure because the
 third party could reveal its secrets at any time.
 
-Since this thesis uses \JWdefn{Oblivious Affine Function Evaluation} {OAFE}
-\cite{davidgoliath} as the main building block, the general polynomial has to be
-expressed as affine functions that evaluate parts of the complete function. The
-entirety of the affine functions exactly represents the original polynomial. To
-maintain the security property, neither party should be able to learn anything
-by intermediate results.
+The thesis expresses the general polynomial as affine functions that evaluate
+parts of the complete function. The entirety of the affine functions exactly
+represents the original polynomial. The process is based on dividing the input
+polynomial into affine functions, because \JWdefn{Oblivious Affine Function
+Evaluation} {OAFE} \cite{davidgoliath} are used as the main building block.
+Every OAFE enables one party to choose an affine function that another party can
+evaluate obliviously. The OAFE guarantees that the second party does not learn
+the affine function and that the first party does not learn the node at which
+the second party evaluated the function. Additionally OAFE guarantees every
+linear function can only be evaluated once. To maintain the security property
+for the input polynomial, neither party should be able to learn anything from
+intermediate results.
 
 The role both parties play differs heavily: The first party---usually named
-\JWpOne{}---is in possession of the function to evaluate and sets up the
-tamper--proof hardware token that implements the OAFE functionality. The second
-party---usually named \JWpTwo{}---is less powerful: It does only evaluate
-entities issued by \JWpOne{} and uses the already configured OAFEs. But in the
-end, only \JWpTwo{} obtains the result.  Since the OAFEs play an important role,
-it is crucial to envision that every OAFE \JWpOne{} generates can be evaluated
-by \JWpTwo{} only once. In other words, an OAFE enables some party to evaluate
-an affine function at one node and guarantees that no further evaluations are
-possible. To prevent a corrupted \JWpOne{} from intercepting information when
-\JWpTwo{} evaluates one of the OAFEs, \JWpOne{} is forced to commit itself to a
-finite number of OAFEs a priori. \JWpOne{} is also forced to commit itself to
-all parameters for the OAFEs and program this configuration onto a tamper--proof
-hardware token. \JWpOne{} programs and physically sends the token to \JWpTwo{}
-before \JWpTwo{} even starts the process.
+\JWpOne{}---is in possession of the polynomial to evaluate and sets up the
+OAFEs.  The second party---usually named \JWpTwo{}---is less powerful: It does
+only evaluate entities issued by \JWpOne{} and uses the already configured
+OAFEs. But in the end, only \JWpTwo{} obtains the result.  Since the OAFEs play
+an important role, it is crucial to envision that every OAFE \JWpOne{} generates
+can be evaluated by \JWpTwo{} only once. In other words, an OAFE enables some
+party to evaluate an affine function at one node and guarantees that no further
+evaluations are possible. To prevent a corrupted \JWpOne{} from intercepting
+information when \JWpTwo{} evaluates one of the OAFEs, \JWpOne{} is forced to
+commit itself to a finite number of OAFEs a priori. \JWpOne{} is also forced to
+commit itself to all parameters for all OAFEs. The OAFE implementation from
+Döttling, Kraschewski and Müller--Quade\cite{davidgoliath} realizes the OAFE
+functionality on exactly one tamper--proof hardware token, that has to be
+physically sent to the other party. Because the OAFE functionality realizes all
+OAFEs together, \JWpOne{} needs to commit itself to the OAFE configuration a
+priori. \JWpOne{} configures all OAFEs before \JWpTwo{} even starts the process.
 
 All following steps will be performed by \JWpTwo{} alone, no further interaction
-with \JWpOne{} is necessary. The tamper--proof hardware token implements the
-OAFE functionality and allows the party that receives this token to evaluate
-every OAFE exactly once. After having evaluated the last OAFE, the tamper--proof
-hardware token can be physically destroyed. An honest \JWpTwo{} acts completely
+with \JWpOne{} is necessary. An honest \JWpTwo{} acts completely
 deterministically and will receive the function's final evaluated value $f(x)$.
 The following process dividing the function in smaller parts usually uses the
 term \emph{(arithmetic) circuit}. The term circuit means a rooted evaluation
@@ -94,23 +99,21 @@ circuit is then divided to sub--circuits (the boxes bounded by dashed lines).
 All the sub--circuits are then encoded in a way that \JWpTwo{} cannot learn
 anything private to \JWpOne{}. To achieve that, \JWpOne{} sets up an OAFE and
 hands the OAFE along with a description of the sub--circuits to \JWpTwo{}.
-After sending the circuits and the token \JWpOne{} can shut down because it is
-no longer needed in the process. As soon as \JWpTwo{} receives the sub--circuit
-description and the token, it starts the evaluation, one sub--circuit after the
-other. To discuss the evaluation the sample polynomial $1 + 2x + 3x^2$ (see
-figure \ref{fig:sample-poly}) is used in the following. In the whole procedure,
-\JWpTwo{} should not learn the coefficients ($a_0$, $a_1$ and $a_2$) of the
-polynomial $a_0 + a_1x + a_2x^2$ but is able to learn the degree of the
-polynomial. The first step for \JWpTwo{} is to evaluate the sub--circuit only
-containing $x$.  This is in fact only one sub--circuit that appears three times
-in the figure.  The next step would be to evaluate the sub--circuit only
+After sending the circuits and the OAFE functionality, \JWpOne{} can shut down
+because it is no longer needed in the process. As soon as \JWpTwo{} receives the
+sub--circuit description and the OAFEs, it starts the evaluation, one
+sub--circuit after the other. To discuss the evaluation the sample polynomial $1
++ 2x + 3x^2$ (see figure \ref{fig:sample-poly}) is used in the following. In the
+whole procedure, \JWpTwo{} should not learn the coefficients ($a_0$, $a_1$ and
+$a_2$) of the polynomial $a_0 + a_1x + a_2x^2$ but is able to learn the degree
+of the polynomial. The first step for \JWpTwo{} is to evaluate the sub--circuit
+only containing $x$.  This is in fact only one sub--circuit that appears three
+times in the figure.  The next step would be to evaluate the sub--circuit only
 encoding $3$ (remember, not learning the value $3$!), then the sub--circuit
 encoding $x^2 (= x \cdot x)$ and finally the overall circuit that encodes $1 +
 2x + 3x^2$.  Usually and as in the example above, the sub--circuits are of
-maximal size. A sub--circuit of maximal size is a sub--circuit into which no
-additional arithmetic gates can be included. Notably, a sub--circuit can only
-contain multiplications that only depend on either constants or stored
-intermediate values.
+maximal size. Notably, a sub--circuit can only contain multiplications that only
+depend on either constants or stored intermediate values.
 
 To simplify the analysis of the different parts and to show the
 modularity, special terms are used throughout in this thesis. A mapping from the
@@ -121,15 +124,15 @@ In the informal illustration above, the encoded tuples played an important role.
 They represented values and the sub--circuits evaluated to these encrypted
 tuples. In fact, the sub--circuits are also twofold, they have a left and a
 right side that eventually evaluate to two values: Both sides of the encrypted
-tuple. For technical reasons, the two sides of the circuits and the tuples often
-handled apart. They still represent the same two values encrypted with different
-keys. For this reason the terms below all exist in two forms, the \emph{Double}
-form (such as \emph{Double Randomized Affine Encoding}) and the regular form
-(such as \emph{Randomized Affine Encoding}). At some point in the processing,
-they are split syntactically, two regular entities are just the same as one
-Double entity. The difference is mainly the same as naming tuple $\widetilde{a}
-= (\widetilde{a_l}, \widetilde{a_r})$ \emph{Double Value} and $\widetilde{a_l}$
-and $\widetilde{a_r}$ \emph{Value}s.
+tuple. For technical reasons, the two sides of the circuits and the tuples are
+often handled apart. They still represent the same value encrypted with
+different keys. For this reason the terms below all exist in two forms, the
+\emph{Double} form (such as \emph{Double Randomized Affine Encoding}) and the
+regular form (such as \emph{Randomized Affine Encoding}). At some point in the
+processing, they are split syntactically, two regular entities are just the same
+as one Double entity. The difference is mainly the same as naming tuple
+$\widetilde{a} = (\widetilde{a_l}, \widetilde{a_r})$ \emph{Double Value} and
+$\widetilde{a_l}$ and $\widetilde{a_r}$ \emph{Value}s.
 
 \begin{itemize}
 
@@ -163,12 +166,12 @@ and $\widetilde{a_r}$ \emph{Value}s.
 This chapter defines important entities that are used in the following chapters.
 
 % Field K
-\JWlthree{Field $K$}
+\JWlthree{Field $\mathbb{K}$}
 \label{sec:field}
 
-\label{def:field} Throughout this thesis, $K$ represents an arbitrary large
-finite field, such as $\mathbb{F}_{2^{256}}$.  When not mentioned otherwise,
-this thesis assumes the field $\mathbb{F}_{2^{256}}$ specified by the
+\label{def:field} Throughout this thesis, $\mathbb{K}$ represents an arbitrary
+large finite field, such as $\mathbb{F}_{2^{256}}$.  When not mentioned
+otherwise, this thesis assumes the field $\mathbb{F}_{2^{256}}$ specified by the
 irreducible polynomial $1 + x^2 + x^5 + x^{10} + x^{256}$.
 
 
@@ -184,7 +187,8 @@ priori. The OAFE functionality is implemented by the David \& Goliath protocol
 other words, one party can specify $n$ affine functions and another party will
 be able to sequentially evaluate the functions exactly once. The evaluating
 party will only learn one evaluation of each function $f_i$ but not their
-definition.
+definition. After all $n$ functions have been evaluated the tamper--proof
+hardware token can be physically destroyed.
 
 \begin{align*}
   i \in& \{1, \ldots, n\}\\
@@ -213,13 +217,13 @@ OAFE} functionality as defined by Döttling, Kraschewski and Müller--Quade
 \label{sec:drav}
 
 \JWdef{Dual Randomized Affine Value}{DRAV}{s} are encrypted, signed values
-representing a scalar value of the field $K$. Each DRAV is encrypted by a pair
-of \emph{dual keys}. The first dual key, the \emph{static key}, remains the same
-in the whole DRAC (see chapter \ref{def:DRAC}) generation procedure and is
-usually denoted as $(\alpha_l, \alpha_r)$. The second dual key, the
-\emph{dynamic key} is a short--lived key, usually represented as $(\beta,
+representing a scalar value of the field $\mathbb{K}$. Each DRAV is encrypted
+with a pair of \emph{dual keys}. The first dual key, the \emph{static key},
+remains the same in the whole DRAC (see chapter \ref{def:DRAC}) generation
+procedure and is usually denoted as $(\alpha_l, \alpha_r)$. The second dual key,
+the \emph{dynamic key} is a short--lived key, usually represented as $(\beta,
 \beta')$. Two DRAVs only share the same dynamic key by chance but always share
-the same static key. Encoding a regular value $v \in K$ as a DRAV
+the same static key. Encoding a regular value $v \in \mathbb{K}$ as a DRAV
 $\widetilde{v}$ is straightforward: For the sake of simplicity this thesis
 assumes a function $E(v)$ (also named \emph{universal encoding function}) that
 is implicitly parametrized by the static dual key $(\alpha_l, \alpha_r)$ and is
@@ -316,12 +320,12 @@ of the DRAV that was expected to be decoded (see also Lemma
 \begin{proof}
 
   In a finite field, the addition of some value $r$ uniformly at random to
-  another value $x \in K$ is uniformly at random. Therefore $\alpha_l \cdot v +
-  \beta$ and $\alpha_r \cdot v + \beta'$ are two values uniformly at random if
-  and only if $\beta$ and $\beta'$ are uniformly at random. Per definition,
-  every time a DRAV gets encoded, $\beta$ and $\beta'$ are fresh uniformly
-  distributed random values. Trivially, a DRAV is therefore uncorrelated to any
-  other DRAV\@.
+  another value $x \in \mathbb{K}$ is uniformly at random. Therefore $\alpha_l
+  \cdot v + \beta$ and $\alpha_r \cdot v + \beta'$ are two values uniformly at
+  random if and only if $\beta$ and $\beta'$ are uniformly at random. Per
+  definition, every time a DRAV gets encoded, $\beta$ and $\beta'$ are fresh
+  uniformly distributed random values. Trivially, a DRAV is therefore
+  uncorrelated to any other DRAV\@.
 
 \end{proof}
 
@@ -338,8 +342,8 @@ Decoding well--formed DRAVs using any other decoding function will highly likely
 lead to $\bot$ because the well--formed DRAV looks non--well--formed to the
 other decoding function. Decoding using another decoding does not lead to
 $\bot$, iff both DRAVs have the same encryption keys. The probability is
-therefore $\frac{1}{2*|K|}$, $K$ (see chapter \ref{sec:field} being the finite
-field and $|K|$ its size.
+therefore $\frac{1}{2*|\mathbb{K}|}$, $\mathbb{K}$ (see chapter \ref{sec:field}
+being the finite field and $|\mathbb{K}|$ its size.
 
 \begin{lem}
   \label{lem:well-formed-fun-of-dec-fun}
@@ -496,13 +500,13 @@ component--wise universal decoding functions $D_l(\widetilde{v})$ and
 $D_r(\widetilde{v})$ (see chapter \ref{def:DRAV}), the value of $\chi$ is $\chi
 = (D_l(\widetilde{\chi_l}), D_r(\widetilde{\chi_r})) = (x + \chi +
 \frac{\Delta_l}{\alpha_l}, x + \chi + \frac{\Delta_r}{\alpha_r})$. So: $\forall
-(\Delta_r, \Delta_l) \in K \setminus \{(0, 0)\} \wedge \frac{\Delta_l}{\alpha_l}
-\neq \frac{\Delta_r}{\alpha_r}: D(\widetilde{\chi}) = \bot$. Since the
-encryption keys are not known to an attacker, $\frac{\Delta_l}{\alpha_l} \neq
-\frac{\Delta_r}{\alpha_r}$ holds except for a negligible probability if
-$\Delta_r \neq 0 \vee \Delta_r \neq 0$ and that's the property for being forged
-(non--well--formed) which was the assumption. Trivially $\bot + \bot = \bot$ by
-a similar argument.
+(\Delta_r, \Delta_l) \in \mathbb{K} \setminus \{(0, 0)\} \wedge
+\frac{\Delta_l}{\alpha_l} \neq \frac{\Delta_r}{\alpha_r}: D(\widetilde{\chi}) =
+\bot$. Since the encryption keys are not known to an attacker,
+$\frac{\Delta_l}{\alpha_l} \neq \frac{\Delta_r}{\alpha_r}$ holds except for a
+negligible probability if $\Delta_r \neq 0 \vee \Delta_r \neq 0$ and that's the
+property for being forged (non--well--formed) which was the assumption.
+Trivially $\bot + \bot = \bot$ by a similar argument.
 
 \end{proof}
 
@@ -641,8 +645,8 @@ called the \emph{final OAFE}.
 The second party's input to the final OAFE is $\widehat{v} = \widetilde{v_l} +
 \widetilde{v_r}$, the addition of both components of the DRAV to decode.  The
 final OAFE was created by the first party as follows: Assuming $\widetilde{v}$
-is encrypted by $(\alpha_l, \alpha_r)$ and $(\beta_1, \beta_2)$ the first party
-knows $\widehat{v}$ has to be encrypted using $(\alpha_l + \alpha_r)$ and
+is encrypted with $(\alpha_l, \alpha_r)$ and $(\beta_1, \beta_2)$, the first
+party knows $\widehat{v}$ has to be encrypted using $(\alpha_l + \alpha_r)$ and
 $(\beta_1 + \beta_2)$.  Given this knowledge the final OAFE setup is
 $\frac{1}{\alpha_l + \alpha_r} \cdot \widehat{v} - \frac{\beta_1 +
 \beta_2}{\alpha_l + \alpha_r}$.
@@ -808,7 +812,7 @@ described.
   x \cdot y\\
 \end{align*}
 
-For uniformly random numbers $r1, r2, r3, r4 \in K$ all the terms
+For uniformly random numbers $r1, r2, r3, r4 \in \mathbb{K}$ all the terms
 $\mathfrak{A}$, $\mathfrak{B}$, $\mathfrak{C}$, and $\mathfrak{D}$ can be
 calculated using two OAFEs and every term alone does not reveal any information
 because each is one--time encrypted. But their composition ($\mathfrak{A} \cdot
@@ -856,41 +860,42 @@ multiplication $x \cdot y$. The first party which generated the OAFEs and chose
 the random numbers in named \emph{Goliath} in the following. The party which
 performs the evaluation but has no knowledge of the encryption keys is named
 \emph{David}. Again, $\alpha_x, \alpha_y, \alpha_z, \beta_x, \beta_y, \beta_z,
-r_1, r_2, r_3 \in K$ and uniformly at random. Obviously the $\alpha$s have to be
-invertible. After the multiplication, $\bar{z}$ is encrypted using the
-encryption keys $\alpha_z$ and $\beta_z$. For two party calculations, Goliath
-can evaluate the terms depending on $x$ (or $y$) the same way (without using
-OAFEs) and transfer the evaluated terms to David. Given the OAFEs and the terms
-Goliath evaluated a priori, David can then calculate the other expressions,
-depending on its input. By commissioning additional tasks to David, this
-construction is composable: When David can be instructed to store (encrypted)
-intermediate values that it provides in further calculations, arbitrary
-multiplicative expressions can be modeled with this construction. Exemplary, the
-evaluation of the expression $(x \cdot y) \cdot z$ is discussed. Assuming David
-provides $x$ and Goliath provides $y$ and $z$, the expression can be evaluated
-by first boxing David's input $\bar{x} = B(x)$ using one OAFE. Using the
-construction described above, David can now calculate the encrypted intermediate
-result $\bar{t} = B(x \cdot y)$ without knowing anything about $y$ or the
-intermediate result $t$. Both one--time encrypted (boxed) variables. In the next
-step, David can be commissioned to calculate $\bar{o} = E(t \cdot z$ similarly.
-And $\bar{o}$ is the final result. Using one additional OAFE, Goliath can allow
-David to execute $o = U(\bar{o})$ yielding the result of $o = (x \cdot y) \cdot
-z$.  David will not learn anything from $y$, $t$ or $z$ that it cannot calculate
-from $o$ (and his input $x$) directly. David could try to forge the value of
-$\bar{t}$ before calculating $\bar{t} \cdot \bar{z}$ but because it has no
-information about the encryption keys of $\bar{t}$ or $\bar{z}$ it will render
-$o = U(\bar{o})$ to randomness because it will contain random terms depending on
-some encryption key ($\forall \bar{v} \in \{B(v) \mid v \in K\}, \Delta \in K
-\setminus \{0\}: U(\bar{v}+\Delta) \neq U(\bar{v})+\Delta$). However, there is a
-security flaw: Usually, from $o = (x \cdot y) \cdot z = 0$, David can learn $x =
-0 \vee y = 0 \vee z = 0$. Because $x$ is its own input, when knowing $x \neq 0$
-from $o = 0$ it should learn $y = 0 \vee z = 0$. Unfortunately, David could
-choose $\bar{t}$ randomly and with overwhelming probability, $U(\bar{t}) \neq
-0$. So forging $\bar{t}$ to a random number will reveal additional information
-to David: $o = 0 \Rightarrow U(\bar{t} \cdot \bar{z}) = 0 \Rightarrow z = 0$
-with overwhelming probability. This means David does not know what it changes
-when it forges, but it can reveal additional information when the result of a
-multiplication is $0$. Therefore, this thesis underwent the next iteration.
+r_1, r_2, r_3 \in \mathbb{K}$ and uniformly at random. Obviously the $\alpha$s
+have to be invertible. After the multiplication, $\bar{z}$ is encrypted using
+the encryption keys $\alpha_z$ and $\beta_z$. For two party calculations,
+Goliath can evaluate the terms depending on $x$ (or $y$) the same way (without
+using OAFEs) and transfer the evaluated terms to David. Given the OAFEs and the
+terms Goliath evaluated a priori, David can then calculate the other
+expressions, depending on its input. By commissioning additional tasks to David,
+this construction is composable: When David can be instructed to store
+(encrypted) intermediate values that it provides in further calculations,
+arbitrary multiplicative expressions can be modeled with this construction.
+Exemplary, the evaluation of the expression $(x \cdot y) \cdot z$ is discussed.
+Assuming David provides $x$ and Goliath provides $y$ and $z$, the expression can
+be evaluated by first boxing David's input $\bar{x} = B(x)$ using one OAFE.
+Using the construction described above, David can now calculate the encrypted
+intermediate result $\bar{t} = B(x \cdot y)$ without knowing anything about $y$
+or the intermediate result $t$. Both one--time encrypted (boxed) variables. In
+the next step, David can be commissioned to calculate $\bar{o} = E(t \cdot z$
+similarly.  And $\bar{o}$ is the final result. Using one additional OAFE,
+Goliath can allow David to execute $o = U(\bar{o})$ yielding the result of $o =
+(x \cdot y) \cdot z$.  David will not learn anything from $y$, $t$ or $z$ that
+it cannot calculate from $o$ (and his input $x$) directly. David could try to
+forge the value of $\bar{t}$ before calculating $\bar{t} \cdot \bar{z}$ but
+because it has no information about the encryption keys of $\bar{t}$ or
+$\bar{z}$ it will render $o = U(\bar{o})$ to randomness because it will contain
+random terms depending on some encryption key ($\forall \bar{v} \in \{B(v) \mid
+v \in \mathbb{K}\}, \Delta \in \mathbb{K} \setminus \{0\}: U(\bar{v}+\Delta)
+\neq U(\bar{v})+\Delta$). However, there is a security flaw: Usually, from $o =
+(x \cdot y) \cdot z = 0$, David can learn $x = 0 \vee y = 0 \vee z = 0$. Because
+$x$ is its own input, when knowing $x \neq 0$ from $o = 0$ it should learn $y =
+0 \vee z = 0$. Unfortunately, David could choose $\bar{t}$ randomly and with
+overwhelming probability, $U(\bar{t}) \neq 0$. So forging $\bar{t}$ to a random
+number will reveal additional information to David: $o = 0 \Rightarrow U(\bar{t}
+\cdot \bar{z}) = 0 \Rightarrow z = 0$ with overwhelming probability. This means
+David does not know what it changes when it forges, but it can reveal additional
+information when the result of a multiplication is $0$. Therefore, this thesis
+underwent the next iteration.
 
 \paragraph{Using Message Authentication Codes} illicit modifications can be
 prevented. The original proposal of Carter and Wegman\cite{carter79} to hash
@@ -902,19 +907,19 @@ integers is to choose a prime $p$ (and random keys $a \neq 0$ and $b$) and use
   %
 \end{align*}
 
-In finite fields (such as $K$) the modulus can be removed and the hashing
-function can be adapted to $h_{a,b}(x) = (ax + b)$ being an universal hashing
-function. For $a$s and $b$s only used once, the hashing function is a one--time
-encryption as well. Because this thesis used $\bar{x} = B(x) = \alpha x + \beta$
-with fresh $\alpha$s and $\beta$s for every variable, this is an one--time a
-one--time encryption of $x$. Because of the flaw that additional information can
-be revealed when multiplications result in $0$, this iteration replaces boxed
-values by DRAVs (chapter \ref{def:DRAV}). DRAVs are twofold one--time
-encryptions, which are valid if the decryption of the one--time encryptions
-equal. Therefore DRAVs are encrypted values with \JWdef{Message Authentication
-Code}{MAC}{s} build--in. To be able to multiply two DRAVs, the multiplication
-construction is adapted (for the exact definitions of DRAVs, see chapter
-\ref{def:DRAV}):
+In finite fields (such as $\mathbb{K}$) the modulus can be removed and the
+hashing function can be adapted to $h_{a,b}(x) = (ax + b)$ being an universal
+hashing function. For $a$s and $b$s only used once, the hashing function is a
+one--time encryption as well. Because this thesis used $\bar{x} = B(x) = \alpha
+x + \beta$ with fresh $\alpha$s and $\beta$s for every variable, this is an
+one--time a one--time encryption of $x$. Because of the flaw that additional
+information can be revealed when multiplications result in $0$, this iteration
+replaces boxed values by DRAVs (chapter \ref{def:DRAV}). DRAVs are twofold
+one--time encryptions, which are valid if the decryption of the one--time
+encryptions equal. Therefore DRAVs are encrypted values with \JWdef{Message
+Authentication Code}{MAC}{s} build--in. To be able to multiply two DRAVs, the
+multiplication construction is adapted (for the exact definitions of DRAVs, see
+chapter \ref{def:DRAV}):
 
 \begin{align*}
   %
@@ -1135,7 +1140,8 @@ forge the DRAVs.
 
 \paragraph{The \emph{radicals} trick} is to modify OAFE calculations such as
 $\Phi \cdot D_\delta(\widetilde{v}) + \Psi$, $\delta \in \{l, r\}$ being the
-tuple component (left/right), $\widetilde{v}$ a DRAV, and $\Phi, \Psi \in K$ the
+tuple component (left/right), $\widetilde{v}$ a DRAV, and $\Phi, \Psi \in
+\mathbb{K}$ the
 OAFE parameters. The calculations get changed to two calculations ($!\delta$
 being two other tuple component, $!\delta = l \Leftrightarrow \delta = r \wedge
 !\delta = r \Leftrightarrow \delta = l$) $R_1$ and $R_2$ in the equations below.
@@ -1385,12 +1391,13 @@ the computations that lead to DRAVs.
 
 \begin{align}
 %
-  &\text{The static keys } \alpha_l, \alpha_r \in K \setminus \{0\}, \alpha_l +
+  &\text{The static keys } \alpha_l, \alpha_r \in \mathbb{K} \setminus \{0\},
+  \alpha_l +
   \alpha_r \neq 0\nonumber\\
 %
-  &\text{The dynamic keys } \beta, \beta' \in K \nonumber\\
+  &\text{The dynamic keys } \beta, \beta' \in \mathbb{K} \nonumber\\
 %
-  &s, x, x', i \in K \nonumber\\
+  &s, x, x', i \in \mathbb{K} \nonumber\\
 %
   \mathcal{C} = & \{ c(x) = s \cdot x + i \} \nonumber\\
 %
@@ -1419,7 +1426,7 @@ the computations (using the OAFEs). The pre--evaluated DRAEs ($\mathcal{E}$) are
 defined as follows:
 
 \begin{align}
-  \mathcal{V} = & \{ (v_l, v_r) \mid v_l, v_r \in K \}
+  \mathcal{V} = & \{ (v_l, v_r) \mid v_l, v_r \in \mathbb{K} \}
   &\text{, the DRAVs (chapter \ref{def:DRAV})} \nonumber\\
 %
   \label{rel:pre-eval-DRAE}
@@ -1436,6 +1443,8 @@ defined as follows:
 \label{sec:DRAE-decoding}
 
 \JWtodo{An Radical Encryption anpassen}
+
+\JWtodo{Noch natürlich sprachlich hinschreiben was geht}
 Entirely evaluating a pre--evaluated DRAE to obtain the DRAV is straightforward:
 A pre--evaluated DRAE $e \in \mathcal{E} = (M,A, k)$ evaluates to its
 single resulting DRAV $r \in \mathcal{V}$ as follows (all additions performed
