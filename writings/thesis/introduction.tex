@@ -53,33 +53,22 @@ requires embedded truth tables in every gate, an adoption to larger finite
 fields would have the cost of a quadratic blowup of every truth table in every
 gate (cf.\ \cite{naor99privacy}).
 
-Besides the GC approch
+Besides the GC approch, this thesis is also related to \emph{Efficient
+Multi-party Computation Over Rings} by Cramer et al.\cite{cramer03}. The
+difference is that Cramer's approach is based on the simulation of formalas by
+bounded--width programs by Cleve \cite{cleve91} which does not support square \&
+multiply \cite{knuth81} and the complexity is slightly polynomial in the number
+of arithmetic operations performed. The writings of Naor et
+al.\cite{naor99,naor06} also describe OPE but are in polynomial complexity and
+based on \JWdefn{Oblivious Transfer}{OT} \cite{rabin81}.
 
-\begin{itemize}
-  \item Efficient Multi--Party Computation Over Rings \cite{cramer03}: Leicht
-    polynomiell und kein square \& multiply
-
-  \item Garbled Arithmetic Circuits \cite{gac2012}, computational assumptions
-
-  \item OPE in \cite{naor99,naor06}: Ist bisher immer polynomiell, wir zeigen
-    linear
-
-  \item Oblivious Affine Function Evaluation \cite{davidgoliath}, warum das so
-    toll ist und was ich damit tun will
-
-\end{itemize}
-
-
-\JWltwo{High--level Description}
-
-\begin{itemize}
-
-  \item Describe Problem
-
-  \item Shortly describe OAFEs
-
-  \item Describe transformation idea
-
-\end{itemize}
+\emph{How to Garble Arithmetic Circuits} by Applebaum et al.\cite{gac2012} is
+related closely to this. Many ideas used in this thesis are inspired by
+Applebaum et al. The difference between the paper and this thesis, is that
+Applebaum et al.\ rely on computational assumptions. In contrast, this thesis
+does not rely on computational assumptions but rebases some of the ideas on
+\JWdefn{Oblivious Affine Function Evaluation}{OAFE} \cite{davidgoliath}. OAFE
+allows oblivious evaluation of affine functions. This primitive is used to
+encode arbitrary functions.
 
 % vim: set spell spelllang=en_us fileencoding=utf8 formatoptions=tcroql : %
