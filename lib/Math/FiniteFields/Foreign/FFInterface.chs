@@ -37,34 +37,8 @@ unsafePackMallocCStringLen (cstr, len) = do
         fp <- newForeignPtr BS.c_free_finalizer (castPtr cstr)
         return $! BS.PS fp 0 len
 
-instance Storable OpaqueElement where
-    sizeOf _ = ffSizeofElement
-    alignment _ = 1
-    peek = peekOpaqueElement
-    poke = pokeOpaqueElement
-
-instance Storable UnsafeOpaqueElement where
-    sizeOf _ = ffSizeofElement
-    alignment _ = 1
-    peek p = fmap UnsafeOpaqueElement (peek (castPtr p))
-    poke p (UnsafeOpaqueElement r) = poke (castPtr p) r
-
-instance Show UnsafeOpaqueElement where
-    show (UnsafeOpaqueElement ptr) = show ptr
-
-peekOpaqueElement :: Ptr OpaqueElement -> IO OpaqueElement
-peekOpaqueElement pfp = newNonCollectedPointer pfp
-
-pokeOpaqueElement :: Ptr OpaqueElement -> OpaqueElement -> IO ()
-pokeOpaqueElement pfp e = ffCopyElement (UnsafeOpaqueElement $ castPtr pfp) e
-
-ffSizeOfOpaqueElement :: Int
-ffSizeOfOpaqueElement = {#sizeof OpaqueElement #}
-
 withOpaqueElement :: OpaqueElement -> (Ptr OpaqueElement -> IO b) -> IO b
 {#pointer OpaqueElement foreign newtype #}
-
-{#pointer UnsafeOpaqueElement newtype #}
 
 foreign import ccall "ntl_interface_easy.h &ff_free_element"
   ffFreeElementPtr :: FunPtr (Ptr OpaqueElement -> IO ())
@@ -161,8 +135,5 @@ ffElementToBytes e =
        unsafePackMallocCStringLen (p, fromIntegral size)
 
 {#fun pure unsafe ff_sizeof_element as ^ { } -> `Int'  #};
-
-{#fun unsafe ff_copy_element as
-    ^ { id `UnsafeOpaqueElement', withOpaqueElement* `OpaqueElement' } -> `()'#}
 
 -- vim: set filetype=haskell :

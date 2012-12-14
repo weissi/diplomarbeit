@@ -9,8 +9,6 @@ module Math.FiniteFields.F2Pow256 ( F2Pow256, f2Pow256FromString
 import Data.ByteString (ByteString)
 import Data.Helpers (integralBytes)
 import Data.FieldTypes
-import Foreign.Storable (Storable(..))
-import Foreign.Ptr (Ptr, castPtr)
 import Control.Monad.CryptoRandom (CRandom(..))
 import Crypto.Random (CryptoRandomGen(..))
 import Test.QuickCheck.Arbitrary (Arbitrary(..))
@@ -60,12 +58,6 @@ instance Num F2Pow256 where
 instance Fractional F2Pow256 where
     (/) = binaryOp FFI.ffDivElements
     fromRational = error "F2Pow256: fromRational undefined"
-
-instance Storable F2Pow256 where
-    sizeOf = sizeOf . unF2Pow256
-    alignment = sizeOf . unF2Pow256
-    peek p = fmap F2Pow256 (peek (castPtr p :: Ptr FFI.OpaqueElement))
-    poke p a = poke (castPtr p) (unF2Pow256 a)
 
 instance CRandom F2Pow256 where
     crandom g =
