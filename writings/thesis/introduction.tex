@@ -1,23 +1,23 @@
 \JWlone{Introduction}
 \label{sec:introduction}
 
-A \JWdef{Secure Multi--party Computation}{MPC} or \JWdef{Secure Function
+A \JWdef{Secure Multi--Party Computation}{MPC} or \JWdef{Secure Function
 Evaluation}{SFE} is the joint calculation of an arbitrary function $f$ with
 private inputs from a set of mutually distrusting parties. The function has to
 be evaluated correctly and the inputs have to be kept privately.  When the size
 of the set of parties for a MPC is $2$, the computation is also called a
-\emph{secure two--party computation}. The area of research of secure
-multi--party computations was founded by \emph{Yao's Millionaires' Problem}
-\cite{yao82}. The famous Millionaires' Problem discusses two millionaires, who
-are interested in knowing which of them is richer without revealing the actual
-values of their wealth. The problem is evaluating the function $f(a, b) = a \geq
-b$, where the first millionaire inputs the value of his wealth as $a$ and the
-second inputs $b$. The result of the evaluation is either $false$ so the second
-millionaire is richer or $true$ meaning the opposite. From the result and the
-own input, neither party is able to calculate the wealth of the other
-millionaire. Another example for real--world multi--party computations are
-democratic elections. The eligible voters input their private vote and the
-result of the calculations is the percentage breakdown.
+two--party computation. The area of research of secure multi--party computations
+was founded by \emph{Yao's Millionaires' Problem} \cite{yao82}. The famous
+Millionaires' Problem discusses two millionaires, who are interested in knowing
+which of them is richer without revealing the actual values of their wealth. The
+problem is evaluating the function $f(a, b) = a \geq b$, where the first
+millionaire inputs the value of his wealth as $a$ and the second inputs $b$. The
+result of the evaluation is either $false$ so the second millionaire is richer
+or $true$ meaning the opposite. From the result and the own input, neither party
+is able to calculate the wealth of the other millionaire. Another example for
+real--world multi--party computations are democratic elections. The eligible
+voters input their private vote and the result of the calculations is the
+percentage breakdown.
 
 \JWdefn{Oblivious Polynomial Evaluation}{OPE} \cite{naor99,naor06} is a special
 case of SFE. In contrast to arbitrary functions that are known by the involved
@@ -30,9 +30,11 @@ protocol a useful and interesting primitive.
 \JWdefn{Oblivious Affine Function Evaluation}{OAFE} \cite{davidgoliath} is a
 primitive that allows---similar to OPE---to obliviously evaluate affine
 functions. This thesis works out an efficient, secure and implemented protocol
-for OPE based on OAFE. This thesis also works out approaches for general SFE.
-The security of the protocol is information--theoretically proved in the
-\JWdefn{Universal Composability}{UC} framework \cite{canetti05}.
+which realizes OPE based on OAFE. The presented approaches are also suitable for
+general SFE (including \emph{Square \& Multiply} \cite{knuth81}), however the
+security is only proved for OPE. The security of the protocol is
+information--theoretically proved in the \JWdefn{Universal Composability}{UC}
+framework \cite{canetti05}.
 
 
 %
@@ -46,29 +48,56 @@ defined by Canetti \cite{canetti05}. The benefit of this notion is that
 UC--secure protocols can be composed and ran concurrently while still staying
 safe without the necessity of additional security proofs. Besides the notion of
 security, Yao's \JWdefn{Garbled Circuit}{GC} approach \cite{yao86} is also
-related to this thesis because Yao garbles boolean circuits to garbled circuits.
-Despite the wide range of adoptions of Yao's garbled circuits, the approach is
+related to this thesis because Yao describes encrypted evaluation of (boolean)
+circuits.  Despite the versatility of Yao's garbled circuits, the approach is
 not suitable for arithmetic functions on large fields. Because the GC approach
 requires embedded truth tables in every gate, an adoption to larger finite
 fields would have the cost of a quadratic blowup of every truth table in every
 gate (cf.\ \cite{naor99privacy}).
 
-Besides the GC approch, this thesis is also related to \emph{Efficient
-Multi-party Computation Over Rings} by Cramer et al.\cite{cramer03}. The
-difference is that Cramer's approach is based on the simulation of formalas by
-bounded--width programs by Cleve \cite{cleve91} which does not support square \&
-multiply \cite{knuth81} and the complexity is slightly polynomial in the number
-of arithmetic operations performed. The writings of Naor et
-al.\cite{naor99,naor06} also describe OPE but are in polynomial complexity and
-based on \JWdefn{Oblivious Transfer}{OT} \cite{rabin81}.
+Besides the GC approach, this thesis is also related to \emph{Efficient
+Multi-Party Computation Over Rings} by Cramer et al.\cite{cramer03}. The
+difference is that Cramer's approach is based on the simulation of formulas by
+bounded--width programs by Cleve \cite{cleve91} which does not support
+\emph{Square \& Multiply} \cite{knuth81} and the complexity is slightly
+polynomial in the number of arithmetic operations performed. The writings of
+Naor et al.\cite{naor99,naor06} also describe OPE but are in polynomial
+complexity and based on \JWdefn{Oblivious Transfer}{OT} \cite{rabin81}.
 
 \emph{How to Garble Arithmetic Circuits} by Applebaum et al.\cite{gac2012} is
 related closely to this. Many ideas used in this thesis are inspired by
 Applebaum et al. The difference between the paper and this thesis, is that
 Applebaum et al.\ rely on computational assumptions. In contrast, this thesis
-does not rely on computational assumptions but rebases some of the ideas on
+does not rely on computational assumptions and switches some of the ideas to
 \JWdefn{Oblivious Affine Function Evaluation}{OAFE} \cite{davidgoliath}. OAFE
 allows oblivious evaluation of affine functions. This primitive is used to
 encode arbitrary functions.
+
+
+%
+% ACKNOWLEDGMENTS
+%
+\JWltwo{Acknowledgments}
+
+I wish to thank my advisor Daniel Kraschewski who supported me throughout the
+research and writing of this thesis. He donated a large amount of his limited
+time for discussions and explorations crucial for my thesis and allowed this
+thesis to be my own work but steered me in the right direction when needed.  I
+am also thankful for his patience introducing me to this exciting topic.
+
+
+%
+% Outline
+%
+\JWltwo{Outline}
+
+This thesis starts by introducing the reader to the general methodology, which
+is discussed in depth thereafter. Next, the security of the methodology gets
+analyzed and proved in the UC framework. Since this thesis also implements the
+proposed protocol, the implementation is covered to some degree. The
+constructive work is then rounded out by an evaluation of both, the methodology
+and the implementation. And since a large amount of the time taken for this
+thesis was affected by researching, a quick tour of the discontinued approaches
+is given to the reader.
 
 % vim: set spell spelllang=en_us fileencoding=utf8 formatoptions=tcroql : %

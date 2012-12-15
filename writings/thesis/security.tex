@@ -6,7 +6,7 @@ This chapter states and proofs the security of the protocol in the
 In the UC framework security is defined by comparing an \emph{ideal model} to a
 \emph{real model}. The ideal model implements the intended functionality
 \JWfuncSym{}{} safely by definition. The protocol under examination runs in the
-real model. In the real model, there is an attacker $\mathcal{A}$ that controls
+real model. In the real model, there is an adversary $\mathcal{A}$ that controls
 all corrupted parties.  In the ideal model, there is a simulator $\mathcal{S}$
 that tries to mimic $\mathcal{A}$. An environment $\mathcal{Z}$ is plugged to
 either the real or the ideal model and has to guess to which it's plugged to. A
@@ -41,9 +41,10 @@ The setup phases are run sequentially as soon as the simulator starts.
 
 \paragraph{Setup Reference System:}
 
-The reference system helps to review the honesty of the attacker \JWadv{}
-that impersonates \JWpTwo{}. The messages sent from \JWadv{} are compared
-to the messages an honest, emulated \JWpTwo{} sends in the reference system.
+The reference system helps to review the honesty of the adversary \JWadv{} that
+impersonates \JWpTwo{}. The messages sent from \JWadv{} are intercepted and
+compared to the messages an honest, emulated \JWpTwo{} sends in the reference
+system.
 
 \begin{itemize}
 
@@ -226,53 +227,92 @@ model.
 % CORRUPTED DAVID
 \JWlthree{Corrupted \JWpTwo{}}
 
-\begin{JWtodoBox}
+This chapter will proof the security of the proposed protocol \JWprotoSymOPE
+in the Universal Composability (UC) framework \cite{canetti05} against both,
+passive and active adversaries impersonating \JWpTwo{}. Passive adversaries are
+adversaries which try to calculate additional information from intermediate
+results, active adversaries additionally misuse the protocol in any way.
 
-  \JWtodo{Neu schreiben  mit radicals. Wird einfacher}
+The protocol is trivially secure against passive adversaries impersonating
+\JWpTwo{} because every value that gets transmitted to \JWpTwo{} is one--time
+encrypted. The values that transmitted to \JWpTwo{} are part of a DRAEs and
+DRAEs only contain references to OAFEs and DRAVs. Chapter \ref{def:DRAV} proves
+(Lemma \ref{lem:DRAV-random}) that DRAV only transport uncorrelated uniform
+randomness to parties not in possession of the encryption keys. The OAFE
+evaluations lead further (one--time encrypted) DRAVs and radicals (see chapter
+\ref{sec:sec-muls}) that are one--time encrypted as well. The simulator from
+chapter \ref{sec:simulator-david} plays on this property and encodes a random
+polynomial of the same degree that is used to test \JWpTwo{}'s honesty. In fact,
+because every value is one--time encrypted, the protocol is perfectly secure
+against any passive adversary.
 
-Using the simulator from chapter \ref{sec:simulator-david}, the adversary
-\JWadv{} is just a player in a game and has to proof its honesty. Interestingly,
-\JWadv{} is only briefly involved in the evaluation of the polynomial
-itself: Only its first message is intercepted which reveals its unencrypted
-polynomial input $x$. All the following moves in the game only serve the purpose
-of checking the adversary's honesty. Because an honest \JWpTwo{} acts
-deterministic while running the protocol, the adversary's messages can easily be
-compared to the messages from the honest \JWpTwo{} in the reference system.
+For the security against a actively corrupted \JWpTwo{} a hybrid argument is
+employed. The general idea is to transform a actively corrupted adversary into a
+passively corrupted adversary and to show that the statistical distance in the
+environment's view is negligible. For to random variables $x$ and $y$
+statistical distance $D_S$ is denoted using the following standard notation.
 
-The most interesting part seems to be the simulator's choice of the polynomial
-to evaluate because the simulator has---except the degree---no information about
-the polynomial \JWpOne{} committed itself to. It would be harmful if the
-environment could discover that the adversary is evaluating another polynomial
-because it would then be able to distinguish between the real and the ideal
-model. Interestingly, a polynomial of the same degree gets (except for DRAV
-constants) deterministically transformed to a DRAC\@. Two DRACs representing two
-polynomials of the same degree are equal except for the values of the constants
-(DRAVs).  While evaluating a polynomial using the protocol, \JWpTwo{} only
-learns intermediate values (DRAVs) and the DRAC\@. Since the degree of the
-polynomial is a protocol parameter, the security of the protocol is reduced to
-the information the environment can reveal from the DRAVs. As Lemma
-\ref{lem:DRAV-random} proofs, DRAVs consist of uniform, uncorrelated randomness.
-Therefore the concrete polynomial is unimportant, the emulated \JWpOne{}
-therefore generates a random polynomial (of the correct degree) and tests the
-honesty of the adversary. In the right moment, the simulator uses the ideal
-functionality \JWfuncSymOPE{} to correctly evaluate the polynomial using the
-adversary's input intercepted at the beginning. If the adversary proofed honest
-throughout the process, the simulator modifies the emulated OAFE functionality
-to evaluate exactly to the correct polynomial evaluation iff the adversary
-proves its honesty again. If the adversary was caught while trying to cheat, the
-simulator modifies the final OAFE to evaluate to some random value.
+\begin{align*}
+  %
+  D_S(x, y) = \frac{\sum_\alpha \left|Pr[x=\alpha] - Pr[y=\alpha]\right|}{2}
+  %
+\end{align*}
 
-Summing up, a party that is not in possession of the encryption keys cannot tell
-if two DRACs encode the same polynomial or not. This remains true when also
-analyzing all intermediate values while evaluating a DRAC\@. Therefore, for any
-passively corrupted \JWadv{}, the environment will not be able to tell if the
-adversary \JWadv{} was running in the real model or inside the simulator in the
-ideal model. Because an honest \JWpTwo{} is entirely deterministic, the
-adversary (which impersonates \JWpTwo{}) can be perfectly compared against the
-honest \JWpTwo{} running in the reference system. This makes the protocol
-perfectly secure against any actively corrupted, \JWpTwo{}, too.
+\noindent{}The first step is to attach a \emph{monitor module} between the
+adversary \JWadv{} and the OAFE functionality \JWfuncSymOAFE{}. The monitor
+module is parametrized by a transcript how an honest \JWpTwo{} would act. The
+task of the module is to analyze the messages that \JWpTwo{} (impersonated by
+the adversary) sends to the OAFE functionality. If it detects that \JWpTwo{}
+sends a message (that would not be ignored by \JWfuncSymOAFE{}) that does not
+equal the same message in the honest transcript, it changes this message to
+match the honest message. Additionally it intercepts the response changed
+message from \JWfuncSymOAFE{} and changes the response to some value uniformly
+at random. The monitor module does this change only once, if the adversary
+changes one of the following messages, the monitor module does no changes and
+acts like a cable. The union of the adversary \JWadv{} and the monitor module
+can be seen as a transformed adversary \JWadv{}' which is forging (at the
+earliest) the message following the first message that \JWadv{} illicitly
+changed. So, if \JWadv{} forges $n$ messages, \JWadv{}' forgest at most $n-1$
+messages.
 
-\end{JWtodoBox}
+The interesting part is the statistical distance of the environment's between
+\JWadv{} and \JWadv{}'. The message which \JWadv{} will receive from the monitor
+module after having forged a message for the first time is uniform randomness.
+This will render some DRAV that is computed with the message to a
+non--well--formed DRAV with overwhelming probability ($1-1/|\mathbb{K}| =
+1-1/2^k$) because only one element of the finite field $\mathbb{K}$ matches its
+counterpart tuple component (its MAC see chapter \ref{sec:sec-muls}). Therefore,
+the statistical distance of the environment's view between \JWadv{} and
+\JWadv{}' is:
+
+\begin{align*}
+  %
+  D_s(\text{view}_\mathcal{Z}(\mathcal{A}),
+  \text{view}_\mathcal{Z}(\mathcal{A}'))
+  \leq \frac{1}{|\mathbb{K}|}
+  = \frac{1}{2^k}
+  %
+\end{align*}
+
+\noindent{}This argument can be used inductive until the original adversary
+\JWadv{} is transformed to a passive adversary $\mathcal{A}^*$. Because the
+triangle inequality holds for the statistical distance and the maximal number of
+OAFEs used for a polynomial of degree $n$ is in $O(n)$ the statistical distance
+of any active adversary \JWadv{} and a passive adversary $\mathcal{A}^*$ is
+
+\begin{align*}
+  %
+  D_s(\text{view}_\mathcal{Z}(\mathcal{A}),
+  \text{view}_\mathcal{Z}(\mathcal{A}^*))
+  \leq \frac{O(n)}{2^k}
+  %
+\end{align*}
+
+\noindent{}And because $k$ is the security parameter, the statistical distance
+in the environment's view between any active adversary and any passive adversary
+is negligible. As stated above, the protocol is perfectly secure against any
+passive adversary and therefore UC--secure against any active adversary. \qed
+
 
 
 % CORRUPTED GOLIATH
