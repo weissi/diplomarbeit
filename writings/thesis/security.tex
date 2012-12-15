@@ -35,120 +35,52 @@ $\mathcal{S}$).
 \JWlthree{Simulator $\mathcal{S}_{\text{\JWpTwo{}}}(\mathcal{A})$}
 \label{sec:simulator-david}
 
-\JWtodo{Dieser ist jetzt falsch, wird einfacher}
-
-The setup phases are run sequentially as soon as the simulator starts.
-
-\paragraph{Setup Reference System:}
-
-The reference system helps to review the honesty of the adversary \JWadv{} that
-impersonates \JWpTwo{}. The messages sent from \JWadv{} are intercepted and
-compared to the messages an honest, emulated \JWpTwo{} sends in the reference
-system.
-
-\begin{itemize}
-
-  \item Setup emulated, honest \JWpOne{} labeled $\mathcal{G}^R$.
-
-  \item Setup emulated, honest OAFE functionality \JWfuncSymOAFE{}
-    labeled $\mathcal{F}^R_{OAFE}$.
-
-  \item Setup emulated, honest \JWpTwo{} labeled $\mathcal{D}^R$.
-    $\mathcal{D}^R$ should not send an initial message (its polynomial input)
-    until notified by the simulator.
-
-  \item Wire $\mathcal{G}^R$, $\mathcal{F}^R_{OAFE}$, and $\mathcal{D}^R$ as
-    usual.
-
-  \item Initialize $\mathcal{G}^R$ with a random polynomial of the parametrized
-    degree.
-
-\end{itemize}
-
-
-\subparagraph{Setup System Under Test:}
+\paragraph{Setup Phase:}
 
 \begin{itemize}
 
   \item Setup an emulated version of the given real model adversary
     \JWadv{} which especially impersonates the corrupted \JWpTwo{}.
 
-  \item Setup emulated, honest \JWpOne{} labeled $\mathcal{G}^T$.
+  \item Setup emulated, honest \JWpOne{} labeled $\mathcal{G}$.
 
-  \item Setup emulated, honest OAFE functionality \JWfuncSymOAFE{}
-    labeled $\mathcal{F}^T_{OAFE}$.
+  \item Setup emulated, honest OAFE functionality labeled \JWfuncSymOAFE{}.
 
-  \item Wire $\mathcal{G}^T$, $\mathcal{F}^T_{OAFE}$ and \JWadv{} to each other
+  \item Initialize $\mathcal{G}$ with a random polynomial of the parametrized
+    degree $k$ and record the DRAC $C$ it generated.
+
+  \item Wire $\mathcal{G}$, \JWfuncSymOAFE{} and \JWadv{} to each other
     and \JWadv{} to the environment as in the real model.
 
-  \item Initialize $\mathcal{G}^T$ with the same polynomial $\mathcal{G}^R$
-    became initialized.
+  \item Start the simulation by transitioning in the \emph{Processing Phase}.
 
 \end{itemize}
 
-
-\subparagraph{General Setup:}
-
-\begin{itemize}
-
-  \item Setup a variable \JWcode{cheated $\leftarrow$ $false$}.
-
-\end{itemize}
-
-
-\paragraph{Regular Processing Phase:}
-
-The regular processing phase starts as soon as the setup phases are terminated.
+\paragraph{Processing Phase:}
 
 \begin{itemize}
 
-  \item Intercept the adversary's (\JWadv{}) polynomial input. This is trivial
-    because it is the first message that \JWadv{} transmits to \JWfuncSymOAFE{}
-    and was not ignored by \JWfuncSymOAFE{}. Next, store $x$.
+  \item Intercept the adversary's (\JWadv{}) polynomial input $x$. This is
+    trivial because it is the first message that \JWadv{} transmits to
+    \JWfuncSymOAFE{} and was not ignored by \JWfuncSymOAFE{}. Notice, this is
+    the initial DRAV encoding of the plain value $x$. Next, halt the simulation
+    and evaluate the proper polynomial using the intercepted input $x$ and the
+    ideal functionality \JWfuncSymOPEnp{} by sending it \JWmsgTP{Evaluate}{$x$}.
 
-  \item Upon an $x$ is stored, send \JWmsgTP{Evaluate}{$x$} to the reference
-    system's emulated \JWpTwo{} $\mathcal{D}^R$. This will start the evaluation
-    process for $\mathcal{D}^R$.
-
-  \item Until evaluating the last OAFE the simulation has to intercept all
-    messages from \JWadv{} and adapt the scheduling of the reference system to
-    match the test system.
-
-  \item Whenever a message from the adversary \JWadv{} that is not ignored is
-    intercepted, compare it to the according message of the reference \JWpTwo{}
-    ($\mathcal{D}^R$). Should the message from the adversary differ from the
-    message from reference \JWpTwo{} or should the adversary send an additional
-    non--ignored message, the adversary is caught while trying to cheat. If
-    \JWadv{} was caught while trying to cheat, set \JWcode{cheated $\leftarrow$
-    $true$} and continue normally.
-
-  \item As soon as the \JWadv{} has evaluated the last affine function the OAFE
-    functionality provides, halt system under test and the reference system.
-
-\end{itemize}
-
-\paragraph{The Last Step:}
-
-\begin{itemize}
-
-  \item Output \JWmsgTP{Evaluate}{$x$} to \JWfuncSymOPEnp{}, this evaluates the
-    polynomial using the ideal OPE functionality using \JWpTwo{}'s intercepted
-    input $x$.
-
-  \item Upon receiving \JWmsgTP{Evaluated}{$y$} from \JWfuncSymOPEnp{}, store
-    the polynomial's evaluated result $y$.
-
-  \item Finally, the variable \JWcode{cheated} is analyzed and the final OAFE is
-    modified accordingly: If \JWcode{cheated $= true$} modify the final OAFE to
-    evaluate to a value at random but unequal to the real result. (e.g., an
-    affine function $0 \cdot x + y + r$ where $r \in \mathbb{K} \setminus \{0\}$
-    is fresh, uniform randomness). If \JWcode{cheated $= false$}, the final OAFE
-    gets modified such that evaluating the next step honestly evaluates to the
-    evaluated polynomial's result (e.g., by an affine function $0 \cdot x + y$
-    where $y$ is the evaluated polynomial's value.
-
-  \item Unhalt the reference system to allow \JWadv{} to fetch the final
-    result.
+  \item Upon receiving \JWmsgTP{Evaluated}{$y$} from \JWfuncSymOPEnp{},
+    calculate the value $\chi$ which an honest \JWpTwo{} would evaluate the last
+    OAFE with. Because an honest \JWpTwo{} acts entirely deterministic, this
+    calculates from the stored DRAC $C$, the OAFE parameters in \JWfuncSymOAFE,
+    and the stored input $x$. Next, draw a random value $r$ and calculate $\psi
+    = \frac{y-r}{\chi}$. Next, reconfigure the parameters of the last OAFE to
+    $(\psi, r)$. The last OAFE then calculates the affine function $f(\eta) =
+    \psi \cdot \eta + r$ which---when evaluated with $\chi$---calculates the
+    result $y$ of the proper polynomial at the node $x$. Since any honest
+    \JWpTwo{} evaluates the last OAFE with $\chi$, any honest \JWpTwo{} will
+    receive the correct result $y = f(\chi) = \psi \cdot \chi + r =
+    \frac{y-r}{\chi} \cdot \chi + r = y$. Any dishonest \JWpTwo{} will receive
+    some random value depending on the random value $r$. Finally unhalt the
+    simulation.
 
 \end{itemize}
 
