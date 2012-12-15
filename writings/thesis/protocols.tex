@@ -15,7 +15,7 @@ is the ideal model of what the protocol tries to achieve.
   {fig:func-ope}
 
   Parametrized by a finite field of size $2^k$ ($\mathbb{F}_{2^k}$)
-  and maximal polynomial degree $n$.
+  and polynomial degree $n$.
 
   \begin{JWfuncSteps}
 
@@ -64,10 +64,8 @@ is the ideal model of what the protocol tries to achieve.
   {Protocol: Oblivious Polynomial Evaluation}%
   {fig:proto-ope}
 
-  \JWtodo{Evtl.\ protocol irgendwie self--contained hinbekommen}
-
   Parametrized by the security parameter $k$ that specifies the field
-  $\mathbb{F}_{2^k}$ and the maximal degree of the polynomial $n$.
+  $\mathbb{F}_{2^k}$ and the degree of the polynomial $n$.
 
   \JWprotoPhase{Setup:}
 
@@ -90,7 +88,7 @@ is the ideal model of what the protocol tries to achieve.
   \item Upon receiving the DRAC from \JWpOne{}, verify that there is no stored
     DRAC yet, else ignore that input. Next, \JWpTwo{} verifies the received
     input is a DRAC, else ignore that input. Additionally it verifies
-    that the DRAC encodes a function whose degree is less or equal than $n$ (see
+    that the DRAC encodes a function whose degree is equal to $n$ (see
     chapter \ref{sec:max-poly-degree}), else ignore the input. If the DRAC
     verification was successful, store the DRAC.
 

@@ -1521,10 +1521,22 @@ of calculating the maximal degree the function the DRAE encodes.
 
 \end{itemize}
 
-Since DRACs that evaluated polynomial always have exactly one final DRAE which
-yields the function's result, the annotated maximal degree of this DRAE is the
-degree of the function the DRAC encodes. Before evaluating a DRAC, \JWpTwo{} has
-to verify the degree of the polynomial it is supposed to evaluate equals the
-parametrized degree.
+\noindent{}Since DRACs that evaluate polynomial always have exactly one final
+DRAE which yields the function's result, the annotated degree of this DRAE is
+the degree of the function the DRAC encodes. Before evaluating a DRAC, \JWpTwo{}
+has to verify that the degree of the polynomial it is supposed to evaluate
+equals the parametrized degree.  Notice, the definition of polynomial degree
+used in this thesis is slightly different than the usual definition: For OPE, it
+is crucial that the evaluating party does not learn any coefficients of the
+polynomial because they can be regarded as the input values of the party which
+chooses the polynomial.  Therefore the polynomial degree is the number of rows
+minus one of the vector $a$ which specifies the polynomial ($\sum_{i=0}^n
+a_i\cdot x^i$). Hence, the degree of the polynomial $0 + 0x + x^2 + x^3 + x^4 +
+0x^5 + 0x^6$ specified by $\begin{pmatrix}0&0&1&1&1&0&0\end{pmatrix}^T$ is
+regarded as $6$.  This may seem odd but is not less powerful and does reveal
+leading coefficients of the encoding party. Obviously, if two parties agreed on
+polynomial degree $n$ and the encoding party chooses to evaluate a polynomial of
+degree $m < n$ it can reshape the specification vector by trailing zeros until
+having $n+1$ rows.
 
 % vim: set spell spelllang=en_us fileencoding=utf8 formatoptions=tcroql : %

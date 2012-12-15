@@ -163,30 +163,32 @@ This chapter will proof the security of the proposed protocol \JWprotoSymOPE
 in the Universal Composability (UC) framework \cite{canetti05} against both,
 passive and active adversaries impersonating \JWpTwo{}. Passive adversaries are
 adversaries which try to calculate additional information from intermediate
-results, active adversaries additionally misuse the protocol in any way.
+results, active adversaries additionally misuse the protocol in some
+unpredictable way.
 
 The protocol is trivially secure against passive adversaries impersonating
 \JWpTwo{} because every value that gets transmitted to \JWpTwo{} is one--time
-encrypted. The values that transmitted to \JWpTwo{} are part of a DRAEs and
-DRAEs only contain references to OAFEs and DRAVs. Chapter \ref{def:DRAV} proves
-(Lemma \ref{lem:DRAV-random}) that DRAV only transport uncorrelated uniform
-randomness to parties not in possession of the encryption keys. The OAFE
-evaluations lead further (one--time encrypted) DRAVs and radicals (see chapter
+encrypted. The values which are sent to \JWpTwo{} are part of a DRAEs and DRAEs
+only contain references to OAFEs and DRAVs. Chapter \ref{def:DRAV} proves (Lemma
+\ref{lem:DRAV-random}) that DRAV only transport uncorrelated uniform randomness
+to parties not in possession of the encryption keys. The OAFE evaluations lead
+to further (one--time encrypted) DRAVs and radicals (see chapter
 \ref{sec:sec-muls}) that are one--time encrypted as well. The simulator from
 chapter \ref{sec:simulator-david} plays on this property and encodes a random
 polynomial of the same degree that is used to test \JWpTwo{}'s honesty. In fact,
 because every value is one--time encrypted, the protocol is perfectly secure
 against any passive adversary.
 
-For the security against a actively corrupted \JWpTwo{} a hybrid argument is
-employed. The general idea is to transform a actively corrupted adversary into a
-passively corrupted adversary and to show that the statistical distance in the
-environment's view is negligible. For to random variables $x$ and $y$
-statistical distance $D_S$ is denoted using the following standard notation.
+For the security against an actively corrupted \JWpTwo{} a hybrid argument is
+employed. The general idea is to transform an actively corrupted adversary
+incrementally into a passively corrupted adversary and to show that the
+statistical distance in the environment's view is negligible. For to random
+variables $x$ and $y$ statistical distance $\Delta_S$ is denoted using the
+following standard notation.
 
 \begin{align*}
   %
-  D_S(x, y) = \frac{\sum_\alpha \left|Pr[x=\alpha] - Pr[y=\alpha]\right|}{2}
+  \Delta_S(x,y) = \frac{\sum_\alpha \left|Pr[x=\alpha] - Pr[y=\alpha]\right|}{2}
   %
 \end{align*}
 
@@ -194,47 +196,49 @@ statistical distance $D_S$ is denoted using the following standard notation.
 adversary \JWadv{} and the OAFE functionality \JWfuncSymOAFE{}. The monitor
 module is parametrized by a transcript how an honest \JWpTwo{} would act. The
 task of the module is to analyze the messages that \JWpTwo{} (impersonated by
-the adversary) sends to the OAFE functionality. If it detects that \JWpTwo{}
-sends a message (that would not be ignored by \JWfuncSymOAFE{}) that does not
-equal the same message in the honest transcript, it changes this message to
-match the honest message. Additionally it intercepts the response changed
-message from \JWfuncSymOAFE{} and changes the response to some value uniformly
-at random. The monitor module does this change only once, if the adversary
-changes one of the following messages, the monitor module does no changes and
-acts like a cable. The union of the adversary \JWadv{} and the monitor module
-can be seen as a transformed adversary \JWadv{}' which is forging (at the
-earliest) the message following the first message that \JWadv{} illicitly
-changed. So, if \JWadv{} forges $n$ messages, \JWadv{}' forgest at most $n-1$
-messages.
+the adversary) sends to the OAFE functionality. Upon the detection of a message
+which does not match the honest transcript, it changes this message to match the
+honest message. Additionally the monitor module intercepts the response to
+changed message (sent by \JWfuncSymOAFE{}) and changes the response to some
+value uniformly at random. The monitor module does this change only once, if the
+adversary changes one of the following messages, the monitor module does no
+further changes. The union of the adversary \JWadv{} and the
+monitor module can be seen as a transformed adversary \JWadv{}' which is forging
+(at the earliest) the message following the first message that \JWadv{}
+illicitly changed. So, if \JWadv{} forges $n$ messages, \JWadv{}' forgest at
+most $n-1$ messages.
 
-The interesting part is the statistical distance of the environment's between
-\JWadv{} and \JWadv{}'. The message which \JWadv{} will receive from the monitor
-module after having forged a message for the first time is uniform randomness.
-This will render some DRAV that is computed with the message to a
-non--well--formed DRAV with overwhelming probability ($1-1/|\mathbb{K}| =
-1-1/2^k$) because only one element of the finite field $\mathbb{K}$ matches its
-counterpart tuple component (its MAC see chapter \ref{sec:sec-muls}). Therefore,
-the statistical distance of the environment's view between \JWadv{} and
-\JWadv{}' is:
+The interesting part is the statistical distance of the environment's view
+between \JWadv{} and \JWadv{}'. The message which \JWadv{} will receive from the
+monitor module after having forged a message for the first time is uniform
+randomness.  This will render some DRAV that is computed involving value in the
+message to a non--well--formed DRAV with overwhelming probability. The
+probability equals $1-1/|\mathbb{K}| = 1-1/2^k$ because exactly one element of
+the finite field $\mathbb{K}$ matches its counterpart tuple component (see
+chapter \ref{def:DRAV}). Therefore, the statistical distance
+$\delta_{\mathcal{A},\mathcal{A}'}$ of the environment's view between \JWadv{}
+and \JWadv{}' is:
 
 \begin{align*}
   %
-  D_s(\text{view}_\mathcal{Z}(\mathcal{A}),
+  \delta_{\mathcal{A},\mathcal{A}'} =
+  \Delta_S(\text{view}_\mathcal{Z}(\mathcal{A}),
   \text{view}_\mathcal{Z}(\mathcal{A}'))
   \leq \frac{1}{|\mathbb{K}|}
   = \frac{1}{2^k}
   %
 \end{align*}
 
-\noindent{}This argument can be used inductive until the original adversary
-\JWadv{} is transformed to a passive adversary $\mathcal{A}^*$. Because the
-triangle inequality holds for the statistical distance and the maximal number of
-OAFEs used for a polynomial of degree $n$ is in $O(n)$ the statistical distance
-of any active adversary \JWadv{} and a passive adversary $\mathcal{A}^*$ is
+\noindent{}This argument can be used inductively until the original adversary
+\JWadv{} is transformed to a passive adversary $\mathcal{A}^*$ which does not
+illicitly change any message. Because the triangle inequality holds for the
+statistical distance and the maximal number of OAFEs used to evaluate a
+polynomial of degree $n$ is in $O(n)$, the statistical distance between any
+active adversary \JWadv{} and any passive adversary $\mathcal{A}^*$ is
 
 \begin{align*}
   %
-  D_s(\text{view}_\mathcal{Z}(\mathcal{A}),
+  \Delta_S(\text{view}_\mathcal{Z}(\mathcal{A}),
   \text{view}_\mathcal{Z}(\mathcal{A}^*))
   \leq \frac{O(n)}{2^k}
   %
@@ -243,8 +247,8 @@ of any active adversary \JWadv{} and a passive adversary $\mathcal{A}^*$ is
 \noindent{}And because $k$ is the security parameter, the statistical distance
 in the environment's view between any active adversary and any passive adversary
 is negligible. As stated above, the protocol is perfectly secure against any
-passive adversary and therefore UC--secure against any active adversary. \qed
-
+passive adversary and therefore information theoretically UC--secure against any
+active adversary. \qed
 
 
 % CORRUPTED GOLIATH
@@ -254,8 +258,8 @@ A corrupted \JWpOne{} has the following possibilities to cheat:
 
 \begin{enumerate}
 
-  \item Describe a polynomial with a degree greater that the parametrized
-    maximal degree.
+  \item Describe a polynomial with a degree other that the parametrized degree
+    $k$.
 
   \item Configure the OAFE functionality in a way that the DRAC evaluation would
     fail because it assumes additional evaluation possibilities or vectors of
@@ -265,14 +269,15 @@ A corrupted \JWpOne{} has the following possibilities to cheat:
 
 \end{enumerate}
 
-Both, the ideal model (running the simulator from \ref{sec:simulator-goliath})
-as well as in the real model (running the \JWprotoSymOPE{} and the adversary)
-handle these possibilities indistinguishably for any environment:
+\noindent{}Both, in the ideal model (running the simulator from
+\ref{sec:simulator-goliath}) as well as in the real model (running the
+\JWprotoSymOPE{} and the adversary) handle these possibilities indistinguishably
+for any environment:
 
 \begin{enumerate}
 
-  \item Both, the protocol and the simulator verify the polynomial's degree.
-    Both ignore the input when the degree is greater than parametrized.
+  \item The protocol and the simulator verify the polynomial's degree.
+    Both ignore the input when the degree is other than parametrized.
 
   \item If the OAFE functionality is configured in a wrong way, both handle this
     case similarly: Vectors of wrong shapes are turned to the all zero vector of
