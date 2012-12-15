@@ -23,7 +23,6 @@ module Main where
 
 import Crypto.Random (SystemRandom, newGenIO)
 import System.Environment
-import qualified Data.DList as DL
 import qualified Data.Map as M
 
 import Data.ExpressionTypes
