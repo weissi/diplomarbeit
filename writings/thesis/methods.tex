@@ -761,15 +761,13 @@ will be discussed in depth in a following chapter.
 \label{sec:enc-adds}
 
 Since two DRAVs can directly be added as explained in chapter
-\ref{sec:DRAV-addition}, two DRAEs can be added by adding the constants and
-unifying the multiplicative ($M$ in relations \ref{rel:DRAE} and
-\ref{rel:pre-eval-DRAE}) and additive ($A$) terms. Notably, although the
-encryption keys change, this operation can be performed by any party, in
-possession of the encryption keys or not. Similarly to DRAVs, unintended
-operations ruin the information because the encryption keys change when
-performing operations. Operations unintended by the party in possession of the
-keys lead to non--well--formed DRAVs because wrong encryption keys will be used
-to decode them.
+\ref{sec:DRAV-addition} and DRAEs evaluate to DRAVs, two DRAEs can be added by
+directly as well. Notably, although the encryption keys change, this operation
+can be performed by any party, in possession of the encryption keys or not.
+Similarly to DRAVs, unintended operations ruin the information because the
+encryption keys change when performing operations. Operations unintended by the
+party in possession of the keys lead to non--well--formed DRAVs because wrong
+encryption keys will be used to decode them.
 
 
 % MULTIPLICATION
@@ -1424,7 +1422,11 @@ variable: $t_0 \leftarrow a \cdot b; t_1 \leftarrow c \cdot d; y \leftarrow t_0
 variable.  Because DRAEs evaluate to DRAVs, the variables will hold a DRAV as
 soon as the DRAE was evaluated. Naturally the DRAC evaluation has to be
 performed in the correct order, otherwise some variables may not have their
-values assigned yet when needed.
+values assigned yet when needed. Notice, a DRAC is not limited to encoding
+polynomials or arithmetic functions, a DRAC can have more than one output DARE
+and therefore model arbitrary arithmetic circuits. However, the security is
+only proven for Oblivious Polynomial Evaluation and the implementation expects
+arithmetic functions (arithmetic circuits with only one output node).
 
 
 % EVALUATION
@@ -1517,10 +1519,10 @@ of calculating the maximal degree the function the DRAE encodes.
 
 \end{itemize}
 
-Since there is always a final DRAE that yields the function's result in every
-DRAC, the annotated maximal degree of this DRAE is the maximal degree the
-function the DRAC encodes can be of. Before evaluating a DRAC, \JWpTwo{} has to
-verify the degree of the polynomial it is supposed to evaluate equals the
+Since DRACs that evaluated polynomial always have exactly one final DRAE which
+yields the function's result, the annotated maximal degree of this DRAE is the
+degree of the function the DRAC encodes. Before evaluating a DRAC, \JWpTwo{} has
+to verify the degree of the polynomial it is supposed to evaluate equals the
 parametrized degree.
 
 % vim: set spell spelllang=en_us fileencoding=utf8 formatoptions=tcroql : %
