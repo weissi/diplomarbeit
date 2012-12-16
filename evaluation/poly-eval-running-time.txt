@@ -47,10 +47,14 @@ legend(300, 250, c("Test Machine 1, $\\mathbb{F}_{97}\\qquad$",
        pch=c(21, 21, 22, 22),lty=1:4)
 dev.off()
 
-t <- read.table('linux-bench-0-1000-10.out', header=T)
+#############################################
+# Smaller Degrees, Linux, F2Po256           #
+#############################################
+# scripts/benchmark-poly-degrees.sh -m 0 -M 500 -s 50 -r 5 \
+#   -b "../run-evaluation.sh" -o ../evaluation/linux-rad-bench-0-500-50.out
+#R
+t <- read.table('linux-rad-bench-0-500-50.out', header=T)
 a <- aggregate(t$Time, list(degree=t$Polynomial.Degree), median)
-selected <- a$degree < 250
-a <- data.frame(degree=a$degree[selected], x=a$x[selected])
 require( tikzDevice )
 tikz('../writings/thesis/images/poly-deg-t-small.tex', height=3, width=6)
 plot(data.frame(degree=a$degree, time=a$x/1000),
