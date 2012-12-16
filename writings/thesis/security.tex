@@ -135,25 +135,12 @@ The setup phase is run as soon as the simulator starts.
 \JWltwo{Security Proof}
 \label{sec:proof}
 
-The proof is a case distinction.
-
-
-% CORRECTNESS --- BOTH PARTIES HONEST
-\JWlthree{Correctness---Both Parties Honest}
-
-\JWtodo{In richtigen Worten hinschreiben}
-
-Easy, just works.
-
-
-
-% BOTH PARTIES CORRUPTED
-\JWlthree{Both Parties Corrupted}
-
-\JWtodo{In richtigen Worten hinschreiben}
-
-The case that both parties are corrupted is just an hypothetical case in the UC
-model.
+The proof is a distinction between the two relevant settings: Either \JWpOne{}
+or \JWpTwo{} is corrupted. The proof below handles theses cases separately. The
+remaining possibilities that either no party is corrupted or both parties are
+corrupted do not have to be proved separately. No meaningful proof is possible
+if both parties are corrupted and no proof is necessary if all involved parties
+act honest.
 
 
 % CORRUPTED DAVID
@@ -171,9 +158,9 @@ The protocol is trivially secure against passive adversaries impersonating
 encrypted. The values which are sent to \JWpTwo{} are part of a DRAEs and DRAEs
 only contain references to OAFEs and DRAVs. Chapter \ref{def:DRAV} proves (Lemma
 \ref{lem:DRAV-random}) that DRAV only transport uncorrelated uniform randomness
-to parties not in possession of the encryption keys. The OAFE evaluations lead
-to further (one--time encrypted) DRAVs and radicals (see chapter
-\ref{sec:sec-muls}) that are one--time encrypted as well. The simulator from
+to parties not in possession of the encryption keys. The OAFE evaluations yield
+further (one--time encrypted) DRAVs and radicals (see chapter
+\ref{sec:sec-muls}) which are one--time encrypted as well. The simulator from
 chapter \ref{sec:simulator-david} plays on this property and encodes a random
 polynomial of the same degree that is used to test \JWpTwo{}'s honesty. In fact,
 because every value is one--time encrypted, the protocol is perfectly secure

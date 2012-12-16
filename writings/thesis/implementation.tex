@@ -348,9 +348,9 @@ $c = (1 + p^2 + p^4) \entspricht \text{\JWcode{[1 0 1 0 1]}}$, and $x = 1 + p^2
 
 \medskip{}
 
-\JWcmd{(echo [1]; echo [1 0 1]; echo [1 0 1 0 1]) > /tmp/my-poly}
+\JWcmd{(echo [1]; echo [1 0 1]; echo [1 0 1 0 1]) > /tmp/test.poly}
 
-\JWcmd{Goliath /tmp/my-polynomial.txt}
+\JWcmd{Goliath /tmp/test.poly}
 
 \JWcmd{Token}
 
@@ -363,7 +363,7 @@ $c = (1 + p^2 + p^4) \entspricht \text{\JWcode{[1 0 1 0 1]}}$, and $x = 1 + p^2
 
 \medskip{}
 
-\JWcmd{run-evaluation.sh /tmp/my-polynomial.txt '[1 0 1 1 1 0 1]'}
+\JWcmd{run-evaluation.sh /tmp/test.poly '[1 0 1 1 1 0 1]'}
 
 \medskip{}
 
@@ -373,7 +373,7 @@ used in the following way:
 
 \medskip{}
 
-\JWcmd{AllInOne /tmp/my-polynomial.txt '[1 0 1 1 1 0 1]'}
+\JWcmd{AllInOne /tmp/test.poly '[1 0 1 1 1 0 1]'}
 
 
 %
