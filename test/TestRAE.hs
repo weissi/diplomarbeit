@@ -69,9 +69,6 @@ _TEST_VAR_MAP_ = M.fromList [ ("x", _VAL_X_)
 deriveSkp :: Field el => el -> el -> (el, el)
 deriveSkp l r = (if l == 0 then 23 else l, if r == 0 then 42 else r)
 
-mkInv :: Element -> Element
-mkInv e = if e == zero then fromInteger 23 else e
-
 draeDecodeFull :: VarMapping Element -> DRAE Element -> Maybe Element
 draeDecodeFull varMap drae =
     let out = decodeDRAE varMap drae
@@ -237,19 +234,11 @@ prop_draeAddAndMulVars :: Element -> Element -> Element -> Element -> Element
                        -> Element -> Element -> Element -> Element -> Element
                        -> Element -> Element -> Bool
 prop_draeAddAndMulVars r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15 r16
-                       rk1p rg1 rk2p rg2 rk3p rg3 rk4p rg4
-                       rk5p rg5 rk6p rg6 rk7p rg7 rk8p rg8 =
+                       rk1 rg1 rk2 rg2 rk3 rg3 rk4 rg4
+                       rk5 rg5 rk6 rg6 rk7 rg7 rk8 rg8 =
     let v1pe = DualVar (0,0) "x"
         v2pe = DualVar (0,0) "y"
         skp = (1,1)
-        rk1 = mkInv rk1p
-        rk2 = mkInv rk2p
-        rk3 = mkInv rk3p
-        rk4 = mkInv rk4p
-        rk5 = mkInv rk5p
-        rk6 = mkInv rk6p
-        rk7 = mkInv rk7p
-        rk8 = mkInv rk8p
         -- Use kappas and gammas normally (1 to 8)
         drae1 = draeEncodeMul skp v1pe v1pe r1 r2 r3 r4 r5 r6 r7 r8
                               rk1 rg1 rk2 rg2 rk3 rg3 rk4 rg4
@@ -279,18 +268,10 @@ prop_draeMulConstants :: Element -> Element -> Element -> Element -> Element
                       -> Element -> Element -> Element -> Element -> Element
                       -> Element -> Element -> Element -> Element -> Bool
 prop_draeMulConstants skil skir el1 el2 el3 r1 r2 r3 r4 r5 r6 r7 r8
-                       rk1p rg1 rk2p rg2 rk3p rg3 rk4p rg4
-                       rk5p rg5 rk6p rg6 rk7p rg7 rk8p rg8 =
+                       rk1 rg1 rk2 rg2 rk3 rg3 rk4 rg4
+                       rk5 rg5 rk6 rg6 rk7 rg7 rk8 rg8 =
     let el1pe = DualConst el1
         el2pe = DualConst el2
-        rk1 = mkInv rk1p
-        rk2 = mkInv rk2p
-        rk3 = mkInv rk3p
-        rk4 = mkInv rk4p
-        rk5 = mkInv rk5p
-        rk6 = mkInv rk6p
-        rk7 = mkInv rk7p
-        rk8 = mkInv rk8p
         skp = deriveSkp skil skir
         outDRAE = draeEncodeMul skp el1pe el2pe r1 r2 r3 r4 r5 r6 r7 r8
                                 rk1 rg1 rk2 rg2 rk3 rg3 rk4 rg4

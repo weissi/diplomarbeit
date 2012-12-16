@@ -111,14 +111,14 @@ draeEncodeMulRnd skp x1 x2 =
        r6 <- getRandomElement
        r7 <- getRandomElement
        r8 <- getRandomElement
-       rk1 <- getRandomInvertibleElement
-       rk2 <- getRandomInvertibleElement
-       rk3 <- getRandomInvertibleElement
-       rk4 <- getRandomInvertibleElement
-       rk5 <- getRandomInvertibleElement
-       rk6 <- getRandomInvertibleElement
-       rk7 <- getRandomInvertibleElement
-       rk8 <- getRandomInvertibleElement
+       rk1 <- getRandomElement
+       rk2 <- getRandomElement
+       rk3 <- getRandomElement
+       rk4 <- getRandomElement
+       rk5 <- getRandomElement
+       rk6 <- getRandomElement
+       rk7 <- getRandomElement
+       rk8 <- getRandomElement
        rg1 <- getRandomElement
        rg2 <- getRandomElement
        rg3 <- getRandomElement
