@@ -77,10 +77,10 @@ raeAddMulTerm :: Field el
 raeAddMulTerm rae oarefs =
     rae { raeMulTerms = oarefs : raeMulTerms rae }
 
--- | Transform a @DRAC@ to a @RAC@.
+-- | Transform a 'DRAC' to a 'RAC'.
 singularizeDRAC :: forall el. Field el
-                => DRAC el
-                -> (RAC el, OAFEConfiguration el)
+                => DRAC el                        -- ^ @DRAC@ to process.
+                -> (RAC el, OAFEConfiguration el) -- ^ @RAC@ and OAFE config.
 singularizeDRAC drac =
     let dracVars :: [VariableName]
         dracVars = concatMap (\v -> [dvnLeftVarName v, dvnRightVarName v])

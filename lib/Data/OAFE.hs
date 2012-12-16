@@ -38,13 +38,27 @@ import qualified Data.Vector as V
 import Data.FieldTypes (Field)
 import Data.LinearExpression (VariableName)
 
+-- | The result of all past OAFE evaluations: A map from 'VariableName' to
+-- the evaluated values (as 'Vector').
 type OAFEEvaluation el    = HashMap VariableName (Vector el)
+
+-- | Request to evaluate one OAFE giving a 'VariableName' and a value.
 type OAFEEvaluationRequest el = (VariableName, el)
+
+
+-- | Response of one OAFE evaluation (the 'VariableName' that has been evaluated
+-- with and the values (as 'Vector')).
 type OAFEEvaluationResponse el = (VariableName, Vector el)
+
+-- | The OAFE configuration for all OAFEs.
 type OAFEConfiguration el = HashMap VariableName (Vector (el, el))
+
+-- | A reference to one OAFE and a specific row in the result vector.
 data OAFEReference = OAFERef !VariableName !Int deriving Show
 
--- | Process one @OAFEEvaluationRequest@.
+-- | Process one 'OAFEEvaluationRequest'.
+-- This is used by the @Token@. A implementation of the /David & Goliath/
+-- protocol would replace this by the actual sub-protocol call.
 processOAFEEvaluationRequest :: Field el
                              => OAFEConfiguration el
                              -> OAFEEvaluationRequest el

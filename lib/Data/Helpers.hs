@@ -41,7 +41,10 @@ import qualified Data.Conduit.Util as CU
 import qualified Data.Conduit.Network as CN
 import qualified Network.Socket as NS
 
-integralBytes :: (Integral a, Bits a, Show a) => a -> ByteString
+-- | Encode a value of an 'Integral' type as 'ByteString'.
+integralBytes :: (Integral a, Bits a, Show a)
+              => a           -- ^ Value to encode
+              -> ByteString  -- ^ Returned 'ByteString'
 integralBytes n0
   | n0 <  0   = error ("integralBytes: applied to negative number " ++ show n0)
   | otherwise =
@@ -56,18 +59,20 @@ integralBytes n0
                  0 -> acc
                  _ -> marshallIntByte (n `shiftR` 8) (acc `mappend` newBuilder)
 
+-- | A 'C.Conduit' drops every element but the first.
 takeOneConduit :: C.MonadResource m => C.Conduit i m i
 takeOneConduit =
     CU.conduitState () push close
     where push _ i = return $ CU.StateFinished Nothing [i]
           close _ = return []
 
--- | Run an @Application@ by connecting to the specified server.
+-- | Run an 'Application' by connecting to the specified server.
 -- Does TCP_NOWAIT
 --
 -- (stolen from network-conduit-0.6.1.1)
 runTCPClientNoWait :: (MonadIO m, MonadBaseControl IO m)
-                   => ClientSettings m -> Application m -> m ()
+                   => ClientSettings m      -- ^ Settings such as host and port.
+                   -> Application m -> m ()
 runTCPClientNoWait cs app =
     let port = clientPort cs
         host = clientHost cs
@@ -83,6 +88,8 @@ runTCPClientNoWait cs app =
                          , appLocalAddr = Nothing
                          })
 
+-- | Predicate to decide whether a command line argument is an optional argument
+-- (starts with a dash).
 isOptionArg :: String -> Bool
 isOptionArg s =
     case s of

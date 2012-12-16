@@ -33,13 +33,13 @@ import Text.ProtocolBuffers.WireMessage ( Wire
                                         , messageWithLengthGetM, runGet
                                         )
 
--- | Serialize to a Protocol Buffer (as @ByteString@).
+-- | Serialize to a Protocol Buffer (as 'ByteString').
 pbufSerialize :: (MonadResource m, ReflectDescriptor w, Wire w)
               => Conduit w m ByteString
 pbufSerialize = awaitForever f
     where f pb = mapM_ yield $ BSL.toChunks $ runPut (messageWithLengthPutM pb)
 
--- | Parse a ProtocolBuffer (@ByteString@) to some data structure.
+-- | Parse a ProtocolBuffer ('ByteString') to some data structure.
 pbufParse :: (MonadResource m, ReflectDescriptor w, Wire w, Show w)
           => Conduit ByteString m w
 pbufParse =

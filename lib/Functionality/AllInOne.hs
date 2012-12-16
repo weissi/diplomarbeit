@@ -51,8 +51,16 @@ import Functionality.Token (runOAFEEvaluation)
 _CHAN_SIZE_ :: Int
 _CHAN_SIZE_ = 64
 
+-- | This evaluates an 'Expr' as usual but without network communication in one
+-- binary.
+--
+-- This is not used for real-world programs, only for tests, benchmarks and the
+-- @AllInOne@ binary.
 evaluateExpr :: forall el. (Show el, CRandom el, Field el)
-             => VarMapping el -> Expr el -> (String -> IO ()) -> IO (Maybe el)
+             => VarMapping el      -- ^ David's input variable value(s).
+             -> Expr el            -- ^ The 'Expr' Goliath defined.
+             -> (String -> IO ())  -- ^ Logging function.
+             -> IO (Maybe el)      -- ^ 'Maybe' a result value.
 evaluateExpr varMap expr logMsg =
     do -- start goliath
        (rac, oac) <- goliath

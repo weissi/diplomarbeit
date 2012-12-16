@@ -32,7 +32,7 @@ module Data.RAE.Evaluation
     , _SPECIAL_VAR_PRE_OUT_LEFT_, _SPECIAL_VAR_PRE_OUT_RIGHT_
     , _SPECIAL_VAR_ADDED_PRE_OUT_
     , _SPECIAL_DUAL_VAR_OUT_, _SPECIAL_DUAL_VAR_PRE_OUT_
-      -- * Direct Evaluation of @RAC@s and @DRAC@s (for tests/benchmarks)
+      -- * Direct Evaluation of 'RAC's and 'DRAC's (for tests/benchmarks)
     , runRAC, runDRAC
     ) where
 
@@ -69,19 +69,19 @@ data RAEEvaluationFailure =  UnknownFailure String String
                            | IndexOutOfBounds VariableName Int String
                            deriving Show
 
--- | The monad used to execute a @RAC@.
+-- | The monad used to execute a 'RAC'.
 type RunRACStateMonad m el = StateT (OAFEEvaluation el) m
 
--- | The monad used to execute a @DRAC@.
+-- | The monad used to execute a 'DRAC'.
 type RunDRACStateMonad el = State (VarMapping el)
 
--- | Directly evaluate a @DRAC@.
+-- | Directly evaluate a 'DRAC'.
 --
 -- This is usually only in use in tests and benchmarks.
 runDRAC :: forall el. (Field el)
-        => VarMapping el
-        -> DRAC el
-        -> (Maybe el, VarMapping el)
+        => VarMapping el              -- ^ Input variable values.
+        -> DRAC el                    -- ^ The 'DRAC' to run.
+        -> (Maybe el, VarMapping el)  -- ^ Result or 'Nothing'
 runDRAC initialVarMap drac =
   let outVarMap :: VarMapping el
       outVarMap = execState (mapM_ execDRACFragment (DL.toList drac))
@@ -95,14 +95,14 @@ runDRAC initialVarMap drac =
             _ -> Nothing
    in (out, outVarMap)
 
--- | Directly evaluate a @RAC@.
+-- | Directly evaluate a 'RAC'.
 --
 -- This is usually only in use in tests and benchmarks.
 runRAC :: forall el. (Field el)
-       => RAC el
-       -> OAFEConfiguration el
-       -> VarMapping el
-       -> Either String el
+       => RAC el               -- ^ The 'RAC' to run.
+       -> OAFEConfiguration el -- ^ The 'OAFEConfiguration'
+       -> VarMapping el        -- ^ The values of the input variables.
+       -> Either String el     -- ^ 'Either' error message or result.
 runRAC racFrag oac vars =
     case doIt of
       Left err -> Left $ show (err :: RAEEvaluationFailure)
@@ -124,7 +124,7 @@ runRAC racFrag oac vars =
 
 -- | Initially evaluate an OAFE.
 --
--- Helper method for @runRAC@
+-- Helper method for 'runRAC'
 initiallyEvaluateOAFE :: (Failure RAEEvaluationFailure f, Field el)
                       => OAFEConfiguration el
                       -> VarMapping el
@@ -181,20 +181,20 @@ evaluateRAE' (RAE muls adds c) oafeVals =
                                 IndexOutOfBounds var idx "evaluateRAE'"
                        else return $! vals V.! idx
 
--- | Evaluate one @RAE@.
+-- | Evaluate one 'RAE'.
 --
 -- In real-world use by the functionality David.
 evalRAE :: Field el
-         => RAE RadicalTuple OAFEReference el
-         -> OAFEEvaluation el
-         -> Either RAEEvaluationFailure el
+         => RAE RadicalTuple OAFEReference el  -- ^ The 'RAC' to evaluate.
+         -> OAFEEvaluation el                  -- ^ Already evaluated OAFE vals.
+         -> Either RAEEvaluationFailure el     -- ^ 'Either' error or result.
 evalRAE = evaluateRAE
 
 
--- | Evaluate one @RAE@.
+-- | Evaluate one 'RAE'.
 --
 -- In real-world use by the functionality David.
--- (same as @evalRAE@ but not exported and with @Failure@ type)
+-- (same as 'evalRAE' but not exported and with 'Failure' type)
 evaluateRAE :: forall f. forall el.
                 (Failure RAEEvaluationFailure f, Field el)
              => RAE RadicalTuple OAFEReference el
@@ -213,7 +213,7 @@ evaluateRAE rae vals =
           rAdds = foldl' (+) zero adds
       return $! rMuls + rAdds + c
 
--- | Execute one @DRACFragment@.
+-- | Execute one 'DRACFragment'.
 --
 -- Used internally only.
 execDRACFragment :: (Field el)
@@ -236,7 +236,7 @@ execDRACFragment (outVar, drae) =
        put varMap'''
        return valsM
 
--- | Execute one @RACFragment@.
+-- | Execute one 'RACFragment'.
 --
 -- Used internally only.
 execRACFragment :: (Failure RAEEvaluationFailure f, Field el)
@@ -279,16 +279,16 @@ _SPECIAL_VAR_OUT_RIGHT_ :: VariableName
 _SPECIAL_VAR_OUT_RIGHT_ = dvnRightVarName _SPECIAL_DUAL_VAR_OUT_
 
 -- | The special variable that contains the added output of the last reguar
--- @RAE@.
+-- 'RAE'.
 _SPECIAL_VAR_ADDED_PRE_OUT_ :: VariableName
 _SPECIAL_VAR_ADDED_PRE_OUT_ = "__added_last_rae"
 
--- | The special variable that contains the output of the last regular @RAE@,
+-- | The special variable that contains the output of the last regular 'RAE',
 -- left part.
 _SPECIAL_VAR_PRE_OUT_LEFT_ :: VariableName
 _SPECIAL_VAR_PRE_OUT_LEFT_ = dvnLeftVarName _SPECIAL_DUAL_VAR_PRE_OUT_
 
--- | The special variable that contains the output of the last regular @RAE@,
+-- | The special variable that contains the output of the last regular 'RAE',
 -- left part.
 _SPECIAL_VAR_PRE_OUT_RIGHT_ :: VariableName
 _SPECIAL_VAR_PRE_OUT_RIGHT_ = dvnRightVarName _SPECIAL_DUAL_VAR_PRE_OUT_
@@ -298,6 +298,6 @@ _SPECIAL_DUAL_VAR_OUT_ :: DualVarName
 _SPECIAL_DUAL_VAR_OUT_ = genDualVarName "__out"
 
 -- | The special dual variable that contains the output of the last
--- regular @DRAE@.
+-- regular 'DRAE'.
 _SPECIAL_DUAL_VAR_PRE_OUT_ :: DualVarName
 _SPECIAL_DUAL_VAR_PRE_OUT_ = genDualVarName "__last_rae"

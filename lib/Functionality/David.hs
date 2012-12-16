@@ -62,11 +62,11 @@ import Data.RAE.Types (RACFragment)
 -- they are received from 'rsps' and saved in a 'Map'.
 runRACEvaluation :: forall el. Field el
                  => VarMapping el                        -- ^ the initial vars
-                 -> TBMChan (OAFEEvaluationRequest el)   -- ^ channel to F_OAFE
-                 -> TBMChan (OAFEEvaluationResponse el)  -- ^ chan. from F_OAFE
-                 -> TBMChan (RACFragment el)             -- ^ RAC streaming
+                 -> TBMChan (OAFEEvaluationRequest el)   -- ^ chan to /F_OAFE/
+                 -> TBMChan (OAFEEvaluationResponse el)  -- ^ chan from /F_OAFE/
+                 -> TBMChan (RACFragment el)             -- ^ 'RAC' streaming
                  -> TMVar (Maybe el)                     -- ^ final result
-                 -> (String -> IO ())                    -- ^ logger function
+                 -> (String -> IO ())                    -- ^ logging function
                  -> IO ()
 runRACEvaluation varMap reqs rsps cRACFrag vResult logMsg =
     do oaeRef <- newIORef =<< evaluateInitialVars (M.toList varMap)

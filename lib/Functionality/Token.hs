@@ -38,9 +38,9 @@ import Data.OAFE ( OAFEConfiguration, OAFEEvaluationRequest
 -- The @OAFEConfiguration@ is a @TMVar@ because each variable can only be
 -- evaluated once.
 runOAFEEvaluation :: Field el
-                  => TMVar (OAFEConfiguration el)
-                  -> OAFEEvaluationRequest el
-                  -> IO (OAFEEvaluationResponse el)
+                  => TMVar (OAFEConfiguration el)  -- ^ 'OAFEConfiguration'
+                  -> OAFEEvaluationRequest el      -- ^ 'OAFEEvaluationRequest'
+                  -> IO (OAFEEvaluationResponse el)-- ^ 'OAFEEvaluationResponse'
 runOAFEEvaluation vOAC req =
    do oac <- atomically $ takeTMVar vOAC
       let rsp = processOAFEEvaluationRequest oac req

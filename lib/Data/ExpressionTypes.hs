@@ -22,7 +22,7 @@ module Data.ExpressionTypes (Expr(..), Operator(..)) where
 -- | Arithmetic expressions.
 data Expr a = Op Operator (Expr a) (Expr a) -- ^ Arithmetic Operation Node
             | Var String                    -- ^ Input Variable Node
-            | Literal a                     -- ^ Literal value
+            | Literal a                     -- ^ Literal Value Node
             deriving (Show)
 
 data Operator = Plus | Minus | Times deriving Show

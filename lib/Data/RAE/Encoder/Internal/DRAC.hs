@@ -24,13 +24,13 @@ module Data.RAE.Encoder.Internal.DRAC
     ( -- * Public API
       exprToDRAC
       -- * Internal, Interesting API
-      -- ** Real, Pure @DRAE@ Encoding
+      -- ** Real, Pure 'DRAE' Encoding
     , draeEncodeMul
     , draeEncodeAdd
     , draeEncodeDRAEAdd
     , draeEncodePrimaryExpr
       -- * Internal, Uninteresting API
-      -- ** @DRAE@ Encoding automatically getting random numbers
+      -- ** 'DRAE' Encoding automatically getting random numbers
     , draeEncodeMulRnd
     , draeEncodeAddRnd
     , draeEncodeDRAEAddRnd
@@ -96,7 +96,7 @@ getRandomInvertibleElement =
                    then return $! rel
                    else loop
 
--- |@DRAE@ for a multiplication getting randoms from generator
+-- |'DRAE' for a multiplication getting randoms from generator
 draeEncodeMulRnd :: (Monad m, CryptoRandomGen g, Field el, CRandom el)
                  => DualKey el                    -- ^ The static dual key
                  -> DualEncPrimExpr el            -- ^ /x1/
@@ -131,7 +131,7 @@ draeEncodeMulRnd skp x1 x2 =
                                    rk1 rg1 rk2 rg2 rk3 rg3 rk4 rg4
                                    rk5 rg5 rk6 rg6 rk7 rg7 rk8 rg8
 
--- |@DRAE@ for a multiplication /f(x1, x2) = x1 * x2/
+-- |'DRAE' for a multiplication /f(x1, x2) = x1 * x2/
 draeEncodeMul :: forall el. Field el
               => DualKey el          -- ^ The static dual key
               -> DualEncPrimExpr el  -- ^ /x1/
@@ -207,7 +207,7 @@ draeEncodeMul skp@(!skL, !skR) !x1 !x2 !r1 !r2 !r3 !r4 !r5 !r6 !r7 !r8
                              ]
                 )
 
--- |@DRAE@ for an addition (/f(x1, x2) = x1 + x2/) getting randoms from
+-- |'DRAE' for an addition (/f(x1, x2) = x1 + x2/) getting randoms from
 -- generator.
 draeEncodeAddRnd :: (Monad m, CryptoRandomGen g, Field el, CRandom el)
                  => DualKey el         -- ^ The static dual key
@@ -221,7 +221,7 @@ draeEncodeAddRnd skp x1 x2 =
        r4 <- getRandomElement
        return $! draeEncodeAdd skp x1 x2 r1 r2 r3 r4
 
--- |@DRAE@ for an addition /f(x1, x2) = x1 + x2/
+-- |'DRAE' for an addition /f(x1, x2) = x1 + x2/
 draeEncodeAdd :: forall el. (Field el)
               => DualKey el         -- ^ The static dual key
               -> DualEncPrimExpr el -- ^ /x1/
@@ -288,7 +288,7 @@ decodeDualEncPrimExpr skp prjVar prjKey depe =
               skInv = (invert . prjKey) skp
            in LinearExpr skInv (prjVar var) (-prjKey dkp * skInv)
 
--- |@DRAE@ for an addition of two @DRAE@s.
+-- |'DRAE' for an addition of two 'DRAE's.
 draeEncodeDRAEAdd :: Field el
                   => DualKey el -- ^ The static dual key.
                   -> DRAE el    -- ^ /D1/
@@ -306,7 +306,7 @@ draeEncodeDRAEAdd skp
                      (dlMuls `DL.append` drMuls)
                      (dlAdds `DL.append` drAdds)
 
--- |@DRAE@ for a @DRAE@ addition getting randoms from generator.
+-- |'DRAE' for a 'DRAE' addition getting randoms from generator.
 draeEncodeDRAEAddRnd :: (Monad m, CryptoRandomGen g, Field el)
                      => DualKey el -- ^ The static dual key.
                      -> DRAE el    -- ^ /D1/
@@ -324,7 +324,7 @@ draeEncodePrimaryExprRnd skp e =
        r2 <- getRandomElement
        return $! draeEncodePrimaryExpr skp e r1 r2
 
--- |@DRAE@ encode primary expressions
+-- |'DRAE' encode primary expressions
 draeEncodePrimaryExpr :: Field el
                       => DualKey el          -- ^ The static dual key
                       -> DualEncPrimExpr el  -- ^ The primary expression
@@ -473,11 +473,11 @@ genSkp =
           then genSkp
           else return (skpL, skpR)
 
--- | Encode an @Expr@ as a @DRAC@.
+-- | Encode an 'Expr' as a 'DRAC'.
 exprToDRAC :: forall g. forall el. (CryptoRandomGen g, Field el, CRandom el)
          => g       -- ^ The random number generator
          -> Expr el -- ^ The arithmetic expression to encode
-         -> (Either GenError g, DRAC el) -- ^ The @DRAC@ encoding the @Expr@
+         -> (Either GenError g, DRAC el) -- ^ The 'DRAC' encoding the 'Expr'
 exprToDRAC g expr =
    let act :: (DRACGenMonad g el) (DRAE el)
        act = do skp <- genSkp

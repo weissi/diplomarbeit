@@ -23,10 +23,18 @@ module Math.Polynomials (monomial, horner) where
 
 import Data.List (foldl')
 
-horner :: (Num a) => a -> [a] -> a
+-- | Build a polynomial using /Horner's rule/.
+horner :: (Num a)
+       => a   -- ^ The polynomial's variable, such as /x/
+       -> [a] -- ^ The polynomial's coefficients.
+       -> a   -- ^ Polynomial built using /Horner's rule/.
 horner x = foldr (\a b -> a + b*x) 0
 
-monomial :: forall a. Num a => a -> [a] -> a
+-- | Build a polynomial in monomial form.
+monomial :: forall a. Num a
+       => a   -- ^ The polynomial's variable, such as /x/
+       -> [a] -- ^ The polynomial's coefficients.
+       -> a   -- ^ Resulting Polynomial
 monomial x coeffs =
     let powers = [0..] :: [Integer]
         powersOfX = map (\p -> x^p) powers

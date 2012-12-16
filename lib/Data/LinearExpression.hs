@@ -17,7 +17,7 @@
 --  Copyright 2012, Johannes Weiß                                             --
 --------------------------------------------------------------------------------
 
--- | Linear Expressions on Arbitrary @Field@ Types
+-- | Linear Expressions on Arbitrary 'Field' Types
 module Data.LinearExpression ( LinearExpr(..), VarMapping, VariableName
                              , scalarMul, scalarAdd, add
                              , apply
@@ -33,7 +33,7 @@ import Data.FieldTypes (Field(..))
 
 -- | Variable Mapping
 --
--- Maps a value to a @VariableName@
+-- Maps a value to a 'VariableName'
 type VarMapping el = Map VariableName el
 type VariableName = Text
 
@@ -72,8 +72,7 @@ scalarAdd le el =
       ConstLinearExpr c -> ConstLinearExpr (c + el)
       LinearExpr s v i -> LinearExpr s v (i + el)
 
--- | Apply the @LinearExpression@ to a @LinearExpression@ resulting in a
--- @LinearExpression@.
+-- | Apply the 'LinearExpr' to a 'LinearExpr' resulting in a 'LinearExpr'.
 apply :: Field el => el -> LinearExpr el -> el -> LinearExpr el
 apply slope le intercept =
     case le of
@@ -83,7 +82,7 @@ apply slope le intercept =
           -- a * (m * le + n) + b = (a*m) * le + (a*n + b)
           LinearExpr (slope * slope') var (slope*intercept' + intercept)
 
--- | Evaluate the linear expression using a @VarMapping@.
+-- | Evaluate the linear expression using a 'VarMapping'.
 evaluate :: Field el => VarMapping el -> LinearExpr el -> Maybe el
 evaluate varMap le =
     case le of

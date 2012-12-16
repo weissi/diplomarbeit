@@ -19,11 +19,11 @@
 
 {-# LANGUAGE BangPatterns #-}
 
--- | This module transforms arithmetic expressions (@Expr@) to Linear Bijection
--- Straight--line Programs (LBS programs) (@LBSProgram@).
+-- | This module transforms arithmetic expressions ('Expr') to Linear Bijection
+-- Straight--line Programs (LBS programs) ('LBSProgram').
 --
--- This approach has been discontinued. The functionality can still be used by
--- running the `ExprToMRM` program.
+-- The approach has been discontinued. The functionality can still be used by
+-- running the @ExprToMRM@ program.
 module Codec.LBS ( InputValues
                  , renderLBSProgram
                  , runLBS, lbsFromExpr, lbsProgramLength
@@ -55,11 +55,11 @@ data Register = Reg { getReg :: Integer } deriving (Eq)
 -- | Wheather to offset a register additive or subtractive.
 data OffsetDirection = OffsetPlus | OffsetMinus
 
--- | Factor to scale a @Register@.
+-- | Factor to scale a 'Register'.
 data ScaleFactor = ScaleFactorConstant Integer
                  | ScaleFactorInput String
 
--- | The input values for @LBSProgram@ evaluation.
+-- | The input values for 'LBSProgram' evaluation.
 type InputValues = Map String Integer
 
 type RegisterState = Map Integer Integer
@@ -101,7 +101,7 @@ renderLBSStmt (Offset (Reg o) dir (Reg i) sf) =
                 ScaleFactorConstant c -> show c
                 ScaleFactorInput input -> input
 
--- | Render an @LBSProgram@ to @Text@.
+-- | Render an 'LBSProgram' to 'Text'.
 renderLBSProgram :: LBSProgram -> Text
 renderLBSProgram lbs = toLazyText $ DL.foldr joinStmts (fromString "") lbs
     where
@@ -111,12 +111,12 @@ renderLBSProgram lbs = toLazyText $ DL.foldr joinStmts (fromString "") lbs
 freeRegister :: [Register] -> Register
 freeRegister dirtyRegs = Reg (1 + maximum (map getReg dirtyRegs))
 
--- |Offsets `output register' by +/- `scale register' * (`expr 1' + `expr 2')
-lbsFromAddExpr :: [Register]       -- dirty registers
-               -> Register         -- output register
-               -> OffsetDirection  -- +/-
-               -> Register         -- scale register
-               -> Expr Integer     -- expr 1
+-- |Offsets /output register/ by +/- /scale register/ * (/expr 1/ + /expr 2/)
+lbsFromAddExpr :: [Register]       -- ^ dirty registers
+               -> Register         -- ^ output register
+               -> OffsetDirection  -- ^ +/-
+               -> Register         -- ^ scale register
+               -> Expr Integer     -- ^ expr 1
                -> Expr Integer     -- expr 2
                -> LBSProgram
 lbsFromAddExpr dirtyRegs regOut direction regScale el er  =
@@ -126,13 +126,13 @@ lbsFromAddExpr dirtyRegs regOut direction regScale el er  =
           lbsr :: LBSProgram
           lbsr = lbsFromExpr' dirtyRegs regOut direction regScale er
 
--- |Offsets `output register' by +/- `scale register' * (`expr 1' * `expr 2')
-lbsFromMulExpr :: [Register]       -- dirty registers
-               -> Register         -- output register
-               -> OffsetDirection  -- +/-
-               -> Register         -- scale register
-               -> Expr Integer     -- expr 1
-               -> Expr Integer     -- expr 2
+-- |Offsets /output register/ by +/- /scale register/ * (/expr 1/ * /expr 2/)
+lbsFromMulExpr :: [Register]       -- ^ dirty registers
+               -> Register         -- ^ output register
+               -> OffsetDirection  -- ^ +/-
+               -> Register         -- ^ scale register
+               -> Expr Integer     -- ^ expr 1
+               -> Expr Integer     -- ^ expr 2
                -> LBSProgram
 lbsFromMulExpr dirtyRegs regOut direction regScale el er =
     case direction of
@@ -153,12 +153,12 @@ lbsFromMulExpr dirtyRegs regOut direction regScale el er =
           rk = regOut
           dirtyRegs' = rj : dirtyRegs
 
--- |Offsets `output register' by +/- `scale register' * `expr'
-lbsFromExpr' :: [Register]       -- dirty registers
-             -> Register         -- output register
-             -> OffsetDirection  -- +/-
-             -> Register         -- scale register
-             -> Expr Integer     -- expr
+-- |Offsets /output register/ by +/- /scale register/ * /expr/
+lbsFromExpr' :: [Register]       -- ^ dirty registers
+             -> Register         -- ^ output register
+             -> OffsetDirection  -- ^ +/-
+             -> Register         -- ^ scale register
+             -> Expr Integer     -- ^ expr
              -> LBSProgram
 lbsFromExpr' dirtyRegs regOut direction regScale e =
     case e of
@@ -172,8 +172,9 @@ lbsFromExpr' dirtyRegs regOut direction regScale e =
       Literal i ->
           DL.singleton $Offset regOut direction regScale (ScaleFactorConstant i)
 
--- | Transform an arithmetic expression (@Expr@) to an @LBSProgram@.
-lbsFromExpr :: Expr Integer -> LBSProgram
+-- | Transform an arithmetic expression ('Expr') to an 'LBSProgram'.
+lbsFromExpr :: Expr Integer  -- ^ The arithmetic expression to transform.
+            -> LBSProgram    -- ^ The LBS program executing the expression.
 lbsFromExpr = lbsFromExpr' alwaysDirtyRegs (Reg 1) OffsetPlus _REG_CONST_1_
     where alwaysDirtyRegs = [_REG_CONST_1_, Reg 1]
 
@@ -191,9 +192,9 @@ dirOp dir = case dir of
               OffsetPlus -> (+)
               OffsetMinus -> (-)
 
-execLBSStatement :: InputValues
-                 -> LBSStmt
-                 -> ErrorList
+execLBSStatement :: InputValues  -- ^ The input values.
+                 -> LBSStmt      -- ^ One LBS statement.
+                 -> ErrorList    -- ^ The accumulated errors.
                  -> RegisterStateMonad ErrorList
 execLBSStatement inputs (Offset regOut dir regScale sf) accumErrors =
     do outVal <- registerValueM regOut
@@ -212,7 +213,9 @@ execLBSStatement inputs (Offset regOut dir regScale sf) accumErrors =
                          Nothing -> Left $ "input `" ++ i ++ "' undefined"
                          Just x -> Right x
 
-execLBSProgram :: InputValues -> LBSProgram -> RegisterStateMonad ErrorList
+execLBSProgram :: InputValues  -- ^ The input values.
+               -> LBSProgram   -- ^ The LBS program.
+               -> RegisterStateMonad ErrorList
 execLBSProgram inputs p =
     combine (DL.toList stmts) DL.empty
     where stmts :: DList (ErrorList -> RegisterStateMonad ErrorList)
@@ -225,8 +228,10 @@ execLBSProgram inputs p =
                 [] -> return errs
                 (s:ss') -> s errs >>= combine ss'
 
--- | Run (evaluate) an @LBSProgram@.
-runLBS :: InputValues -> LBSProgram -> Maybe (Integer, RegisterState)
+-- | Run (evaluate) an 'LBSProgram'.
+runLBS :: InputValues  -- ^ The input values.
+       -> LBSProgram   -- ^ The LBS program.
+       -> Maybe (Integer, RegisterState) -- ^ The result or 'Nothing' if failed.
 runLBS inputs lbs =
     if null $ DL.toList errs
       then Just (registerValue (Reg 1) state, state)
@@ -234,6 +239,6 @@ runLBS inputs lbs =
     where (errs, state) =
               runState (execLBSProgram inputs lbs) _INITIAL_REGISTER_STATE_
 
--- | Calculate the length of an @LBSProgram@.
+-- | Calculate the length of an 'LBSProgram'.
 lbsProgramLength :: LBSProgram -> Int
 lbsProgramLength = length . DL.toList

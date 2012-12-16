@@ -33,8 +33,11 @@ import qualified Data.Conduit.Text as CT
 -- # LOCAL
 import Data.ExpressionTypes (Expr(..))
 
+-- | Parse a polynomial from a file.
 readExprFromFile :: forall a. (Show a, Read a, Num a)
-                 => ([Expr a] -> Expr a) -> FilePath -> IO (Expr a)
+                 => ([Expr a] -> Expr a) -- ^ Polynomial Buuilding function
+                 -> FilePath             -- ^ File
+                 -> IO (Expr a)          -- ^ Polynomial read, as 'Expr'
 readExprFromFile buildPoly path =
     do elems <-
         runResourceT $

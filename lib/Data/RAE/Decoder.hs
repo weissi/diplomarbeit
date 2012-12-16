@@ -19,7 +19,7 @@
 
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE BangPatterns #-}
--- | This module contains direct DRAE decoding.
+-- | This module contains direct 'DRAE' decoding.
 --
 -- That's not needed in the real-world. Only for tests/benchmarks.
 module Data.RAE.Decoder (decodeDRAE) where

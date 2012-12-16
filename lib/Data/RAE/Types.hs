@@ -55,16 +55,16 @@ data PrimaryExpression el = Variable VariableName
 -- | An encryption key.
 type Key el = el
 
--- | A dual encryption key (e.g. the dynamic keys or the static keys)
+-- | A dual encryption key (e.g. the dynamic keys or the static keys).
 type DualKey el = (Key el, Key el)
 
--- | The radicals travelling separated from each other in tuples
+-- | The radicals travelling separated from each other in tuples.
 newtype RadicalTuple a = RT (a, a) deriving Show
 
--- | The radicals already unified to one element
+-- | The radicals already unified to one element.
 newtype RadicalSingleton a = RS a
 
--- | A dual linear expression.
+-- | A dual linear expression, each linear expression split to two radicals.
 type DualLinearExpr el = (LinearExpr el, LinearExpr el)
 newtype DualLinearRadicals el =
     DLR { unDLR :: ( RadicalTuple (LinearExpr el)
@@ -75,9 +75,10 @@ instance (Show el, Field el) => Show (DualLinearRadicals el) where
     show (DLR (lrl, lrr)) =
         "{DLR L: " ++ show lrl ++ "; DLR R: " ++ show lrr ++ "}"
 
+-- | Multiplicative radicals.
 data MulTermRadicals el =
-    MulTermRadicals { mtrLeft  :: DualLinearRadicals el  -- ^ for left @RAC@
-                    , mtrRight :: DualLinearRadicals el  -- ^ for right @RAC@
+    MulTermRadicals { mtrLeft  :: DualLinearRadicals el  -- ^ for left 'RAC'
+                    , mtrRight :: DualLinearRadicals el  -- ^ for right 'RAC'
                     }
 instance (Field el, Show el) => Show (MulTermRadicals el) where
     show (MulTermRadicals l r) =
@@ -88,9 +89,14 @@ instance (Field el, Show el) => Show (MulTermRadicals el) where
 type DualKeyPair el = (DualKey el, DualKey el)
 
 -- | /D/ual /R/andomized /A/ffine /E/ncoding.
-data DRAE el = DRAE !(DualKeyPair el)
-                    !(DList (MulTermRadicals el))
-                    !(DList (DualLinearExpr el))
+data DRAE el = DRAE {
+                      -- | The 'DualKeyPair' (static dual key&dynamic dual key)
+                      draeKeys :: !(DualKeyPair el)
+                      -- | The multipicative terms as 'MulTermRadicals'
+                    , draeMulTerms :: !(DList (MulTermRadicals el))
+                      -- | The additive terms
+                    , draeAddTerms :: !(DList (DualLinearExpr el))
+                    }
 
 -- | /D/ual /R/andomized /A/ffine /C/ircuit fragment.
 type DRACFragment el = (DualVarName, DRAE el)
@@ -100,8 +106,11 @@ type DRAC el = DList (DRACFragment el)
 
 -- | /R/andomized /A/ffine /E/ncoding.
 data RAE r val el =
-    RAE { raeMulTerms   :: [(r val, r val)]
+    RAE { -- | The multiplicate terms, usually as 'RadicalTuple' of OAFE refs.
+          raeMulTerms   :: [(r val, r val)]
+          -- | The additive terms, usually OAFE references.
         , raeAddTerms   :: [val]
+          -- | A constant value (one tuple component of a DRAV).
         , raeConst      :: el
         }
 
