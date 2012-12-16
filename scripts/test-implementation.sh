@@ -42,12 +42,13 @@ function run_sample() {
     RET=0
 
     if [ $DEBUG -ne 0 ]; then
-        "$PROG" "$PFILE" "$EL" $POLY_EVAL_OPTS -q $PROGOPTS 2>&1 | tee "$TMPOUT"
+        "$PROG" -n "$PFILE" "$EL" $POLY_EVAL_OPTS -q $PROGOPTS 2>&1 |\
+             tee "$TMPOUT"
     else
-        "$PROG" "$PFILE" "$EL" $POLY_EVAL_OPTS -q $PROGOPTS &> "$TMPOUT"
+        "$PROG" -n "$PFILE" "$EL" $POLY_EVAL_OPTS -q $PROGOPTS &> "$TMPOUT"
     fi
 
-    if grep -q "^David: DAVID DONE, final result = Just ${EXP}\$" "$TMPOUT";then
+    if grep -q "DAVID DONE, final result = Just ${EXP}\$" "$TMPOUT";then
         RET=0
     else
         RET=1
