@@ -39,13 +39,13 @@ The definition of formulas is the same as Cleve's\cite{cleve91}: Formulas are
 circuits that are trees. A postorder traversal is enough to evaluate the formula
 easily. This chapter describes the evaluation of such a formula using
 \emph{linear bijection straight--line programs} (LBS programs)\cite{cleve91}
-which use at most $\omega$ registers. A LBS program can be simulated by matrix
+which use at most $\omega$ registers. An LBS program can be simulated by matrix
 multiplications, one statement is simulated by one matrix multiplication. The
 matrices are elements of $SL_w(K)$, the special linear group consisting of
 $\omega \times \omega$ matrices with determinant $1$ (and $K$ a field).
 
 A LBS program consists of assignment statements of the following
-forms where $R_{1,...,\omega}$ denote registers, $c \in K$ constants and $x_u
+forms where $R_{1,\ldots,\omega}$ denote registers, $c \in K$ constants and $x_u
 \in K$ the formula's inputs:
 
 \begin{align*}
@@ -155,13 +155,13 @@ $R_i \leftarrow R_i + (R_j \cdot \alpha)$ is equivalent to the $K^{\omega \times
 \JWlthree{Grouping the Matrices}
 \label{sec:matrix-grouping}
 
-The grouping process is straightforward, too: From the process described in
-chapter \ref{sec:FormulasToMatrixMuls} matrices $\widehat{M_1}$ to
-$\widehat{M_n}$ which each have the effect of exactly one LBS program statement
-are obtained.  Using associativity, groups of a variable amount of these
-matrices can be built. Each group is complete when there is at least one
-reference to the \emph{other party's input} $x_D$. The matrices $M_1$ to $M_m$
-are the result of this step. The following properties hold:
+The grouping process is straightforward: From the process described in chapter
+\ref{sec:FormulasToMatrixMuls} matrices $\widehat{M_1}$ to $\widehat{M_n}$,
+which each have the effect of exactly one LBS program statement, are obtained.
+Using associativity, groups of a variable amount of these matrices can be built.
+Each group is complete when there is at least one reference to the \emph{other
+party's input} $x_D$. The matrices $M_1$ to $M_m$ are the result of this step.
+The following properties hold:
 
 \begin{align*}
 n & \geq m \\

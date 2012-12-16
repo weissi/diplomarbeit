@@ -20,8 +20,8 @@ by any \JWThaskell{} compiler that supports these extensions and is able to
 compile the external libraries.
 
 The implementation is designed to match the descriptions in chapter
-\ref{sec:methods} as closely as possible. The implementation implements
-Oblivious Polynomial Evaluation as explained in chapter \ref{def:OPE}.
+\ref{sec:methods} as closely as possible, it implements Oblivious Polynomial
+Evaluation as explained in chapter \ref{def:OPE}.
 
 Even the Haskell data--types such as \JWcode{DRAC}, \JWcode{DRAE}, \JWcode{RAE},
 \JWcode{LinearExpr} match the names of the constructs described in chapter
@@ -50,6 +50,7 @@ tamper--proof hardware token is left open to potential future works.
 \JWltwo{Communication Channels and Their TCP Ports}
 \label{sec:communication-channels}
 
+\JWtodo{Hier wieder bla bla für Erklärung}
 
 % GOLIATH TO TOKEN
 \JWlthree{\JWpOne{} to \JWtoken{}}
@@ -111,6 +112,8 @@ that \JWpTwo{} does not verify the polynomial degree it evaluates.
 \JWltwo{Implementation Details}
 \label{sec:implementation-details}
 
+\JWtodo{Hier auch bla bla}
+
 % Calculations in Finite Fields
 \JWlthree{Calculations in Finite Fields}
 \label{sec:finite-field-calcs}
@@ -133,7 +136,7 @@ therefore tries to provide a thread--safe interface to \JWTntl{} by limiting its
 functionality.  Another problem is that \JWTntl{} is designed for mutable
 objects, e.g., arithmetic operations are implemented using destructive
 assignment.  Since \JWThaskell{} is a pure functional language
-\cite{haskell2010} and destructive assignment is referentially opaque the
+\cite{haskell2010} and destructive assignment is referentially opaque, the
 \JWTc{} wrapper changes that and offers only an interface that obeys referential
 transparency. It does so by internally allocating a new element for the result
 of arithmetic operations and other functions that would modify existing objects
@@ -208,8 +211,8 @@ communication with complex data types independent of the programming language,
 operating system, machine endianness, and other parameters. The \JWThaskell{}
 \JWTprotobuf{} compiler \JWbinary{hprotoc} that comes with the \JWThaskell{}
 \JWTprotobuf{} library (\JWTprotobufLib{}) automatically generates the
-\JWThaskell{} source the code that serializes the data structures to
-\JWTprotobuf{} and code that parses \JWTprotobuf{} to \JWThaskell{} data
+\JWThaskell{} source code which serializes the data structures to
+\JWTprotobuf{} and code parses \JWTprotobuf{} to \JWThaskell{} data
 structures. The automatically generated code can be found in the directory
 \JWpath{gen-src/} in this thesis' source tree.
 
@@ -339,7 +342,7 @@ numbers for any prime field. Examplary for $\mathbb{F}_{97}$: $1 \entspricht 1
 The three main programs are \JWBpOne{}, \JWBpTwo{} and \JWBtoken{}. \JWBtoken{}
 does not accept any command line parameters. \JWpOne{} expects exactly one
 command line parameter: The file for the polynomial to evaluate, one coefficient
-per line. \JWpTwo{} expects exactly one parameter, too: The field element to
+per line. \JWpTwo{} expects exactly one parameter too: The field element to
 evaluate the polynomial. The following example would evaluate the polynomial
 $f(x) = a \cdot 1 + b \cdot x + c \cdot x^2$ where $a = 1 \entspricht
 \text{\JWcode{[1]}}$, $b = 1 + p^2 \entspricht \text{\JWcode{[1 0 1]}}$,

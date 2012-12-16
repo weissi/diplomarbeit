@@ -68,23 +68,23 @@ both, the theoretical examination and the implementation. Figure
 \ref{fig:poly-deg-t} and table \ref{tab:poly-deg-t} show this for the finite
 field $\mathbb{F}_{97}$ (implementation from the \JWTLhaskellForMaths{}
 package). The implementation for the field $\mathbb{F}_{2^{256}}$ does not seem
-have linear time complexity, the cause is the unoptimal implementation and the
-Haskell binding of the library used for the calculations in
-$\mathbb{F}_{2^{256}}$. The problem is that the library includes a rather
+to have linear time complexity. This is caused by the unoptimal implementation
+and the Haskell binding of the library used for the calculations in
+$\mathbb{F}_{2^{256}}$. It is problematic that the library includes a rather
 complex routine for object destruction that takes most of the evaluation time.
-The root of the problem is that functional languages prefer immutable
-(unchangeable) objects with very fast construction/destruction and the C++
-library that is interfaced is optimized for as few constructions/destructions
-as possible and the use of mutable objects. The phenomenon that is observable
-when using this library is that the garbage collector is taking up most of the
-running time (up to $85\%$) waiting for the library destruction routine. For
-high performance (such as the pure Haskell implementation for $\mathbb{F}_{97}$)
-another library should be interfaced or developed entirely in Haskell, but this
-is not the main concern of this thesis. For futher details see chapter
-\ref{sec:finite-field-calcs}. For lower degrees the current implementation for
+Root of the problem is that functional languages prefer immutable (unchangeable)
+objects with very fast construction/destruction and the C++ library that is
+interfaced is optimized for as few constructions/destructions as possible and
+the use of mutable objects. The phenomenon that is observable when using this
+library is that the garbage collector is taking up most of the running time (up
+to $85\%$) waiting for the library destruction routine. For high performance
+(such as the pure Haskell implementation for $\mathbb{F}_{97}$) another library
+should be interfaced or developed entirely in Haskell, but this is not the main
+concern of this thesis. Futher details are covered in chapter
+\ref{sec:finite-field-calcs}. For lower degrees, the current implementation for
 $\mathbb{F}_{2^{256}}$ has linear time complexity. Figure
-\ref{fig:poly-deg-t-small} and table \ref{tab:poly-deg-t-small} show
-this. It is also noteworthy that the first test machine (see chapter
+\ref{fig:poly-deg-t-small} and table \ref{tab:poly-deg-t-small} show this. It is
+also noteworthy that the first test machine (see chapter
 \ref{sec:test-machines}) outperforms the second test machine despite the
 inferior hardware. The cause has not been investigated, a possible cause could
 be that the 64--bit \JWTghc{} runtime seems to be slower (at least on Apple

@@ -4,7 +4,7 @@
 A \JWdef{Secure Multi--Party Computation}{MPC} or \JWdef{Secure Function
 Evaluation}{SFE} is the joint calculation of an arbitrary function $f$ with
 private inputs from a set of mutually distrusting parties. The function has to
-be evaluated correctly and the inputs have to be kept privately.  When the size
+be evaluated correctly and the inputs have to be kept privately.  If the size
 of the set of parties for a MPC is $2$, the computation is also called a
 two--party computation. The area of research of secure multi--party computations
 was founded by \emph{Yao's Millionaires' Problem} \cite{yao82}. The famous
@@ -52,8 +52,8 @@ related to this thesis because Yao describes encrypted evaluation of (boolean)
 circuits.  Despite the versatility of Yao's garbled circuits, the approach is
 not suitable for arithmetic functions on large fields. Because the GC approach
 requires embedded truth tables in every gate, an adoption to larger finite
-fields would have the cost of a quadratic blowup of every truth table in every
-gate (cf.\ \cite{naor99privacy}).
+fields would have the consequence of a quadratic blowup of every truth table in
+every gate (cf.\ \cite{naor99privacy}).
 
 Besides the GC approach, this thesis is also related to \emph{Efficient
 Multi-Party Computation Over Rings} by Cramer et al.\cite{cramer03}. The
@@ -66,9 +66,9 @@ complexity and based on \JWdefn{Oblivious Transfer}{OT} \cite{rabin81}.
 
 \emph{How to Garble Arithmetic Circuits} by Applebaum et al.\cite{gac2012} is
 related closely to this. Many ideas used in this thesis are inspired by
-Applebaum et al. The difference between the paper and this thesis, is that
-Applebaum et al.\ rely on computational assumptions. In contrast, this thesis
-does not rely on computational assumptions and switches some of the ideas to
+Applebaum et al. The difference between the Applebaum's paper and this thesis,
+is that it relies on computational assumptions. In contrast, this thesis does
+not rely on computational assumptions and switches some of the ideas to
 \JWdefn{Oblivious Affine Function Evaluation}{OAFE} \cite{davidgoliath}. OAFE
 allows oblivious evaluation of affine functions. This primitive is used to
 encode arbitrary functions.

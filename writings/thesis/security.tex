@@ -11,7 +11,7 @@ all corrupted parties.  In the ideal model, there is a simulator $\mathcal{S}$
 that tries to mimic $\mathcal{A}$. An environment $\mathcal{Z}$ is plugged to
 either the real or the ideal model and has to guess to which it's plugged to. A
 protocol \JWprotoSym{}{} is an universally composable implementation of the
-ideal functionality if for every adversary $\mathcal{A}$ there is a
+ideal functionality if, for every adversary $\mathcal{A}$ there is a
 simulator $\mathcal{S}$ such that for all environments $\mathcal{Z}$ the entire
 view of $\mathcal{Z}$ in the real model (with \JWprotoSym{}{} and $\mathcal{A}$)
 is statistically close to its view in the ideal model (with \JWfuncSym{}{} and
@@ -155,8 +155,8 @@ unpredictable way.
 
 The protocol is trivially secure against passive adversaries impersonating
 \JWpTwo{} because every value that gets transmitted to \JWpTwo{} is one--time
-encrypted. The values which are sent to \JWpTwo{} are part of a DRAEs and DRAEs
-only contain references to OAFEs and DRAVs. Chapter \ref{def:DRAV} proves (Lemma
+encrypted. The values sent to \JWpTwo{} are part of a DRAEs and DRAEs only
+contain references to OAFEs and DRAVs. Chapter \ref{def:DRAV} proves (Lemma
 \ref{lem:DRAV-random}) that DRAV only transport uncorrelated uniform randomness
 to parties not in possession of the encryption keys. The OAFE evaluations yield
 further (one--time encrypted) DRAVs and radicals (see chapter
@@ -166,7 +166,7 @@ polynomial of the same degree that is used to test \JWpTwo{}'s honesty. In fact,
 because every value is one--time encrypted, the protocol is perfectly secure
 against any passive adversary.
 
-For the security against an actively corrupted \JWpTwo{} a hybrid argument is
+For the security against an actively corrupted \JWpTwo{}, an hybrid argument is
 employed. The general idea is to transform an actively corrupted adversary
 incrementally into a passively corrupted adversary and to show that the
 statistical distance in the environment's view is negligible. For to random
