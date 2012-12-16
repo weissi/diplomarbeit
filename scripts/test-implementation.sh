@@ -145,7 +145,7 @@ if [ $F97 -ne 0 ]; then
     TESTS="$F97_TESTS"
 else
     if ! grep -qE '^type Element.*\<F2Pow256\>' ../programs/StaticConf*.hs; then
-        echo "WARNING: Source seems not to be compiled for F97"
+        echo "WARNING: Source seems not to be compiled for F2^256"
         WRONG=1
     fi
     TESTS="$F256_TESTS"

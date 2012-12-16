@@ -102,6 +102,10 @@ while true; do
         if grep -q 'Exited (running ' "$GOUT"; then
             break
         fi
+        if grep -q 'Parse failed$' "$GOUT"; then
+            echo 'Giving up, parse failed'
+            break
+        fi
         echo -n .
         sleep 0.5
     fi
@@ -114,8 +118,9 @@ sleep 0.5
 run_component_bg David "$INPUTELEM" "$@"
 DPID=$!
 
-echo $DPID
+echo "Waiting for David, pid=$DPID"
 wait $DPID
+echo "DONE waiting for David, pid=$DPID"
 echo $DPID $TPID $GPID
 
 set +e
