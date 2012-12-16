@@ -138,7 +138,7 @@ runRACEvaluation varMap reqs rsps cRACFrag vResult logMsg =
                    Just Nothing ->
                        return $! oae
                    Nothing ->
-                       fail "FUCK, channel closed"
+                       fail "ERROR: Channel from OAFE closed"
           evaluateInitialVars initialVars =
               evaluateInitialVars' initialVars HM.empty
               where evaluateInitialVars' vars oae =
