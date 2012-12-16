@@ -144,13 +144,13 @@ $\widetilde{a_l}$ and $\widetilde{a_r}$ \emph{Value}s.
     \emph{Double Randomized Affine Values} (DRAV), defined in chapter
     \ref{def:DRAV}.
 
-  \item The encodings of sub--circuits are called \emph{Double Affine Randomized
-    Encodings} (DRAE) and \emph{Randomized Affine Encodings} (RAE) defined in
-    chapter \ref{def:DRAE}. Each (D)RAE is assigned to an intermediate variable
-    that occurs in the subsequent (D)RAEs. A (D)RAE is a specification of
-    calculations that have to be performed until obtaining the (D)RAEs result
-    value. For the (D)RAC, the result value is just an intermediate
-    value that a sub--circuit evaluated to.
+  \item The encodings of the sub--circuits are named \emph{Double Affine
+    Randomized Encodings} (DRAE) and \emph{Randomized Affine Encodings} (RAE),
+    defined in chapter \ref{def:DRAE}. Each (D)RAE is assigned to an
+    intermediate variable that occurs in the subsequent (D)RAEs. A (D)RAE is a
+    specification of calculations that have to be performed until obtaining the
+    (D)RAEs result value. For the (D)RAC, the result value is just an
+    intermediate value that a sub--circuit evaluated to.
 
   \item The overall circuit representing exactly one function is named
     \emph{Double Affine Randomized Circuit} (DRAC) or \emph{Affine Randomized
@@ -182,11 +182,12 @@ irreducible polynomial $1 + x^2 + x^5 + x^{10} + x^{256}$.
 % OAFEs
 \JWlthree{Oblivious Affine Function Evaluation}
 
-The main building block of this thesis are \JWdef{Oblivious Affine Function
-Evaluation}{OAFE}{s}. More precisely, \emph{Sequential one--time OAFE} as
-defined by Döttling, Kraschewski and Müller--Quade \cite{davidgoliath}. The OAFE
-functionality enables to sequentially evaluate $n$ affine functions specified a
-priori. The OAFE functionality is implemented by the David \& Goliath protocol
+The main building block and the only external cryptographic primitive of this
+thesis are \JWdef{Oblivious Affine Function Evaluation}{OAFE}{s}. More
+precisely, \emph{Sequential one--time OAFE} as defined by Döttling, Kraschewski
+and Müller--Quade \cite{davidgoliath}. The OAFE functionality enables to
+sequentially evaluate $n$ affine functions specified a priori. The OAFE
+functionality is implemented by the David \& Goliath protocol
 \cite{davidgoliath} and exactly one stateful tamper--proof hardware token. In
 other words, one party can specify $n$ affine functions and another party will
 be able to sequentially evaluate the functions exactly once. The evaluating

@@ -81,7 +81,7 @@ running time (up to $85\%$) waiting for the library destruction routine. For
 high performance (such as the pure Haskell implementation for $\mathbb{F}_{97}$)
 another library should be interfaced or developed entirely in Haskell, but this
 is not the main concern of this thesis. For futher details see chapter
-\ref{sec:finite-field-calcs}. For smaller degrees the current implementation for
+\ref{sec:finite-field-calcs}. For lower degrees the current implementation for
 $\mathbb{F}_{2^{256}}$ has linear time complexity. Figure
 \ref{fig:poly-deg-t-small} and table \ref{tab:poly-deg-t-small} show
 this. It is also noteworthy that the first test machine (see chapter
@@ -134,6 +134,7 @@ Macs)\cite{lentczner11}.
 \begin{figure}[ht]
   \centering
   \input{images/poly-deg-t-small}
+  \caption{Evaluation Time of Polynomials (Lower Degrees) on Test Machine 1}
   \label{fig:poly-deg-t-small}
 \end{figure}
 
@@ -153,7 +154,7 @@ Macs)\cite{lentczner11}.
     450 & 1964 \\
     500 & 2294 \\
   \end{tabular}
-  \caption{Evaluation Time of Polynomial (Smaller Degrees) on Test Machine 1}
+  \caption{Evaluation Time of Polynomials (Lower Degrees) on Test Machine 1}
   \label{tab:poly-deg-t-small}
 \end{table}
 
