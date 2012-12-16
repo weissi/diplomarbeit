@@ -47,7 +47,7 @@ tamper--proof hardware token is left open to potential future works.
 %
 % COMMUNICATION CHANNELS
 %
-\JWltwo{Communication Channels and Their TCP Ports}
+\JWltwo{Communication Channels}
 \label{sec:communication-channels}
 
 The binaries \JWBpOne{}, \JWBpTwo{}, and \JWBtoken{} use TCP/IP networking to
@@ -56,8 +56,7 @@ which takes part over these channels are described.
 
 
 % GOLIATH TO TOKEN
-\JWlthree{\JWpOne{} to \JWtoken{}}
-\label{sec:comm:goliath2Token}
+\JWlthree*{\JWpOne{} to \JWtoken{}}
 
 On TCP port \JWport{23120} \JWpOne{} initiates a connection to the \JWtoken{}.
 This connection serves to transfer the OAFE configuration. After having
@@ -67,8 +66,7 @@ One \JWtoken{} process can be committed to a OAFE configuration exactly once.
 
 
 % DAVID TO TOKEN
-\JWlthree{\JWpTwo{} to \JWtoken{}}
-\label{sec:comm:david2token}
+\JWlthree*{\JWpTwo{} to \JWtoken{}}
 
 On TCP port \JWport{23021} \JWpTwo{} initiates a connection to the \JWtoken{}.
 This connection serves to evaluate the OAFEs. \JWpTwo{} tells which
@@ -77,8 +75,7 @@ consisting of the evaluated linear expressions.
 
 
 % DAVID TO GOLIATH
-\JWlthree{\JWpTwo{} to \JWpOne{}}
-\label{sec:comm:david2goliath}
+\JWlthree*{\JWpTwo{} to \JWpOne{}}
 
 On TCP port \JWport{23201} \JWpTwo{} initiates a connection to \JWpOne{}. This
 connection is not necessary for the protocol itself but serves to exchange
@@ -88,8 +85,7 @@ on which \JWpTwo{} accepts the DRAC.
 
 
 % GOLIATH TO DAVID
-\JWlthree{\JWpOne{} to \JWpTwo{}}
-\label{sec:comm:goliath2david}
+\JWlthree*{\JWpOne{} to \JWpTwo{}}
 
 On TCP port \JWport{23102} \JWpOne{} initiates a connection to \JWpTwo{}. This
 connection streams the DRAC that \JWpTwo{} will evaluate.
