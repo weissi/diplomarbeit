@@ -1,37 +1,37 @@
 \JWlone{Introduction}
 \label{sec:introduction}
 
-An \JWdef{Secure Multi--Party Computation}{MPC} or \JWdef{Secure Function
+A \JWdef{Secure Multi--Party Computation}{MPC} or \JWdef{Secure Function
 Evaluation}{SFE} is the joint calculation of an arbitrary function $f$ with
 private inputs from a set of mutually distrusting parties. If the size of the
 set of parties for an MPC is two, the computation is also called a two--party
 computation. The area of research of secure multi--party computations was
-founded by \emph{Yao's Millionaires' Problem} \cite{yao82}. The famous
-Millionaires' Problem discusses two millionaires, who are interested in knowing
-which of them is richer without revealing the actual values of their wealth. The
-problem is evaluating the function $f(a, b) = a \geq b$, where the first
-millionaire inputs the value of his wealth as $a$ and the second inputs $b$. The
-result of the evaluation is either \textit{false} if the second millionaire is
-richer or \textit{true} meaning the opposite. From the result and the own input,
-neither party is able to calculate the wealth of the other millionaire. Another
-example for real--world multi--party computations are democratic elections. The
-eligible voters input their private vote and the result of the calculations is
-the percentage breakdown.
+founded by Yao \cite{yao82}. His famous \emph{Millionaires' Problem} discusses
+two millionaires, who are interested in knowing which of them is richer without
+revealing the actual values of their wealth. The problem is evaluating the
+function $f(a, b) = a \geq b$, where the first millionaire inputs the value of
+his wealth as $a$ and the second inputs $b$. The result of the evaluation is
+either \textit{false} if the second millionaire is richer or \textit{true}
+meaning the opposite. From the result and the own input, neither party is able
+to calculate the wealth of the other millionaire. Another example for
+real--world multi--party computations are democratic elections. The eligible
+voters input their private vote and the result of the calculation is the
+percentage breakdown.
 
 \JWdefn{Oblivious Polynomial Evaluation}{OPE} \cite{naor99,naor06} is a special
 case of SFE. In contrast to arbitrary functions that are known by the involved
 parties, OPE only allows the first party to privately submit a polynomial $p$
 and another party to evaluate the polynomial at one node $x$. The second party
 obtains the result $p(x)$ but not the polynomial, the first party learns
-nothing. A secure and efficient OPE protocol a useful and interesting primitive
-because many other cryptographic problems can be based on OPE, for example the
-share generation for \emph{Shamir's Secret Sharing} \cite{shamir79}.
+nothing. A secure and efficient OPE protocol is a useful and interesting
+primitive because many other cryptographic problems can be based on OPE, for
+example the share generation for \emph{Shamir's Secret Sharing} \cite{shamir79}.
 
 \JWdefn{Oblivious Affine Function Evaluation}{OAFE} \cite{davidgoliath} is a
 primitive that allows to obliviously evaluate affine functions. The David \&
 Goliath protocol \cite{davidgoliath} presents a secure and efficient OAFE
 implementation based on only one stateful tamper--proof hardware token. Based on
-OAFE, this thesis works out the astonishing result of OPE in linear time which
+OAFE, this thesis works out the novel result of OPE in linear time which
 is asymptotically as fast as usual polynomial evaluation. Alongside the
 theoretical methodology, this thesis features an efficient, secure, and working
 implementation of the proposed protocol. The presented approaches are also
@@ -70,18 +70,18 @@ Besides the GC approach, this thesis is also related to \emph{Efficient
 Multi-Party Computation Over Rings} by Cramer et al.\ \cite{cramer03}. The
 difference is that Cramer's approach is based on the simulation of formulas by
 bounded--width programs by Cleve \cite{cleve91} which does not support
-\emph{Square \& Multiply} \cite{knuth81} and the complexity is slightly
-polynomial in the number of arithmetic operations performed. The writings of
-Naor et al.\ \cite{naor99,naor06} also describe OPE but are in polynomial
+\emph{Square \& Multiply} \cite{knuth81} and the complexity is polynomial (with
+a low degree) in the number of arithmetic operations performed. The writings of
+Naor et al.\ \cite{naor99,naor06} also describe OPE but have polynomial
 complexity and based on \JWdefn{Oblivious Transfer}{OT} \cite{rabin81}.
 
 \emph{How to Garble Arithmetic Circuits} by Applebaum et al.\ \cite{gac2012}
 describes the garbled evaluation of arithmetic circuits.  Many ideas used in
-this thesis are inspired by Applebaum et al. The difference between the
-Applebaum's paper and this thesis, is that the former relies on computational
-assumptions. In contrast, this thesis does not rely on computational assumptions
+this thesis are inspired by Applebaum et al. The difference between Applebaum's
+paper and this thesis, is that the former relies on computational assumptions to
+be secure. In contrast, this thesis does not rely on computational assumptions
 and proves the methodology to be information--theoretically secure. This thesis
-switches some of Applebaum's ideas to \JWdefn{Oblivious Affine Function
+adapts some of Applebaum's ideas to work with \JWdefn{Oblivious Affine Function
 Evaluation}{OAFE} \cite{davidgoliath}.
 
 %
@@ -105,10 +105,11 @@ This thesis starts by introducing the reader to the general methodology, which
 is discussed in depth thereafter (Chapter \ref{sec:methods}). Next, the security
 of the methodology is analyzed and proved in the UC framework (Chapter
 \ref{sec:security}). Since this thesis also implements the proposed protocol,
-the implementation is covered (Chapter \ref{sec:implementation}). An evaluation
+the implementation is covered in Chapter \ref{sec:implementation}. An evaluation
 of both, the methodology and the implementation (Chapter \ref{sec:evaluation})
-rounds out this thesis.  And since a large amount of the time taken for this
-thesis was affected by researching, a quick tour of the alternative approaches
-is given to the reader (Chapter \ref{sec:discontinued}).
+followed by the conclusion (Chapter \ref{sec:conclusion}) rounds out this
+thesis.  And since a large amount of the time taken for this thesis was affected
+by researching, a brief tour of the discontinued approaches is given to the
+reader (Chapter \ref{sec:discontinued}).
 
 % vim: set spell spelllang=en_us fileencoding=utf8 formatoptions=tcroql : %

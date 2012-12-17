@@ -1,16 +1,17 @@
 \JWlone{Conclusion}
+\label{sec:conclusion}
 
 This thesis contributes a protocol implementing \emph{Oblivious Polynomial
 Evaluation} in linear time. The protocol is implemented and proven to be
 UC--secure \cite{canetti05} against passively and actively corrupted parties.
-Hence, the protocol can be used ideally as a cryptographic primitive to build
-further works on.
+Hence, the protocol can be used ideally suited as a cryptographic primitive to
+build future work on.
 
 For restricted security requirements, evaluation of arbitrary arithmetic
 circuits (including Square \& Multiply \cite{knuth81}) is possible using the
-techniques presented. More specifically restricted security requirements means
-security against actively corrupted evaluating party but security against
-passively corrupted function definition party only.
+techniques presented. More specifically, restricted security requirements means
+security against an actively corrupted evaluating party (\JWpTwo{}) but security
+against a passively corrupted function definition party (\JWpOne{}) only.
 
 
 %
@@ -20,8 +21,8 @@ passively corrupted function definition party only.
 \label{sec:outlook}
 
 The most important open question is to find an improvement for the current
-technique to support arbitrary arithmetic circuits and not just polynomials by
-maintaining the computing time complexity and the UC--security against all
+technique to support arbitrary arithmetic circuits and not just polynomials
+while maintaining the computing time complexity and the UC--security against all
 actively corrupted parties.
 
 The implementation would benefit from a better implementation of a library for
