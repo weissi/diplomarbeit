@@ -6,9 +6,9 @@ description (Chapter \ref{sec:protocol}) and the security proof of the protocol
 in the UC framework (Chapter \ref{sec:security}), this thesis contains an
 implementation of the protocol. The implementation is written in the lazy,
 functional programming language \JWTLhaskell{}, more specifically \JWThaskell{}
-as implemented by the major \JWThaskell{} compiler the \JWTXLghc{} (\JWTghc{})
+as implemented by the major \JWThaskell{} compiler, the \JWTXLghc{} (\JWTghc{})
 version \JWTVghc{}. Whenever feasible, standard \emph{Haskell 2010}
-\cite{haskell2010} features have been preferred. However the following
+\cite{haskell2010} features have been preferred. However, the following
 extensions have been used: \JWhsExt{Bang\-Patterns},
 \JWhsExt{Scoped\-Type\-Variables}, \JWhsExt{Rank2\-Types}, and
 \JWhsExt{Flexible\-Contexts}.  The \JWTprotobuf{} (see chapter
@@ -29,19 +29,19 @@ Even the Haskell data--types such as \JWcode{DRAC}, \JWcode{DRAE}, \JWcode{RAE},
 \ref{def:DRAE}) and linear expressions (named $\mathcal{C}$ in chapter
 \ref{def:DRAE}). For practical reasons the program also features \JWcode{RAC}
 (Randomized Affine Circuits) and \JWcode{RAE} (Randomized Affine Encodings)
-which are the same as their \emph{dual} counterparts but split into the
+which are the same as their \emph{dual} counterparts but separated in the tuple
 components. So while running the program two \JWcode{RAE}s are derived from one
 \JWcode{DRAE}.
 
 As in Chapter \ref{def:OPE}, the oblivious polynomial evaluation consists of
-three parties: The tamper--proof hardware issuing party \JWpOne{} (executable
-program called \JWBpOne{}), the receiving party \JWpTwo{} (\JWBpTwo{}) and the
-tamper--proof hardware \JWtoken{} (\JWBtoken{}). The individual programs talk to
-each other using TCP/IP networking. The \JWtoken{} implements the OAFE
-functionality \JWfuncSym{seq-ot}{OAFE} as provided by the David \& Goliath
-protocol \cite{davidgoliath}. The \JWtoken{} does not implement the
-David \& Goliath protocol but only its interface. A real implementation using a
-tamper--proof hardware token is left open to potential future works.
+three parties: The OAFE issuing party \JWpOne{} (executable program called
+\JWBpOne{}), the receiving party \JWpTwo{} (\JWBpTwo{}) and the OAFE
+functionality (\JWBtoken{}). The individual programs talk to each other using
+TCP/IP networking. The \JWtoken{} implements the OAFE functionality
+\JWfuncSym{seq-ot}{OAFE} as provided by the David \& Goliath protocol
+\cite{davidgoliath}. The \JWtoken{} does not implement the David \& Goliath
+protocol but only its interface. A real implementation using a tamper--proof
+hardware token is left open to potential future works.
 
 
 %
@@ -60,9 +60,10 @@ which takes part over these channels are described.
 
 On TCP port \JWport{23120} \JWpOne{} initiates a connection to the \JWtoken{}.
 This connection serves to transfer the OAFE configuration. After having
-successfully received the OAFE configuration, the \JWtoken{} accepts OAFE
-evaluation requests (usually from \JWpTwo{}) but no more OAFE configurations.
-One \JWtoken{} process can be committed to a OAFE configuration exactly once.
+successfully received the OAFE configuration, the OAFE functionality accepts
+OAFE evaluation requests (usually from \JWpTwo{}) but no more OAFE
+configurations. One \JWtoken{} process can be configured to a OAFE configuration
+exactly once.
 
 
 % DAVID TO TOKEN
@@ -118,14 +119,14 @@ need documentation.
 \JWlthree{Calculations in Finite Fields}
 \label{sec:finite-field-calcs}
 
-For the calculation in the finite fields (Chapter \ref{sec:field}) the \JWTcpp{}
+For calculations in finite fields (Chapter \ref{sec:field}), the \JWTcpp{}
 library \JWTLntl{} (\emph{Number Theory Library}) has been interfaced to
-\JWThaskell{} for developing the implementation of this thesis. The interface
+\JWThaskell{} to use in the implementation of this thesis. The interface
 has been developed using \JWThaskell{}'s \JWdef{Foreign Function Interface}{FFI}
 \cite{haskell2010} and \JWdef{C $\longrightarrow$ Haskell}{C2Hs} \cite{c2hs}.
 Before interfacing the library to Haskell a very lightweight \JWTc{} wrapper
 has been developed because the library is written in \JWTcpp{} which cannot
-directly be interfaced using the FFI.
+directly be interfaced by the FFI.
 
 Although \JWTntl{} does its work fast and without problems, the library has some
 implementation problems and is not optimally designed for exposing its
@@ -148,21 +149,21 @@ is a performance problem: Creating and destructing a massive amount of objects
 is slow. The problem is that it is not possible to allocate memory for \JWTntl{}
 objects completely externally because \JWTntl{} allocates memory internally on
 the heap in the constructor. In more detail: The objects the programmer gets
-from the \JWTntl{} library are only one machine word wide that stores a pointer
+from the \JWTntl{} library are only one machine word wide which stores a pointer
 to memory on the heap which stores the representation of the elements in the
 finite field. In other words: Allocating memory for an array of field elements
-is not in $O(1)$ as usual (a chunk of stack space or one \JWcode{malloc} call)
+is not in $O(1)$ as usual (a chunk of stack space or one \JWcode{malloc()} call)
 but in $O(n)$ because \JWTntl{} allocates additional memory for every element on
 the heap internally. Obviously, the same problem occurs when destructing an
 array of \JWTntl{} objects: Usually that is in $O(1)$ as well (waiting until the
-stack frame gets destroyed or one \JWcode{free()} call) but using \JWTntl{} this
-is in $O(n)$ because \JWTcpp{}'s \JWcode{delete} has to be called for every
+stack frame gets destroyed or \JWcode{free()} is called) but using \JWTntl{}
+this is in $O(n)$ because \JWTcpp{}'s \JWcode{delete} has to be called for every
 element. Not calling \JWcode{delete} will lead to a massive memory leak.
 Therefore, the \JWThaskell{} binding cannot manage memory as usual but has to
 call a special memory freeing function of the \JWTc{} wrapper that calls
 \JWTcpp{}'s \JWcode{delete} for every object. This becomes a major performance
 problem for evaluations of large polynomials (see chapter
-\ref{sec:comp-complexity}). Nevertheless, this problem is fixable easily by
+\ref{sec:comp-complexity}). Nevertheless, this problem is easily fixable by
 using a \JWThaskell{} library for finite field calculations or interfacing a
 library that fits better.
 
@@ -197,8 +198,8 @@ unit test approach of \JWTLhunit{}.
 The random numbers needed for the implementation of this thesis are generated
 using \JWTLmonadcryptorandom{}. This package allows explicit failure of the
 random number generation and exchangeable random number generators such as
-\JWTLdrbg{} that implements a NIST standardized number--theoretically secure
-random number generator.
+\JWTLdrbg{}. \JWTdrbg{} implements a NIST standardized number--theoretically
+secure random number generator.
 
 
 % Communication Layer
@@ -206,13 +207,13 @@ random number generator.
 \label{sec:net-comm}
 
 The communication between the different binaries is done using the
-schrie\-bl\-esque \JWTXLprotobuf{}. This library easily allows network
+schrie\-bl\-esque \JWTXLprotobuf{}. This library features easy network
 communication with complex data types independent of the programming language,
 operating system, machine endianness, and other parameters. The \JWThaskell{}
 \JWTprotobuf{} compiler \JWbinary{hprotoc} that comes with the \JWThaskell{}
 \JWTprotobuf{} library (\JWTprotobufLib{}) automatically generates the
 \JWThaskell{} source code which serializes the data structures to
-\JWTprotobuf{} and code parses \JWTprotobuf{} to \JWThaskell{} data
+\JWTprotobuf{}, and code parses \JWTprotobuf{} to \JWThaskell{} data
 structures. The automatically generated code can be found in the directory
 \JWpath{gen-src/} in this thesis' source tree.
 
@@ -234,28 +235,28 @@ can be found below.
 
 \begin{itemize}
 
-  \item \JWpath{programs/}, the source code for the binaries (\JWBpOne{},
+  \item \JWpath{programs/}, source code for the binaries (\JWBpOne{},
     \JWBpTwo{} and \JWBtoken{}).
 
-  \item \JWpath{lib/}, the source code for everything that's reusable.
+  \item \JWpath{lib/}, source code for the library functionality.
 
-  \item \JWpath{lib/Functionality/}, the reusable code that forms the binaries'
+  \item \JWpath{lib/Functionality/}, reusable code that forms the binaries'
     functionality.
 
   \item \JWpath{lib/Data/OAFE/}, OAFE functionality implementation.
 
   \item \JWpath{lib/Data/RAE/}, RAE encoding, decoding and evaluation.
 
-  \item \JWpath{lib/Math/}, the finite field implementation and other
+  \item \JWpath{lib/Math/}, finite field implementation and other
     mathematical methods.
 
-  \item \JWpath{test/}, the \JWTquickcheck{} tests and the unit tests.
+  \item \JWpath{test/}, \JWTquickcheck{} tests and the unit tests.
 
   \item \JWpath{bench/}, benchmarking programs.
 
   \item \JWpath{scripts/}, helper scripts, mainly for benchmarking.
 
-  \item \JWpath{protos/}, the \JWTXprotobuf{} definition files.
+  \item \JWpath{protos/}, \JWTXprotobuf{} definition files.
 
   \item \JWpath{gen-src/}, automatically generated source code, derived from the
     \JWTprotobuf{} definition files.
@@ -273,9 +274,10 @@ can be found below.
 % Build System
 \JWlthree{Build System and Building}
 
-To build the source code of this thesis, the \JWTLcabal{} is used. \JWTcabal{}
+To build the source code of this thesis, \JWTLcabal{} is used. \JWTcabal{}
 is the standard building and packaging system used for \JWThaskell{} programs
-and libraries. The build process can be started by typing:
+and libraries. The build process can be started by executing the following
+commands in a shell:
 
 \JWcmd{cd diplomarbeit/}
 
@@ -303,9 +305,9 @@ denote the polynomials (that represent the scalar field elements):
 
 \noindent{}Intuitively that is between $0$ and $256$ digits (each either
 \JWcode{0} or \JWcode{1}) separated by spaces and surrounded by square brackets.
-The meaning of such a string is $\sum_{i=0}^{P-1} d \cdot x^p$ where $p$ is the
-index of the digit in the string and $P$ is the maximal index (counted from $0$,
-not counting the spaces and the brackets). An exception is the string
+The meaning of such a string is $\sum_{p=0}^{P} d_p \cdot x^p$ where $d_p$ is
+the digit at index $p$ in the string and $P$ is the maximal index (counted from
+$0$, not counting the spaces and the brackets). An exception is the string
 \JWcode{[]} which represents the polynomial \JWcode{0}.  Examples:
 
 \begin{itemize}
@@ -328,7 +330,7 @@ not counting the spaces and the brackets). An exception is the string
 the irreducible polynomial $1 + x^2 + x^5 + x^{10} + x^{256}$. The
 $\mathbb{F}_{97}$ is a prime field and therefore the elements are regular
 elements of the ring $\mathbb{Z}/2\mathbb{Z}$.  This implementation uses regular
-numbers for any prime field. Examplary for $\mathbb{F}_{97}$: $1 \entspricht 1
+numbers for any prime field. Exemplary for $\mathbb{F}_{97}$: $1 \entspricht 1
 (mod 97) = 1_{\mathbb{F}_{97}}$, $98 \entspricht 98 (mod 97) =
 1_{\mathbb{F}_{97}}$.
 
@@ -403,9 +405,9 @@ available at:
 \JWltwo{Code Availability}
 \label{sec:code-availability}
 
-All of the code is open--sourced and available at
-\JWnamedlink{https://github.com/weissi/diplomarbeit.git}{GitHub}. The code can
-be obtained by typing:
+All of the code is open--sourced under the terms of the \JWTXLgpl{} and
+available at \JWnamedlinkfn{https://github.com/weissi/diplomarbeit.git}{GitHub}.
+The code can be obtained by executing the following command in a shell:
 
 \JWcmd{git clone https://github.com/weissi/diplomarbeit.git}
 

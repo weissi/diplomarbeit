@@ -2,9 +2,9 @@
 \label{sec:discontinued}
 
 This chapter briefly describes the approaches that have been investigated (and
-partly implemented) but were not good enough to reach the goal. The approaches
-are ordered chronologically by date of examination to document the evolution of
-the methodology.
+partly implemented) but were considered not good enough to reach the goal. The
+approaches are ordered chronologically by date of examination to document the
+evolution of the methodology.
 
 
 %
@@ -17,7 +17,7 @@ The first approach pursued in this thesis to transform general formulas to
 affine functions suitable for OAFEs was via Linear Bijection Straight--Line
 Programs.  The results seemed promising at the first glance but a problem
 emerged leading to exponential blowup when using multiplications. The problem
-already becomes apparent as Cleve writes in the abtract of the paper
+already becomes apparent as Cleve writes in the abstract of his paper
 \cite{cleve91}:
 
 \begin{quote}
@@ -28,16 +28,16 @@ already becomes apparent as Cleve writes in the abtract of the paper
 \end{quote}
 
 \noindent{}Two problems arise: Cleve's approach does not support \emph{Square
-and Multiply}\cite{knuth81} and it is slightly polynomial. However, the approach
+and Multiply} and it is slightly polynomial. However, the approach
 is partly implemented as explained in detail in the next few chapters but
 neither the code nor the ideas are used for the final version of this thesis.
 
-\JWlthree{From Arithmetic Formulas To Matrix Multiplications}
+\JWlthree{From Arithmetic Formulas to Matrix Multiplications}
 \label{sec:FormulasToMatrixMuls}
 
-The definition of formulas is the same as Cleve's\cite{cleve91}: Formulas are
-circuits that are trees. A postorder traversal is enough to evaluate the formula
-easily. This chapter describes the evaluation of such a formula using
+The definition of formulas is the same as Cleve's \cite{cleve91}: Formulas are
+circuits that are trees. A postorder traversal is enough to evaluate the
+formula. This chapter describes the evaluation of such a formula using
 \emph{linear bijection straight--line programs} (LBS programs)\cite{cleve91}
 which use at most $\omega$ registers. An LBS program can be simulated by matrix
 multiplications, one statement is simulated by one matrix multiplication. The
@@ -62,7 +62,7 @@ The goal is to transform a register $R_{out}$ with a initial value of $0$ to be
 transformed like $R_{out} \leftarrow R_{out} + R_{one} \cdot f(x_G,x_D)$. The
 special register $R_{one}$ holds a constant $1$. This can be achieved by
 induction as follows.  For the exact definitions, proofs and algorithms how to
-transform arbitrary formulas to LBS programs see \cite{cleve91}.
+transform arbitrary formulas to LBS programs, see \cite{cleve91}.
 
 
 \JWlfive{Depth $d = 0$}
@@ -75,11 +75,11 @@ $R_j \leftarrow R_j \pm R_i \cdot c$ or $R_j \leftarrow R_j \pm R_i \cdot x_u$ .
 
 Two LBS programs that have the effect of $R_j \leftarrow R_j \pm R_i \cdot
 l(x_G, x_D)$  and $R_j \leftarrow R_j \pm R_i \cdot r(x_G, x_D)$ express
-formulas of depth $d > 0$ using only formulas of of depth $d - 1$. Repeated
+formulas of depth $d > 0$ using only formulas of depth $d - 1$. Repeated
 until $d = 0$, arbitrary formulas can be written as LBS programs. The following
 two sections show the induction step for additions and multiplications.
 
-\JWlsix{Additive:} The construction of a LBS program doing $R_j \leftarrow R_j
+\JWlsix{Additive:} The construction of an LBS program doing $R_j \leftarrow R_j
 + R_i \cdot (l + r)(x_G, x_D)$ can be achieved by the following LBS program.
 
 \begin{align*}
@@ -95,9 +95,9 @@ R_j & \leftarrow R_j - R_i \cdot r(x_G, x_D)
 \end{align*}
 
 
-\JWlsix{Multiplicative:} The construction of a LBS program doing $R_j \leftarrow
-R_j + R_i \cdot (l \cdot r)(x_G, x_D)$ is less obviously achieved by the
-following LBS program.
+\JWlsix{Multiplicative:} The construction of an LBS program doing $R_j
+\leftarrow R_j + R_i \cdot (l \cdot r)(x_G, x_D)$ is less obviously achieved by
+the following LBS program.
 
 \begin{align*}
 R_k & \leftarrow R_k - R_j \cdot r(x_G, x_D) \\
@@ -118,13 +118,14 @@ R_j & \leftarrow R_j + R_i \cdot l(x_G, x_D)
 
 \JWlfour{Implementation State}
 
-The current implementation is a Haskell library which does the transformation
-from the formula, over the LBS program to the matrices that only need to be
-multiplied to calculate the result. The main implementation can be
-found in the file \JWpath{lib/Codec/LBS.hs} of the code tree of this thesis (see
-chapters \ref{sec:src-org} and \ref{sec:code-availability}). Exemplary, the LBS
-program to evaluate the function $f(x_G,x_D) = 3x \cdot (x_G + x_D^2)$ which
-will hold the result in \texttt{R1}:
+The current implementation is a Haskell module which features the transformation
+from an arithmetic expression to an LBS program. The LBS program then transforms
+easily to the matrices. The multiplication of the matrices yield the result. The
+implementation can be found in the file \JWpath{lib/Codec/LBS.hs} of the code
+tree of this thesis (see chapters \ref{sec:src-org} and
+\ref{sec:code-availability}). Exemplary, the LBS program to evaluate the
+function $f(x_G,x_D) = 3x \cdot (x_G + x_D^2)$ which will hold the result in
+\texttt{R1}:
 
 \begin{lstlisting}
 R1 <- R1 - R2 * Xg
@@ -232,29 +233,29 @@ $f(x_G,x_D)$.
 \JWltwo{Decomposable Affine Randomized Encodings}
 \label{sec:dare}
 
-The second approach that was examinated while this thesis evolved was to
-transform general functions to affine functions using a slightly modified form
-of the \emph{Decomposable Affine Randomized Encodings} (DAREs) from
-\emph{Garbled Arithmetic Circuits} by Applebaum et al.\ \cite{gac2012}. The
-change is necessary because this thesis uses OAFEs to evaluate the DAREs
-and does therefore not depend on the \emph{learning with errors} (LWE) problem.
-This leads to further changes: The \emph{affinization gadget} \cite{gac2012} is
+The second approach that was examined during this thesis, was to transform
+general functions to affine functions using a slightly modified form of the
+\emph{Decomposable Affine Randomized Encodings} (DAREs) from \emph{Garbled
+Arithmetic Circuits} by Applebaum et al.\ \cite{gac2012}. The change is
+necessary because this thesis uses OAFEs to evaluate the DAREs and does
+therefore not depend on the \emph{learning with errors} (LWE) problem.  This
+leads to further changes: The \emph{affinization gadget} \cite{gac2012} is
 modified and the \emph{key--shrinking gadget} \cite{gac2012} is not needed.
-Altough the final version of this thesis does not directly contain anything from
-Applebaum's garbled arithmetic circuits, some ideas are closely related and
-inspired by Applebaum's paper. The reader might also notice similar wording.
+Although the final version of this thesis does not directly contain anything
+from Applebaum's garbled arithmetic circuits, some ideas are closely related and
+inspired by Applebaum's paper.
 
 
 \JWlthree{Definitions}
 \label{sec:affinization_definitions}
 
-These definitions are not from the original paper but are closely related and
-modeled thereafter. An \emph{Linear Randomized Expression} (LRE) is an element
-of the set $\mathcal{F}_{AR}$ ($K$ a finite field), an \emph{Decomposable Affine
-Randomized Encoding} (DARE) an element of the set $\mathcal{E}_{AR}$. One
-important constraint has to hold for all LREs and therefore for all DAREs, too:
-After fully evaluating a LRE, i.e. replacing the variable by its actual value,
-the now constant LRE should reveal no more information that the result of a full
+These definitions are not from the original paper but are closely related. A
+\emph{Linear Randomized Expression} (LRE) is an element of the set
+$\mathcal{F}_{AR}$ ($K$ a finite field), a \emph{Decomposable Affine Randomized
+Encoding} (DARE) an element of the set $\mathcal{E}_{AR}$. One important
+constraint has to hold for all LREs and therefore for all DAREs too: After fully
+evaluating an LRE, i.e.\ replacing the variable by its actual value, the now
+constant LRE should reveal no more information than the result of a full
 decoding of the respective DARE. The safety is proved in \emph{How to Garble
 Arithmetic Circuits} \cite{gac2012}.
 
@@ -315,7 +316,7 @@ r & = \sum_{a \in A} a + \sum_{m \in M'} m
 
 Whenever a circuit is not directly transformable to one single DARE, sub--DAREs
 get replaced by \emph{Randomized Variables} (RV). RVs do not appear in
-Applebaum's paper\cite{gac2012}. RVs are just (sub--)DARE that
+Applebaum's paper \cite{gac2012}. RVs are just (sub--)DAREs that
 get transmitted to the second party (see Chapter \ref{sec:dare}) which
 fully evaluates them and saves the result just like an ordinary input variable
 (such as $x_D$). Following DAREs may then use the RVs as pseudo--inputs. But
@@ -323,7 +324,7 @@ since a DARE reveals as much information as its decoded form, the original DARE
 cannot just be transmitted as the final overall DARE. That would reveal
 intermediate information. Therefore, RVs get an additional garbling step: Say
 the following property would hold for a variable $v$ being the decoded value of
-an DARE $e$:
+a DARE $e$:
 
 \begin{align*}
   v = DEC(e \in \mathcal{E}_{AR})
@@ -349,14 +350,14 @@ are closely related to \emph{Dual Randomized Affine Encodings} (DRAEs, chapter
 value of the sub--circuit it models, DRAEs in contrast are still
 encrypted (twofold). Because the DAREs are equal to their plain evaluation,
 the old version presented in this chapter needed the \emph{Randomized Variables}
-(RVs) that are not present in the final version. However, the final version does
-also assign evaluated sub--circuits to variables but since DRAEs are encrypted
+(RVs) that are not present in the final version. However, the final version
+also assigns evaluated sub--circuits to variables, but since DRAEs are encrypted
 anyways, there is no need for an additional encryption.
 
 
 \JWlthree{Implementation State}
 
-The ideas of this chapter were implemented but the implementation did
+The ideas of this chapter were implemented, but the implementation did
 evolve to the final version described in Chapter \ref{sec:methods}. If
 there is interest in the old implementation, it can be recovered from this
 thesis' source code tree by using the \JWTgit{} version control system.

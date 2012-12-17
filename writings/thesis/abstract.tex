@@ -15,20 +15,21 @@ course, the proofs must concern the composability of the components that enables
 to build complex and secure systems from smaller building blocks.
 
 This thesis concerns itself with cryptographic primitives for \JWdefn{Secure
-Multi--Party Computations}{MPC}. MPC are joint computations of a set parties
+Multi--Party Computations}{MPC}. MPC are joint computations of a set of parties
 which reveal the result of the computation to any party and nothing more. Every
 party should only learn information that can be calculated from its own input
 and the result. This thesis mainly deals with \JWdefn{Oblivious Polynomial
 Evaluation}{OPE}, a subset of general MPC. OPE allows two parties to jointly
 evaluate a polynomial where the first party chooses the polynomial and learns
 nothing. The second party chooses the node and only learns the evaluation of the
-polynomial at the chosen node. In addition to evaluation of polynomials which
-is an obvious use--case of OPE, OPE hat many interesting applications, such as
-the share generation for \emph{Shamir's Secret Sharing} \cite{shamir79}. The
-methodology of this thesis also applies to the larger class of \JWdefn{Secure
-Function Evaluation}{SFE} which enables to securely evaluate arbitrary
-functions. Though, the focus as well as the target of the security proof is OPE.
-Further works might extend the methods to be entirely suitable for SFE.
+polynomial at the chosen node. In addition to the evaluation of polynomials
+which is an obvious use case of OPE, OPE has many interesting applications,
+such as the share generation for \emph{Shamir's Secret Sharing} \cite{shamir79}.
+The methodology of this thesis also applies to the larger class of
+\JWdefn{Secure Function Evaluation}{SFE} which enables to securely evaluate
+arbitrary functions. Though, the focus as well as the target of the security
+proof is OPE.  Further works might extend the methods to be entirely suitable
+for SFE.
 
 Because OPE is a complex primitive, this thesis bases its implementation of the
 protocol realizing OPE on the weaker cryptographic primitive \JWdefn{Oblivious
@@ -64,8 +65,8 @@ erreichen. Die Zuverlässigkeit wird in der Telematik untersucht. Die Integritä
 und die Vertraulichkeit werden jedoch mit kryptographischen Methoden
 sichergestellt. Da die Gesamtheit ein sehr komplexes Problem ist, geht man
 zunehmend dazu über komplexe Verfahren auf kryptographischen Primitiven und
-Protokollen zu basieren, die bewiesen sicher und komponierbar sind. Wie in
-anderen Wissenschaften können die einzelnen Komponenten dann zum einem
+Protokollen aufzubauen, die bewiesen sicher und komponierbar sind. Wie in
+anderen Wissenschaften können die einzelnen Komponenten dann zu einem
 funktionierenden Gesamtsystem zusammengesteckt werden.
 
 Die vorliegende Arbeit beschäftigt sich mit kryptographischen Primitiven zur
@@ -73,23 +74,24 @@ sicheren Mehrparteienberechnung. Sichere Mehrparteienberechnungen sind
 Berechnungen, die von mehreren Parteien durchgeführt werden, wobei keine Partei
 mehr Wissen erlangt als sie aus ihrer Eingabe und der Ausgabe der Berechnung
 ohnehin hätte berechnen können. Diese Arbeit beschäftigt sich hauptsächlich mit
-Primitive \JWdefn{Oblivious Polynomial Evaluation}{OPE} die eine Unterklasse
-der sicheren Mehrparteienberechnung darstellt. Mit OPE können zwei Parteien
-gemeinsam ein Polynom auswerten wobei die erste Partei das Polynom festlegt und
-keine Informationen erhält. Die zweite Partei soll das Polynom an einer
-Stützstelle auswerten können und das Ergebnis, jedoch nicht das Polynom an sich,
-erhalten. Weitere Informationen können weder die erste, noch die zweite Partei
-errechnen. Außer der selbstverständlichen Anwendung von OPE zum Evaluieren von
-Polynomen gibt es für die kryptographische Primitive OPE noch zahlreiche
-Anwendungen, zum Beispiel das Generieren der \emph{Shares} bei \emph{Shamir's
-Secret Sharing} \cite{shamir79}. Die in der Arbeit vorgestellten Methoden lassen
-sich auch für die größere Klasse \JWdefn{Secure Function Evaluation}{SFE}, mit
-der allgemeine Funktionen ausgewertet werden können anwenden, der Fokus liegt
-jedoch auf OPE. Der Sicherheitsbeweis behandelt ebenfalls OPE, spätere Arbeiten
-können aber die hier vorgestellten Verfahren auf SFE erweitern.
+der Primitive \JWdefn{Oblivious Polynomial Evaluation}{OPE}, die eine
+Unterklasse der sicheren Mehrparteienberechnung darstellt. Mit OPE können zwei
+Parteien gemeinsam ein Polynom auswerten, wobei die erste Partei das Polynom
+festlegt und keine Informationen erhält. Die zweite Partei soll das Polynom an
+einer Stützstelle auswerten können und das Ergebnis, jedoch nicht das Polynom an
+sich, erhalten. Weitere Informationen können weder die erste, noch die zweite
+Partei errechnen. Außer der selbstverständlichen Anwendung von OPE zum
+Evaluieren von Polynomen gibt es für die kryptographische Primitive OPE noch
+zahlreiche Anwendungen, zum Beispiel die Generierung der \emph{Shares} bei
+\emph{Shamir's Secret Sharing} \cite{shamir79}. Die in der Arbeit vorgestellten
+Methoden lassen sich auch auf die größere Klasse \JWdefn{Secure Function
+Evaluation}{SFE}, mit der allgemeine Funktionen ausgewertet werden können,
+anwenden, der Fokus liegt jedoch auf OPE. Der Sicherheitsbeweis behandelt
+ebenfalls OPE, spätere Arbeiten können aber die hier vorgestellten Verfahren auf
+SFE erweitern.
 
 Da OPE eine komplexe Primitive ist, basiert diese Arbeit auf der
-(schwächeren) Primitive \JWdefn{Oblivious Affine Function Evaluation}{OAFE} die
+(schwächeren) Primitive \JWdefn{Oblivious Affine Function Evaluation}{OAFE}, die
 es ermöglicht affine Funktionen ebenso auszuwerten wie OPE es für Polynome
 erlaubt.
 
@@ -104,7 +106,7 @@ theoretischen Ausarbeitung liegt dieser Thesis auch eine vollständige
 Implementierung in der funktionalen Programmiersprache \JWThaskell{} bei, die
 die angesprochenen Eigenschaften zeigt.
 
-Die Arbeit wird letztendlich durch eine Evaluierung sowohl der theoretischen als
+Die Arbeit wird letztendlich durch eine Evaluierung sowohl des theoretischen als
 auch des praktischen Teils abgerundet.
 
 \end{otherlanguage}

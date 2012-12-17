@@ -4,7 +4,7 @@
 An \JWdef{Secure Multi--Party Computation}{MPC} or \JWdef{Secure Function
 Evaluation}{SFE} is the joint calculation of an arbitrary function $f$ with
 private inputs from a set of mutually distrusting parties. If the size of the
-set of parties for an MPC is $2$, the computation is also called a two--party
+set of parties for an MPC is two, the computation is also called a two--party
 computation. The area of research of secure multi--party computations was
 founded by \emph{Yao's Millionaires' Problem} \cite{yao82}. The famous
 Millionaires' Problem discusses two millionaires, who are interested in knowing
@@ -22,11 +22,10 @@ the percentage breakdown.
 case of SFE. In contrast to arbitrary functions that are known by the involved
 parties, OPE only allows the first party to privately submit a polynomial $p$
 and another party to evaluate the polynomial at one node $x$. The second party
-obtains the result $p(x)$ without revealing $x$ to the first party or revealing
-the polynomial $p$ to the second party. We find a secure and efficient OPE
-protocol a useful and interesting primitive. Many other cryptographic problems
-can be based on OPE, for example the share generation for \emph{Shamir's Secret
-Sharing} \cite{shamir79}.
+obtains the result $p(x)$ but not the polynomial, the first party learns
+nothing. A secure and efficient OPE protocol a useful and interesting primitive
+because many other cryptographic problems can be based on OPE, for example the
+share generation for \emph{Shamir's Secret Sharing} \cite{shamir79}.
 
 \JWdefn{Oblivious Affine Function Evaluation}{OAFE} \cite{davidgoliath} is a
 primitive that allows---similar to OPE---to obliviously evaluate affine

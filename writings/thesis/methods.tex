@@ -18,10 +18,10 @@ thesis. The following chapters contain a more formal bottom--up description that
 is rather cumbersome to understand without grasping the overall picture.
 
 The goal is to obliviously evaluate a polynomial by two mutual distrusting
-parties. Informally, that means to evaluate a polynomial ($f(x) = \sum a_ix^i$)
-where the first party chooses $f$ and the second party chooses $x$. It is
-crucial that neither party learns the choice of the other party. The naive and
-simple solution is to instruct a trusted third party to evaluate the
+parties. Informally, that means to evaluate a polynomial ($f(x) = \sum_i
+a_ix^i$) where the first party chooses $f$ and the second party chooses $x$. It
+is crucial that neither party learns the choice of the other party. The naive
+and simple solution is to instruct a trusted third party to evaluate the
 polynomial---provided by the first party---at the node $x$ provided by the
 second party. Of course, this solution is just as simple as insecure because the
 third party could reveal its secrets at any time.
@@ -36,7 +36,7 @@ evaluate obliviously. The OAFE guarantees that the second party does not learn
 the affine function and that the first party does not learn the node at which
 the second party evaluated the function. Additionally, OAFE guarantees that
 every linear function can only be evaluated once. To maintain the security
-property for the input polynomial, neither party should be able to learn
+property for the polynomial case, neither party should be able to learn
 anything from intermediate results.
 
 The role both parties play differs heavily: The first party---usually named
@@ -127,19 +127,19 @@ special terms are used throughout the entire thesis. A mapping from the informal
 terms used above and the terms used otherwise (and defined in the following
 chapters) follows:
 
-In the informal illustration above, the encoded tuples played an important role.
-They represented values and the sub--circuits evaluated to these encrypted
-tuples. In fact, the sub--circuits are also twofold, they have a left and a
-right side that eventually evaluate to two values: Both sides of the encrypted
-tuple. For technical reasons, the two sides of the circuits and the tuples are
-often handled apart. They still represent the same value encrypted with
-different keys. For this reason the terms below all exist in two forms, the
-\emph{Double} form (such as \emph{Double Randomized Affine Encoding}) and the
-regular form (such as \emph{Randomized Affine Encoding}). At some point in the
-processing, they are split syntactically, two regular entities are just the same
-as one Double entity. The difference is mainly the same as naming tuple
-$\widetilde{a} = (\widetilde{a_l}, \widetilde{a_r})$ \emph{Double Value} and
-$\widetilde{a_l}$ and $\widetilde{a_r}$ \emph{Value}s.
+In the informal illustration above, the encoded tuples play an important role.
+They represent values and the sub--circuits evaluate to encrypted tuples. In
+fact, the sub--circuits are also twofold, they have a left and a right side that
+eventually evaluate to two values: Both sides of the encrypted tuple. For
+technical reasons, the two sides of the circuits and the tuples are often
+handled apart. They still represent the same value encrypted with different
+keys. For this reason the terms below all exist in two forms, the \emph{Double}
+form (such as \emph{Double Randomized Affine Encoding}) and the regular form
+(such as \emph{Randomized Affine Encoding}). At some point in the processing,
+they are split syntactically, two regular entities are just the same as one
+Double entity. The difference is mainly the same as naming tuple $\widetilde{a}
+= (\widetilde{a_l}, \widetilde{a_r})$ \emph{Double Value} and $\widetilde{a_l}$
+and $\widetilde{a_r}$ \emph{Value}s.
 
 \begin{itemize}
 
@@ -214,7 +214,7 @@ different in this thesis: The term \emph{OAFE} is a functionality to evaluate
 one affine function. The plural (\emph{OAFEs}) means a set of OAFEs that enables
 to evaluate multiple affine functions. Therefore the collectivity of OAFEs as
 defined in this thesis can be implemented by one \emph{Sequential one--time
-OAFE} functionality as defined by Döttling, Kraschewski and Müller--Quade
+OAFE functionality} as defined by Döttling, Kraschewski and Müller--Quade
 \cite{davidgoliath}.
 
 
@@ -239,27 +239,7 @@ able to generate a new dynamic dual key $(\beta, \beta')$ uniformly at random.
 Just like $E(v)$, this thesis also assumes $D(\widetilde{v})$, named the
 \emph{universal decoding function}. The universal decoding function is assumed
 to be implicitly parametrized by the encryption keys from the context it is used
-in. Both functions are defined below.  The universal encoding and decoding
-functions only serve the purpose of describing the methodology. In the reality
-especially the function $D$ is never called by anyone. That would not even be
-possible since only the party in possession of the keys (\JWpOne{}) has the
-information to do so but because of the non--interactivity of the protocol,
-\JWpOne{} is not active anymore when the second party (not in possession of the
-keys, usually named \JWpTwo{}) starts the evaluation. The real protocol encodes
-the encryption and decryption into the OAFEs in a way that as soon as \JWpTwo{}
-tries to cheat everything eventually becomes uniform randomness. To cheat means
-to disrespect the protocol description and to misbehave in any way. The property
-to turn everything to uniform randomness as soon as a party tries to cheat is
-done using carefully chosen linear functions realized as OAFEs. The setup of
-these linear functions assures the addition of uncorrelated uniform randomness
-as soon as \JWpTwo{} tries to cheat. One can envision the process as applying a
-one--time pad encryption that is only correctly removed if the other party did
-not try to cheat. As soon as the second party tries to cheat this resembles the
-attempt to undo a one--time pad encryption using another one--time pad. This
-clearly leads to a one--time pad encryption which can only be undone using an
-unknown one--time pad. The unknown one--time pad is a composition of the
-encrypting one--time pad and the one--time pad using which the decryption was
-attempted.
+in. Both functions are defined in the following.
 
 \begin{align}
   \label{eqn:one-time-pad}
@@ -274,9 +254,9 @@ attempted.
 \noindent{}The values $\beta$ and $\beta'$ are fresh values uniformly at random.
 In finite fields $\beta$ and $\beta'$ therefore one--time encrypt both tuple
 components, as such a DRAV is one--time pad encrypted.  $\alpha_l$ and
-$\alpha_r$ are also values uniformly at random but are in contrast to $\beta$
-and $\beta'$ used in for DRAVs throughout the whole process. The purpose they
-serve will be discussed in the following chapters.
+$\alpha_r$ are also values uniformly at random but have---in contrast to $\beta$
+and $\beta'$--the same value in all DRAVs throughout the whole process. The
+purpose they serve will be discussed in the following chapters.
 
 Notationally, the DRAV encoding a scalar value $v$ is usually denoted as
 $\widetilde{v}$. $\widetilde{v}$'s tuple components are usually called
@@ -310,12 +290,32 @@ function $D(\widetilde{v})$ is:
 \end{align}
 
 \noindent{}In equation \ref{eqn:keys-assumed} one can see that the universal
-decoding function $D$ assumes context--specific  dual keys $(\alpha_l,
-\alpha_r)$ and $(\beta, \beta')$. If an attacker at some point passes a DRAV
-that is not expected to be decoded at this point, the decoding will fail and
-evaluate to $\bot$. This is evident because $D$ will decode using the dual keys
-of the DRAV that was expected to be decoded (see also Lemma
+decoding function $D$ assumes context--specific dual keys $(\alpha_l, \alpha_r)$
+and $(\beta, \beta')$. If an attacker at some point passes a DRAV that is not
+expected to be decoded at this point, the decoding will fail and evaluate to
+$\bot$. This is evident because $D$ will decode using the dual keys of the DRAV
+that was expected to be decoded (see also Lemma
 \ref{lem:well-formed-fun-of-dec-fun}).
+
+The universal encoding and decoding functions only serve the purpose of
+describing the methodology.  In the reality especially the function $D$ is never
+called by anyone. That would not even be possible since only the party in
+possession of the keys (\JWpOne{}) has the information to do so but because of
+the non--interactivity of the protocol, \JWpOne{} is not active anymore when the
+second party (not in possession of the keys, usually named \JWpTwo{}) starts the
+evaluation. The real protocol encodes the encryption and decryption into the
+OAFEs in a way that as soon as \JWpTwo{} tries to cheat everything eventually
+becomes uniform randomness. To cheat means to disrespect the protocol
+description and to misbehave in any way. The property to turn everything to
+uniform randomness as soon as a party tries to cheat is done using carefully
+chosen linear functions realized as OAFEs. The setup of these linear functions
+assures the addition of uncorrelated uniform randomness as soon as \JWpTwo{}
+tries to cheat. One can envision the process as applying a one--time pad
+encryption that is only correctly removed if the other party did not try to
+cheat. As soon as the second party tries to cheat this resembles the attempt to
+undo a one--time pad encryption using another one--time pad. This clearly leads
+to a one--time pad encryption which can only be removed using another unknown
+one--time pad.
 
 \begin{lem}
   \label{lem:DRAV-random}
@@ -626,13 +626,13 @@ Trivially $\bot + \bot = \bot$ by a similar argument.
 \JWlthree{Final DRAV Decoding}
 \label{sec:drav-final-decoding}
 
-Finally decoding a DRAV means to extract the hidden value which is crucial
-because otherwise everything else would be useless. Obviously, ordinary parties
-have no information about the encryption keys and are thus not able to make use
-of the universal decoding function $D(\widetilde{v})$. This chapter describes a
-system that enables the party in possession of the keys to allow other parties
-to decode a specific DRAV\@. Usually it only allows the final DRAV to be
-decoded, otherwise intermediate information would leak.
+Finally decoding a DRAV means to extract the hidden value which is crucial to
+successfully complete an evaluation. Obviously, ordinary parties have no
+information about the encryption keys and are thus not able to make use of the
+universal decoding function $D(\widetilde{v})$. This chapter describes a system
+that enables the party in possession of the keys to allow other parties to
+decode a specific DRAV\@. Usually it only allows the final DRAV to be decoded,
+otherwise intermediate information would leak.
 
 The overall costs thereof are only one addition and an OAFE evaluation for the
 ordinary party. Of course, the OAFE has to be created by the party that knows
@@ -640,7 +640,7 @@ the encryption keys. The setup of this OAFE can be seen as the authorization to
 decode exactly one specific DRAV\@. The procedure will decode a DRAV to a final
 scalar value although $D$ is a partial function. The special value $\bot$ that
 $D$ evaluates to if the DRAV is non--well--formed is mapped to uniform
-randomness. As Lemma \ref{lem:well-formed-fun-of-dec-fun} proofs, a DRAV is
+randomness. As Lemma \ref{lem:well-formed-fun-of-dec-fun} proves, a DRAV is
 also non--well--formed if the encryption keys differ from the keys of the DRAV
 whose decoding was intended. Therefore, no other DRAVs can be decoded
 illegitimately. In the following, the DRAV to be decoded is named $\widetilde{v}
@@ -1458,8 +1458,8 @@ of a polynomial that is only known by the first party at a node that is only
 known by the second party. The evaluation should neither reveal the polynomial
 to the second party nor reveal the node to the first party.
 
-Using technique described in this thesis, the first party (\JWpOne{}) starts the
-process by choosing the polynomial coefficients and transforming  $f$ into a
+Using techniques described in this thesis, the first party (\JWpOne{}) starts
+the process by choosing the polynomial coefficients and transforming  $f$ into a
 DRAC (see Chapter \ref{def:DRAC}. The number of DRAEs the DRAC consists of is in
 $O(n)$, $n$ being the number of arithmetic operations needed to evaluate $f$ as
 usual. Using Horner's rule \cite{cormen01}, evaluating a polynomial of degree

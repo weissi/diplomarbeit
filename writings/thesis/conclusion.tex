@@ -1,0 +1,35 @@
+\JWlone{Conclusion}
+
+This thesis contributes a protocol implementing \emph{Oblivious Polynomial
+Evaluation} in linear time. The protocol is implemented and proven to be
+UC--secure \cite{canetti05} against passively and actively corrupted parties.
+Hence, the protocol can be used ideally as a cryptographic primitive to build
+further works on.
+
+For restricted security requirements, evaluation of arbitrary arithmetic
+circuits (including Square \& Multiply \cite{knuth81}) is possible using the
+techniques presented. More specifically restricted security requirements means
+security against actively corrupted evaluating party but security against
+passively corrupted function definition party only.
+
+
+%
+% OPEN QUESTIONS AND OUTLOOK
+%
+\JWltwo{Open Questions and Outlook}
+\label{sec:outlook}
+
+The most important open question is to find an improvement for the current
+technique to support arbitrary arithmetic circuits and not just polynomials by
+maintaining the computing time complexity and the UC--security against all
+actively corrupted parties.
+
+The implementation would benefit from a better implementation of a library for
+calculations in large finite fields such as $\mathbb{F}_{2^{k}}$ for $k > 128$.
+Additionally, the David \& Goliath protocol \cite{davidgoliath} should be
+implemented as a component the implementation of this thesis could use. The
+current implementation assumes a tamper--proof hardware token that implements
+the OAFE functionality (the program \JWBtoken{} that comes with this thesis
+implements the functionality naively but insecure).
+
+% vim: set spell spelllang=en_us fileencoding=utf8 formatoptions=tcroql : %

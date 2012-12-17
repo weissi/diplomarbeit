@@ -112,6 +112,8 @@
 
 %links and names
 \newcommand{\JWnamedlink}[2]{\href{#1}{#2}}
+\newcommand{\JWnamedlinkfn}[2]{\href{#1}{#2}%
+                               \footnote{\JWnamedlink{#1}{\texttt{#1}}}}
 \newcommand{\JWurl}[1]{\href{#1}{#1}}
 
 %code/commands
@@ -146,38 +148,43 @@ Arithmetic Circuits and Untrusted Tamper--Proof Hardware}
 \newcommand{\JWThaskell}[0]{Has\-kell}
 \newcommand{\JWTghc}[0]{GHC}
 \newcommand{\JWTXghc}[0]{Glas\-gow Has\-kell Com\-pi\-ler}
-\newcommand{\JWTLhaskell}[0]{\JWnamedlink{http://haskell.org}{\JWThaskell}}
-\newcommand{\JWTLhaddock}[0]{\JWnamedlink{http://www.haskell.org/haddock/}%
+\newcommand{\JWTLhaskell}[0]{\JWnamedlinkfn{http://haskell.org}{\JWThaskell}}
+\newcommand{\JWTLhaddock}[0]{\JWnamedlinkfn{http://www.haskell.org/haddock/}%
                             {Haddock}}
 \newcommand{\JWTcabal}[0]{Cabal}
-\newcommand{\JWTLcabal}[0]{\JWnamedlink{http://www.haskell.org/cabal/}%
+\newcommand{\JWTLcabal}[0]{\JWnamedlinkfn{http://www.haskell.org/cabal/}%
                           {\JWTcabal{}}}
-\newcommand{\JWTXLghc}[0]{\JWnamedlink{http://www.haskell.org/ghc/}{\JWTXghc}}
+\newcommand{\JWTXLghc}[0]{\JWnamedlinkfn{http://www.haskell.org/ghc/}{\JWTXghc}}
 \newcommand{\JWTVghc}{7.6.1}
 \newcommand{\JWTntl}[0]{NTL}
-\newcommand{\JWTLntl}[0]{\JWnamedlink{http://www.shoup.net/ntl/}{\JWTntl}}
+\newcommand{\JWTLntl}[0]{\JWnamedlinkfn{http://www.shoup.net/ntl/}{\JWTntl}}
 \newcommand{\JWTcpp}[0]{C++}
 \newcommand{\JWTc}[0]{C}
 \newcommand{\JWTgit}[0]{git}
 \newcommand{\JWTquickcheck}[0]{Quick\-Check}
-\newcommand{\JWTLhunit}[0]{\JWnamedlink{http://hunit.sourceforge.net/}{HUnit}}
+\newcommand{\JWTLhunit}[0]{\JWnamedlinkfn{http://hunit.sourceforge.net/}{HUnit}}
 \newcommand{\JWTLmonadcryptorandom}[0]%
-  {\JWnamedlink{http://hackage.haskell.org/package/monadcryptorandom}%
+  {\JWnamedlinkfn{http://hackage.haskell.org/package/monadcryptorandom}%
   {\texttt{monadcryptorandom}}}
 \newcommand{\JWTLhaskellForMaths}[0]%
-  {\JWnamedlink{http://hackage.haskell.org/package/HaskellForMaths}%
+  {\JWnamedlinkfn{http://hackage.haskell.org/package/HaskellForMaths}%
   {\texttt{HaskellForMaths}}}
+\newcommand{\JWTdrbg}[0]{\texttt{DRBG}}
 \newcommand{\JWTLdrbg}[0]%
-  {\JWnamedlink{http://hackage.haskell.org/package/DRBG}{\texttt{DRBG}}}
+  {\JWnamedlinkfn{http://hackage.haskell.org/package/DRBG}{\JWTdrbg}}
 \newcommand{\JWTXprotobuf}{Goo\-gle\TTra{} Pro\-to\-col Buff\-ers}
 \newcommand{\JWTprotobuf}{Pro\-to\-col Buff\-ers}
 \newcommand{\JWTXLprotobuf}[0]%
-  {\JWnamedlink{http://code.google.com/apis/protocolbuffers/}{\JWTXprotobuf{}}}
+           {\JWnamedlinkfn{http://code.google.com/apis/protocolbuffers/}%
+           {\JWTXprotobuf{}}}
 \newcommand{\JWTprotobufLib}[0]%
-  {\JWnamedlink{http://hackage.haskell.org/package/protocol-buffers}%
+  {\JWnamedlinkfn{http://hackage.haskell.org/package/protocol-buffers}%
   {\texttt{protocol-buffers}}}
 \newcommand{\JWTLhackage}[0]%
-  {\JWnamedlink{http://hackage.haskell.org/packages/hackage.html}{HackageDB}}
+  {\JWnamedlinkfn{http://hackage.haskell.org/packages/hackage.html}{HackageDB}}
+\newcommand{\JWTXLgpl}[0]%
+  {\JWnamedlinkfn{http://www.gnu.org/licenses/gpl-3.0.html}%
+                 {\emph{GNU General Public License (Version 3)}}}
 
 
 %binaries

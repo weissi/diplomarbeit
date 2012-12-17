@@ -1,7 +1,7 @@
 \JWlone{Correctness and Security of the Protocol}
 \label{sec:security}
 
-This chapter states and proofs the security of the protocol in the
+This chapter states and proves the security of the protocol in the
 \JWdef{Universal--Composability}{UC} framework by Ran Canetti \cite{canetti05}.
 In the UC framework security is defined by comparing an \emph{ideal model} to a
 \emph{real model}. The ideal model implements the intended functionality
@@ -53,7 +53,7 @@ $\mathcal{S}$).
   \item Wire $\mathcal{G}$, \JWfuncSymOAFE{} and \JWadv{} to each other
     and \JWadv{} to the environment as in the real model.
 
-  \item Start the simulation by transitioning in the \emph{Processing Phase}.
+  \item Start the simulation by transitioning to the \emph{Processing Phase}.
 
 \end{itemize}
 
@@ -63,25 +63,25 @@ $\mathcal{S}$).
 
   \item Intercept the adversary's (\JWadv{}) polynomial input $x$. This is
     trivial because it is the first message that \JWadv{} transmits to
-    \JWfuncSymOAFE{} and was not ignored by \JWfuncSymOAFE{}. Notice, this is
-    the initial DRAV encoding of the plain value $x$. Next, halt the simulation
-    and evaluate the proper polynomial using the intercepted input $x$ and the
-    ideal functionality \JWfuncSymOPEnp{} by sending it \JWmsgTP{Evaluate}{$x$}.
+    \JWfuncSymOAFE{} (only considering messages accepted by \JWfuncSymOAFE{}).
+    Notice, this is the initial DRAV encoding of the plain value $x$. Next, halt
+    the simulation and evaluate the proper polynomial using the intercepted
+    input $x$ and the ideal functionality \JWfuncSymOPEnp{} by sending it
+    \JWmsgTP{Evaluate}{$x$}.
 
   \item Upon receiving \JWmsgTP{Evaluated}{$y$} from \JWfuncSymOPEnp{},
-    calculate the value $\chi$ which an honest \JWpTwo{} would evaluate the last
-    OAFE with. Because an honest \JWpTwo{} acts entirely deterministic, this
+    calculate the value $\chi$ with which an honest \JWpTwo{} would evaluate the
+    last OAFE . Because an honest \JWpTwo{} acts entirely deterministic, this
     calculates from the stored DRAC $C$, the OAFE parameters in \JWfuncSymOAFE,
     and the stored input $x$. Next, draw a random value $r$ and calculate $\psi
     = \frac{y-r}{\chi}$. Next, reconfigure the parameters of the last OAFE to
     $(\psi, r)$. The last OAFE then calculates the affine function $f(\eta) =
     \psi \cdot \eta + r$ which---when evaluated with $\chi$---calculates the
     result $y$ of the proper polynomial at the node $x$. Since any honest
-    \JWpTwo{} evaluates the last OAFE with $\chi$, any honest \JWpTwo{} will
-    receive the correct result $y = f(\chi) = \psi \cdot \chi + r =
-    \frac{y-r}{\chi} \cdot \chi + r = y$. Any dishonest \JWpTwo{} will receive
-    some random value depending on the random value $r$. Finally unhalt the
-    simulation.
+    \JWpTwo{} evaluates the last OAFE with $\chi$, it will receive the correct
+    result $y = f(\chi) = \psi \cdot \chi + r = \frac{y-r}{\chi} \cdot \chi + r
+    = y$. Any dishonest \JWpTwo{} will receive some random value depending on
+    the random value $r$. Finally unhalt the simulation.
 
 \end{itemize}
 
@@ -119,13 +119,13 @@ The setup phase is run as soon as the simulator starts.
     fail otherwise.
 
   \item After having symbolically evaluated the polynomial encoded by \JWadv{},
-    verify, that the polynomial has a degree that is less or equal than the
-    parametrized degree $k$. If \JWadv{} submitted a polynomial of valid degree,
-    store the polynomial's coefficients as $a \in \JWfieldGeneral^n$.  Next,
-    upload that polynomial to the ideal functionality \JWfuncSymOPEnp{} by
-    outputting \JWmsgTP{Commit}{$a$} to \JWfuncSymOPEnp{}.  If the polynomial
-    was illegal, restart the simulator in the setup phase.  This restart is
-    equivalent to ignoring the adversary's inputs.
+    verify, that the polynomial has a degree that equals the parametrized degree
+    $k$. If \JWadv{} submitted a polynomial of valid degree, store the
+    polynomial's coefficients as $a \in \JWfieldGeneral^n$.  Next, upload that
+    polynomial to the ideal functionality \JWfuncSymOPEnp{} by outputting
+    \JWmsgTP{Commit}{$a$} to \JWfuncSymOPEnp{}.  If the polynomial was illegal,
+    restart the simulator in the setup phase.  This restart is equivalent to
+    ignoring the adversary's inputs.
 
 \end{itemize}
 
@@ -156,9 +156,9 @@ unpredictable way.
 
 The protocol is trivially secure against passive adversaries impersonating
 \JWpTwo{} because every value that gets transmitted to \JWpTwo{} is one--time
-encrypted. The values sent to \JWpTwo{} are part of a DRAEs and DRAEs only
+encrypted. The values sent to \JWpTwo{} are part of a DRAE and DRAEs only
 contain references to OAFEs and DRAVs. Chapter \ref{def:DRAV} proves (Lemma
-\ref{lem:DRAV-random}) that DRAV only transport uncorrelated uniform randomness
+\ref{lem:DRAV-random}) that DRAVs only transport uncorrelated uniform randomness
 to parties not in possession of the encryption keys. The OAFE evaluations yield
 further (one--time encrypted) DRAVs and radicals (see chapter
 \ref{sec:sec-muls}) which are one--time encrypted as well. The simulator from
@@ -170,8 +170,8 @@ against any passive adversary.
 For the security against an actively corrupted \JWpTwo{}, an hybrid argument is
 employed. The general idea is to transform an actively corrupted adversary
 incrementally into a passively corrupted adversary and to show that the
-statistical distance in the environment's view is negligible. For to random
-variables $x$ and $y$ statistical distance $\Delta_S$ is denoted using the
+statistical distance in the environment's view is negligible. For two random
+variables $x$ and $y$, the statistical distance $\Delta_S$ is denoted using the
 following standard notation.
 
 \begin{align*}
@@ -182,18 +182,18 @@ following standard notation.
 
 \noindent{}The first step is to attach a \emph{monitor module} between the
 adversary \JWadv{} and the OAFE functionality \JWfuncSymOAFE{}. The monitor
-module is parametrized by a transcript how an honest \JWpTwo{} would act. The
+module is parametrized by a transcript of how an honest \JWpTwo{} would act. The
 task of the module is to analyze the messages that \JWpTwo{} (impersonated by
 the adversary) sends to the OAFE functionality. Upon the detection of a message
 which does not match the honest transcript, it changes this message to match the
 honest message. Additionally the monitor module intercepts the response to
-changed message (sent by \JWfuncSymOAFE{}) and changes the response to some
-value uniformly at random. The monitor module does this change only once, if the
+the changed message (sent by \JWfuncSymOAFE{}) and changes the response to some
+value uniformly at random. The monitor module does this change only once. If the
 adversary changes one of the following messages, the monitor module does no
 further changes. The union of the adversary \JWadv{} and the
 monitor module can be seen as a transformed adversary \JWadv{}' which is forging
 (at the earliest) the message following the first message that \JWadv{}
-illicitly changed. So, if \JWadv{} forges $n$ messages, \JWadv{}' forgest at
+illicitly changed. So, if \JWadv{} forges $n$ messages, \JWadv{}' forges at
 most $n-1$ messages.
 
 The interesting part is the statistical distance of the environment's view
@@ -259,8 +259,8 @@ A corrupted \JWpOne{} has the following possibilities to cheat:
 
 \noindent{}Both, in the ideal model (running the simulator from
 \ref{sec:simulator-goliath}) as well as in the real model (running the
-\JWprotoSymOPE{} and the adversary) handle these possibilities indistinguishably
-for any environment:
+\JWprotoSymOPE{} and the adversary) these possibilities are handled
+indistinguishably for any environment:
 
 \begin{enumerate}
 

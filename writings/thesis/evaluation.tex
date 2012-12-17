@@ -14,15 +14,15 @@ the open questions are exposed in the following.
 \JWlthree{Test Machines}
 \label{sec:test-machines}
 
-Both test machines are regular home computer systems thus the benchmarks were
-not run under laboratory conditions. Though, most background services and other
+Both test machines are regular home computer systems, thus the benchmarks were
+not run under laboratory conditions, Though most background services and other
 programs that could interfere with the benchmarks have been stopped. The
 implementation has been compiled using full optimizations turned on
 (\JWcmd{cabal configure --ghc-options=-O3}). To work out the computing time
 taken for the implementation of the protocol itself, the protocol implementation
-is evaluated using two different implementation of finite field calculations.
+is evaluated using two different finite field implementations.
 The first implementation is a C++ library (see chapter
-\ref{sec:finite-field-calcs}) for calculations in $\mathbb{F}_{2^{256}}$ and the
+\ref{sec:finite-field-calcs}) for calculation in $\mathbb{F}_{2^{256}}$ and the
 second implementation is a \JWThaskell{} library which calculates in the prime
 field $\mathbb{F}_{97}$.
 
@@ -31,26 +31,27 @@ field $\mathbb{F}_{97}$.
 
 \emph{Dell Latitude D620} running \emph{Debian GNU/Linux} on kernel version
 \emph{3.1.7, 32--bit}. The machine is powered by a \emph{Intel\TReg{} Core Duo
-T2400} dual core processor at \emph{1.83 GHz}. It has \emph{2 GB} system memory.
+T2400} dual core processor at \emph{1.83 GHz}. It has \emph{2 GB} of system
+memory.
 
 
 \JWlfour*{Test Machine 2}
 
 \emph{Apple Mac mini} (\texttt{Macmini 3,1}) running \emph{MacOS X 10.7.5
 (Lion), 64--bit}. The machine is powered by a \emph{Intel\TReg{} Core 2 Duo}
-dual core processor at \emph{2.26 GHz}. It has \emph{8 GB} system memory.
+dual core processor at \emph{2.26 GHz}. It has \emph{8 GB} of system memory.
 
 \JWlthree{Benchmarking Process}
 
 Both machines run the three programs (\JWBpOne{}, \JWBpTwo{}, \JWBtoken{})
-simultaneously, the programs are compiled single--threaded. The programs
-communicate to each other using local TCP/IP networking. Chapter
-\ref{sec:communication-channels} has an in depth description about the
+simultaneously, the programs are compiled single--threaded. They
+communicate with each other using local TCP/IP networking. Chapter
+\ref{sec:communication-channels} has an in--depth description about the
 communication that takes part in the implementation that comes with this thesis.
 The running time includes the DRAC building and transmitting, the OAFE
 configuration and the successful evaluation of a random polynomial. The
 polynomial is evaluated using \emph{Horner's rule}\cite{cormen01}. The data
-points in all figures and tables was obtained by taking the median of
+points in all figures and tables were obtained by taking the median of
 running the same benchmark five times in a row (preceded by a non--accounted
 warm--up run).
 
@@ -68,7 +69,7 @@ both, the theoretical examination and the implementation. Figure
 \ref{fig:poly-deg-t} and table \ref{tab:poly-deg-t} show this for the finite
 field $\mathbb{F}_{97}$ (implementation from the \JWTLhaskellForMaths{}
 package). The implementation for the field $\mathbb{F}_{2^{256}}$ does not seem
-to have linear time complexity. This is caused by the unoptimal implementation
+to have linear time complexity. This is caused by the suboptimal implementation
 and the Haskell binding of the library used for the calculations in
 $\mathbb{F}_{2^{256}}$. It is problematic that the library includes a rather
 complex routine for object destruction that takes most of the evaluation time.
@@ -80,15 +81,15 @@ library is that the garbage collector is taking up most of the running time (up
 to $85\%$) waiting for the library destruction routine. For high performance
 (such as the pure Haskell implementation for $\mathbb{F}_{97}$) another library
 should be interfaced or developed entirely in Haskell, but this is not the main
-concern of this thesis. Futher details are covered in chapter
+concern of this thesis. Further details are covered in chapter
 \ref{sec:finite-field-calcs}. For lower degrees, the current implementation for
 $\mathbb{F}_{2^{256}}$ has linear time complexity. Figure
 \ref{fig:poly-deg-t-small} and table \ref{tab:poly-deg-t-small} show this. It is
 also noteworthy that the first test machine (see chapter
 \ref{sec:test-machines}) outperforms the second test machine despite the
-inferior hardware. The cause has not been investigated, a possible cause could
-be that the 64--bit \JWTghc{} runtime seems to be slower (at least on Apple
-Macs)\cite{lentczner11}.
+inferior hardware. The cause has not been investigated, but a possible cause
+could be that the 64--bit \JWTghc{} runtime seems to be slower (at least on
+Apple Macs)\cite{lentczner11}.
 
 
 % F97 vs. F2Pow256 and Linux vs. Mac
@@ -169,43 +170,5 @@ The memory complexity of the current implementation is in $O(n)$, $n$ being the
 polynomial's degree, too. The reason is that the implementation has to store all
 DRAEs to be able to generate the OAFE configuration and to write the OAFE
 references in the DRAEs.
-
-
-%
-% CONTRIBUTION
-%
-\JWltwo{Contribution}
-\label{sec:contribution}
-
-The main contribution of this thesis is UC--secure (against actively corrupted
-parties) \emph{Oblivious Polynomial Evaluation} (see Chapter \ref{def:OPE}) in
-linear time. For restricted security requirements (secure against actively
-corrupted function evaluating party but only secure against passively corrupted
-function definition party) arbitrary arithmetic circuits (include Square \&
-Multiply) are possible using the techniques presented in chapter
-\ref{sec:methods}.
-
-For the main case---Oblivious Polynomial Evaluation---this thesis also
-contributes a working implementation.
-
-
-%
-% OPEN QUESTIONS AND OUTLOOK
-%
-\JWltwo{Open Questions and Outlook}
-\label{sec:outlook}
-
-The most important open question is to find an improvement for the current
-technique to support arbitrary arithmetic circuits and not just polynomials by
-maintaining the computing time complexity and the UC--security against all
-actively corrupted parties.
-
-The implementation would benefit from a better implementation of a library for
-calculations in large finite fields such as $\mathbb{F}_{2^{k}}$ for $k > 128$.
-Additionally, the David \& Goliath protocol \cite{davidgoliath} should be
-implemented as a component the implementation of this thesis can use. The
-current implementation assumes a tamper--proof hardware token that implements
-the OAFE functionality (the program \JWBtoken{} that comes with this thesis
-implements the functionality naively but insecure).
 
 % vim: set spell spelllang=en_us fileencoding=utf8 :

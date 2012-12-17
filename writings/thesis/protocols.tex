@@ -7,9 +7,9 @@
 \JWtodo{Hier fehlt wahrscheinlich noch etwas Beschreibung was das ist}
 
 This chapter defines the functionality \JWfuncSymOPE and the protocol
-\JWprotoSymOPE this thesis proposes to realize the functionality. The
-functionality (described in figures \ref{fig:func-ope} and \ref{fig:graph-ope})
-is the ideal model of what the protocol tries to achieve.
+\JWprotoSymOPE this thesis proposes to realize OPE (see Chapter \ref{def:OPE}).
+The functionality described in Figures \ref{fig:func-ope} and
+\ref{fig:graph-ope} is the ideal model of what the protocol tries to achieve.
 
 \begin{JWfunc}%
   {\JWfuncSymOPE}%
@@ -74,11 +74,12 @@ is the ideal model of what the protocol tries to achieve.
   \begin{JWprotoSteps}
 
   \item Upon input \JWmsgTP{Commit}{$a$} from the environment, \JWpOne{}
-    verifies that $a \in \mathbb{F}_{2^k}^{n+1}$; else ignore that input. Next,
+    verifies that $a \in \mathbb{F}_{2^k}^{n+1}$; else ignores that input. Next,
     \JWpOne{} generates the DRAC and sets up the OAFE functionality for the
     polynomial $f(x) = \sum_{i=0}^n a_ix^i$ (see Section \ref{sec:OPE}).
 
-  \item Finally, \JWpOne{} sends the DRAC to \JWpTwo{}.
+  \item Finally, \JWpOne{} sends the DRAC to \JWpTwo{}. \JWpOne{} also allows
+    \JWpTwo{} to use the OAFE functionality it configured before.
 
   \end{JWprotoSteps}
 
@@ -89,9 +90,9 @@ is the ideal model of what the protocol tries to achieve.
 
   \item Upon receiving the DRAC from \JWpOne{}, verify that there is no stored
     DRAC yet, else ignore that input. Next, \JWpTwo{} verifies the received
-    input is a DRAC, else ignore that input. Additionally it verifies
+    input is a DRAC, else ignores that input. Additionally it verifies
     that the DRAC encodes a function whose degree is equal to $n$ (see
-    Chapter \ref{sec:max-poly-degree}), else ignore the input. If the DRAC
+    Chapter \ref{sec:max-poly-degree}), else ignores the input. If the DRAC
     verification was successful, store the DRAC.
 
   \item Upon receiving input \JWmsgTP{Evaluate}{$x$} from the environment,
@@ -100,13 +101,13 @@ is the ideal model of what the protocol tries to achieve.
     DRAC.
 
   \item Next, \JWpTwo{} evaluates the DRAC. Because the OAFE functionality is
-    set up by \JWpOne{}, during the evaluation it is possible that the OAFE
+    set up by \JWpOne{}, it is possible that during the evaluation the OAFE
     functionality turns out to behave unexpectedly: It could decline needed
     evaluations and it could return vectors of unexpected shapes. In both cases
     always assume it would have returned all zero vectors of the expected shape.
 
   \item After the evaluation, \JWpTwo{} adds both components of the last DRAV
-    and queries a special final OAFE with that value. Again, assume the all zero
+    and queries a special final OAFE with that value. Again, use the all zero
     vector if the OAFE behaves unexpectedly. The then received new value is the
     result of the computation $y = \sum_{i=0}^k a_ix^i$. Finally, output
     \JWmsgTP{Evaluated}{$y$} to the environment.
