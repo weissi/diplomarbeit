@@ -193,12 +193,12 @@ result.
 
 \JWlthree{Evaluating the Matrices using OAFEs}
 
-From chapter \ref{sec:matrix-garbling} the matrices $U_{1..m} \in K^{\omega
+From Chapter \ref{sec:matrix-garbling} the matrices $U_{1..m} \in K^{\omega
 \times \omega}$ are obtained. The matrices $U_{1..m}$ can be reshaped to vectors
 $u_{1..m} \in K^{\omega^2}$. The vectors $u_{1..m}$ can be concatenated to one
 large vector $\mu \in K^{m\omega^2}$. Next, two vectors $a$ and $b$ are deduced
 that hold the following property ($a, b \in K^{m\omega^2}$, $x_D$ a scalar
-variable, as in chapter \ref{sec:matrix-grouping} David's input):
+variable, as in Chapter \ref{sec:matrix-grouping} David's input):
 
 \begin{align}
 a \cdot x_D + b = \mu
@@ -316,7 +316,7 @@ r & = \sum_{a \in A} a + \sum_{m \in M'} m
 Whenever a circuit is not directly transformable to one single DARE, sub--DAREs
 get replaced by \emph{Randomized Variables} (RV). RVs do not appear in
 Applebaum's paper\cite{gac2012}. RVs are just (sub--)DARE that
-get transmitted to the second party (see chapter \ref{sec:dare}) which
+get transmitted to the second party (see Chapter \ref{sec:dare}) which
 fully evaluates them and saves the result just like an ordinary input variable
 (such as $x_D$). Following DAREs may then use the RVs as pseudo--inputs. But
 since a DARE reveals as much information as its decoded form, the original DARE
@@ -357,7 +357,7 @@ anyways, there is no need for an additional encryption.
 \JWlthree{Implementation State}
 
 The ideas of this chapter were implemented but the implementation did
-evolve to the final version described in chapter \ref{sec:methods}. If
+evolve to the final version described in Chapter \ref{sec:methods}. If
 there is interest in the old implementation, it can be recovered from this
 thesis' source code tree by using the \JWTgit{} version control system.
 

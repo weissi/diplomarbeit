@@ -76,7 +76,7 @@ is the ideal model of what the protocol tries to achieve.
   \item Upon input \JWmsgTP{Commit}{$a$} from the environment, \JWpOne{}
     verifies that $a \in \mathbb{F}_{2^k}^{n+1}$; else ignore that input. Next,
     \JWpOne{} generates the DRAC and sets up the OAFE functionality for the
-    polynomial $f(x) = \sum_{i=0}^n a_ix^i$ (see section \ref{sec:OPE}).
+    polynomial $f(x) = \sum_{i=0}^n a_ix^i$ (see Section \ref{sec:OPE}).
 
   \item Finally, \JWpOne{} sends the DRAC to \JWpTwo{}.
 
@@ -91,7 +91,7 @@ is the ideal model of what the protocol tries to achieve.
     DRAC yet, else ignore that input. Next, \JWpTwo{} verifies the received
     input is a DRAC, else ignore that input. Additionally it verifies
     that the DRAC encodes a function whose degree is equal to $n$ (see
-    chapter \ref{sec:max-poly-degree}), else ignore the input. If the DRAC
+    Chapter \ref{sec:max-poly-degree}), else ignore the input. If the DRAC
     verification was successful, store the DRAC.
 
   \item Upon receiving input \JWmsgTP{Evaluate}{$x$} from the environment,

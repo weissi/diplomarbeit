@@ -1,9 +1,9 @@
 \JWlone{Implementation}
 \label{sec:implementation}
 
-In addition to the formal methodology (chapter \ref{sec:methods}), the protocol
-description (chapter \ref{sec:protocol}) and the security proof of the protocol
-in the UC framework (chapter \ref{sec:security}), this thesis contains an
+In addition to the formal methodology (Chapter \ref{sec:methods}), the protocol
+description (Chapter \ref{sec:protocol}) and the security proof of the protocol
+in the UC framework (Chapter \ref{sec:security}), this thesis contains an
 implementation of the protocol. The implementation is written in the lazy,
 functional programming language \JWTLhaskell{}, more specifically \JWThaskell{}
 as implemented by the major \JWThaskell{} compiler the \JWTXLghc{} (\JWTghc{})
@@ -21,11 +21,11 @@ compile the external libraries.
 
 The implementation is designed to match the descriptions in chapter
 \ref{sec:methods} as closely as possible, it implements Oblivious Polynomial
-Evaluation as explained in chapter \ref{def:OPE}.
+Evaluation as explained in Chapter \ref{def:OPE}.
 
 Even the Haskell data--types such as \JWcode{DRAC}, \JWcode{DRAE}, \JWcode{RAE},
 \JWcode{LinearExpr} match the names of the constructs described in chapter
-\ref{sec:methods}: DRACs (chapter \ref{def:DRAC}), DRAEs (chapter
+\ref{sec:methods}: DRACs (Chapter \ref{def:DRAC}), DRAEs (chapter
 \ref{def:DRAE}) and linear expressions (named $\mathcal{C}$ in chapter
 \ref{def:DRAE}). For practical reasons the program also features \JWcode{RAC}
 (Randomized Affine Circuits) and \JWcode{RAE} (Randomized Affine Encodings)
@@ -33,7 +33,7 @@ which are the same as their \emph{dual} counterparts but split into the
 components. So while running the program two \JWcode{RAE}s are derived from one
 \JWcode{DRAE}.
 
-As in chapter \ref{def:OPE}, the oblivious polynomial evaluation consists of
+As in Chapter \ref{def:OPE}, the oblivious polynomial evaluation consists of
 three parties: The tamper--proof hardware issuing party \JWpOne{} (executable
 program called \JWBpOne{}), the receiving party \JWpTwo{} (\JWBpTwo{}) and the
 tamper--proof hardware \JWtoken{} (\JWBtoken{}). The individual programs talk to
@@ -118,7 +118,7 @@ need documentation.
 \JWlthree{Calculations in Finite Fields}
 \label{sec:finite-field-calcs}
 
-For the calculation in the finite fields (chapter \ref{sec:field}) the \JWTcpp{}
+For the calculation in the finite fields (Chapter \ref{sec:field}) the \JWTcpp{}
 library \JWTLntl{} (\emph{Number Theory Library}) has been interfaced to
 \JWThaskell{} for developing the implementation of this thesis. The interface
 has been developed using \JWThaskell{}'s \JWdef{Foreign Function Interface}{FFI}
@@ -174,11 +174,11 @@ The implementation itself is fully thread--safe, all communication is done using
 \JWTghc{}'s implementation of \emph{Software Transactional Memory} (STM)
 \cite{stm05} for Haskell. The library (\JWTntl{}) that is used for the
 calculations in the finite fields is not thread--safe but the small \JWTc{}
-wrapper (see chapter \ref{sec:finite-field-calcs}) tries to fix \JWTntl{}'s
+wrapper (see Chapter \ref{sec:finite-field-calcs}) tries to fix \JWTntl{}'s
 thread--safety problems. However, for guaranteed thread--safety \JWTntl{} should
 be replaced by another library that is thread--safe. The \JWTntl{}
 implementation also has other disadvantages that would make another library even
-more useful (for details see chapter \ref{sec:finite-field-calcs}).
+more useful (for details see Chapter \ref{sec:finite-field-calcs}).
 
 
 % Testing Correctness
