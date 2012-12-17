@@ -24,18 +24,21 @@ parties, OPE only allows the first party to privately submit a polynomial $p$
 and another party to evaluate the polynomial at one node $x$. The second party
 obtains the result $p(x)$ without revealing $x$ to the first party or revealing
 the polynomial $p$ to the second party. We find a secure and efficient OPE
-protocol a useful and interesting primitive. \JWtodo{Beispiele warum OPE
-wichtig.}
+protocol a useful and interesting primitive. Many other cryptographic problems
+can be based on OPE, for example the share generation for \emph{Shamir's Secret
+Sharing} \cite{shamir79}.
 
 \JWdefn{Oblivious Affine Function Evaluation}{OAFE} \cite{davidgoliath} is a
 primitive that allows---similar to OPE---to obliviously evaluate affine
 functions. The David \& Goliath protocol \cite{davidgoliath} presents a secure
 and efficient OAFE implementation based on only one stateful tamper--proof
-hardware token. This thesis works out an efficient, secure, and implemented
-protocol which realizes efficient OPE based on OAFE. The presented approaches
-are also suitable for general SFE (including \emph{Square \& Multiply}
-\cite{knuth81}), however the security is only proved for OPE. The security of
-the protocol against passive and active adversaries is
+hardware token. Based on OAFE, this thesis works out the astonishing result of
+OPE in linear time which is asymtotically as fast as usual polynomial
+evaluation. Alongside the theoretical methodology, this thesis features an
+efficient, secure, and working implementation of the proposed protocol. The
+presented approaches are also suitable for general SFE (including \emph{Square
+\& Multiply} \cite{knuth81}), however the security is only proved for OPE. The
+security of the protocol against passive and active adversaries is
 in\-for\-ma\-tion--the\-o\-ret\-ically proved in the \JWdefn{Universal
 Composability}{UC} framework \cite{canetti05}. \JWtodo{Hier alle Beiträge meiner
 Arbeit reischreiben}
