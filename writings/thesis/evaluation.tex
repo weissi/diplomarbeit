@@ -1,4 +1,4 @@
-\JWlone{Evaluation and Conclusion}
+\JWlone{Evaluation}
 \label{sec:evaluation}
 
 This part evaluates the computational complexity of the methodology and the
@@ -21,7 +21,7 @@ implementation has been compiled using full optimizations turned on
 (\JWcmd{cabal configure --ghc-options=-O3}). To work out the computing time
 taken for the implementation of the protocol itself, the protocol implementation
 is evaluated using two different finite field implementations.
-The first implementation is a C++ library (see chapter
+The first implementation is a C++ library (see Section
 \ref{sec:finite-field-calcs}) for calculation in $\mathbb{F}_{2^{256}}$ and the
 second implementation is a \JWThaskell{} library which calculates in the prime
 field $\mathbb{F}_{97}$.
@@ -45,12 +45,12 @@ dual core processor at \emph{2.26 GHz}. It has \emph{8 GB} of system memory.
 
 Both machines run the three programs (\JWBpOne{}, \JWBpTwo{}, \JWBtoken{})
 simultaneously, the programs are compiled single--threaded. They
-communicate with each other using local TCP/IP networking. Chapter
+communicate with each other using local TCP/IP networking. Section
 \ref{sec:communication-channels} has an in--depth description about the
 communication that takes part in the implementation that comes with this thesis.
 The running time includes the DRAC building and transmitting, the OAFE
 configuration and the successful evaluation of a random polynomial. The
-polynomial is evaluated using \emph{Horner's rule}\cite{cormen01}. The data
+polynomial is evaluated using \emph{Horner's rule} \cite{cormen01}. The data
 points in all figures and tables were obtained by taking the median of
 running the same benchmark five times in a row (preceded by a non--accounted
 warm--up run).
@@ -66,7 +66,7 @@ Ordinary evaluation of a polynomial of degree $n$ using \emph{Horner's rule} is
 in $\Theta(n)$ \cite{cormen01}. Despite the complex technique presented in this
 thesis the overall evaluation time is still in $\Theta(n)$. This is true for
 both, the theoretical examination and the implementation. Figure
-\ref{fig:poly-deg-t} and table \ref{tab:poly-deg-t} show this for the finite
+\ref{fig:poly-deg-t} and Table \ref{tab:poly-deg-t} show this for the finite
 field $\mathbb{F}_{97}$ (implementation from the \JWTLhaskellForMaths{}
 package). The implementation for the field $\mathbb{F}_{2^{256}}$ does not seem
 to have linear time complexity. This is caused by the suboptimal implementation
@@ -81,15 +81,15 @@ library is that the garbage collector is taking up most of the running time (up
 to $85\%$) waiting for the library destruction routine. For high performance
 (such as the pure Haskell implementation for $\mathbb{F}_{97}$) another library
 should be interfaced or developed entirely in Haskell, but this is not the main
-concern of this thesis. Further details are covered in chapter
+concern of this thesis. Further details are covered in Section
 \ref{sec:finite-field-calcs}. For lower degrees, the current implementation for
 $\mathbb{F}_{2^{256}}$ has linear time complexity. Figure
-\ref{fig:poly-deg-t-small} and table \ref{tab:poly-deg-t-small} show this. It is
-also noteworthy that the first test machine (see chapter
+\ref{fig:poly-deg-t-small} and Table \ref{tab:poly-deg-t-small} show this. It is
+also noteworthy that the first test machine (see Section
 \ref{sec:test-machines}) outperforms the second test machine despite the
 inferior hardware. The cause has not been investigated, but a possible cause
 could be that the 64--bit \JWTghc{} runtime seems to be slower (at least on
-Apple Macs)\cite{lentczner11}.
+Apple Macs) \cite{lentczner11}.
 
 
 % F97 vs. F2Pow256 and Linux vs. Mac
@@ -102,34 +102,39 @@ Apple Macs)\cite{lentczner11}.
 
 \begin{table}[ht]
   \centering
-  \begin{tabular}{|c|c|c|}
+  \begin{tabular}{rrr}
+    \toprule
+    %
     Polynomial Degree & Running Time $\mathbb{F}_{97}$ [s] & Running Time
     $\mathbb{F}_{2^{256}}$ [s]\\
     %
-      500 &  1.754 &   2.389 \\
-     1000 &  3.673 &   6.032 \\
-     1500 &  5.587 &  10.159 \\
-     2000 &  7.400 &  15.179 \\
-     2500 &  9.104 &  20.702 \\
-     3000 & 10.905 &  25.560 \\
-     3500 & 12.800 &  31.978 \\
-     4000 & 14.549 &  39.926 \\
-     4500 & 16.422 &  47.248 \\
-     5000 & 18.288 &  55.450 \\
-     5500 & 20.142 &  63.496 \\
-     6000 & 22.000 &  72.293 \\
-     6500 & 23.901 &  85.184 \\
-     7000 & 25.654 &  93.694 \\
-     7500 & 27.670 & 104.231 \\
-     8000 & 29.510 & 117.480 \\
-     8500 & 31.518 & 127.848 \\
-     9000 & 33.417 & 143.123 \\
-     9500 & 35.525 & 156.820 \\
+    \midrule
+    %
+    500 &  1.754 &   2.389 \\
+    1000 &  3.673 &   6.032 \\
+    1500 &  5.587 &  10.159 \\
+    2000 &  7.400 &  15.179 \\
+    2500 &  9.104 &  20.702 \\
+    3000 & 10.905 &  25.560 \\
+    3500 & 12.800 &  31.978 \\
+    4000 & 14.549 &  39.926 \\
+    4500 & 16.422 &  47.248 \\
+    5000 & 18.288 &  55.450 \\
+    5500 & 20.142 &  63.496 \\
+    6000 & 22.000 &  72.293 \\
+    6500 & 23.901 &  85.184 \\
+    7000 & 25.654 &  93.694 \\
+    7500 & 27.670 & 104.231 \\
+    8000 & 29.510 & 117.480 \\
+    8500 & 31.518 & 127.848 \\
+    9000 & 33.417 & 143.123 \\
+    9500 & 35.525 & 156.820 \\
     10000 & 37.395 & 172.216 \\
-
+    %
+    \bottomrule
+    \label{tab:poly-deg-t}
   \end{tabular}
   \caption{Evaluation Time of Polynomials by Degree on Test Machine 1}
-  \label{tab:poly-deg-t}
 \end{table}
 
 \begin{figure}[ht]
@@ -141,10 +146,15 @@ Apple Macs)\cite{lentczner11}.
 
 \begin{table}[ht]
   \centering
-  \begin{tabular}{|c|c|}
+  \begin{tabular}{rrr}
+    \toprule
+    %
     Polynomial Degree & Average Running Time [ms] \\
-      0 &   70 \\
-     50 &  219 \\
+    %
+    \midrule
+    %
+    0 &   70 \\
+    50 &  219 \\
     100 &  393 \\
     150 &  588 \\
     200 &  779 \\
@@ -154,6 +164,8 @@ Apple Macs)\cite{lentczner11}.
     400 & 1718 \\
     450 & 1964 \\
     500 & 2294 \\
+    %
+    \bottomrule
   \end{tabular}
   \caption{Evaluation Time of Polynomials (Lower Degrees) on Test Machine 1}
   \label{tab:poly-deg-t-small}

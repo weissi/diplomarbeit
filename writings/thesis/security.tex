@@ -147,7 +147,7 @@ act honest.
 % CORRUPTED DAVID
 \JWlthree{Corrupted \JWpTwo{}}
 
-This chapter will proof the security of the proposed protocol \JWprotoSymOPE
+This section will proof the security of the proposed protocol \JWprotoSymOPE
 in the Universal Composability (UC) framework \cite{canetti05} against both,
 passive and active adversaries impersonating \JWpTwo{}. Passive adversaries are
 adversaries which try to calculate additional information from intermediate
@@ -157,12 +157,12 @@ unpredictable way.
 The protocol is trivially secure against passive adversaries impersonating
 \JWpTwo{} because every value that gets transmitted to \JWpTwo{} is one--time
 encrypted. The values sent to \JWpTwo{} are part of a DRAE and DRAEs only
-contain references to OAFEs and DRAVs. Chapter \ref{def:DRAV} proves (Lemma
+contain references to OAFEs and DRAVs. Section \ref{def:DRAV} proves (Lemma
 \ref{lem:DRAV-random}) that DRAVs only transport uncorrelated uniform randomness
 to parties not in possession of the encryption keys. The OAFE evaluations yield
-further (one--time encrypted) DRAVs and radicals (see chapter
+further (one--time encrypted) DRAVs and radicals (see Section
 \ref{sec:sec-muls}) which are one--time encrypted as well. The simulator from
-Chapter \ref{sec:simulator-david} plays on this property and encodes a random
+Section \ref{sec:simulator-david} plays on this property and encodes a random
 polynomial of the same degree that is used to test \JWpTwo{}'s honesty. In fact,
 because every value is one--time encrypted, the protocol is perfectly secure
 against any passive adversary.
@@ -203,7 +203,7 @@ randomness.  This will render some DRAV that is computed involving value in the
 message to a non--well--formed DRAV with overwhelming probability. The
 probability equals $1-1/|\mathbb{K}| = 1-1/2^k$ because exactly one element of
 the finite field $\mathbb{K}$ matches its counterpart tuple component (see
-Chapter \ref{def:DRAV}). Therefore, the statistical distance
+Section \ref{def:DRAV}). Therefore, the statistical distance
 $\delta_{\mathcal{A},\mathcal{A}'}$ of the environment's view between \JWadv{}
 and \JWadv{}' is:
 

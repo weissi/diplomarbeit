@@ -29,7 +29,7 @@ already becomes apparent as Cleve writes in the abstract of his paper
 
 \noindent{}Two problems arise: Cleve's approach does not support \emph{Square
 and Multiply} and it is slightly polynomial. However, the approach
-is partly implemented as explained in detail in the next few chapters but
+is partly implemented as explained in detail in the next few sections but
 neither the code nor the ideas are used for the final version of this thesis.
 
 \JWlthree{From Arithmetic Formulas to Matrix Multiplications}
@@ -37,8 +37,8 @@ neither the code nor the ideas are used for the final version of this thesis.
 
 The definition of formulas is the same as Cleve's \cite{cleve91}: Formulas are
 circuits that are trees. A postorder traversal is enough to evaluate the
-formula. This chapter describes the evaluation of such a formula using
-\emph{linear bijection straight--line programs} (LBS programs)\cite{cleve91}
+formula. This section describes the evaluation of such a formula using
+\emph{linear bijection straight--line programs} (LBS programs) \cite{cleve91}
 which use at most $\omega$ registers. An LBS program can be simulated by matrix
 multiplications, one statement is simulated by one matrix multiplication. The
 matrices are elements of $SL_w(K)$, the special linear group consisting of
@@ -122,7 +122,7 @@ The current implementation is a Haskell module which features the transformation
 from an arithmetic expression to an LBS program. The LBS program then transforms
 easily to the matrices. The multiplication of the matrices yield the result. The
 implementation can be found in the file \JWpath{lib/Codec/LBS.hs} of the code
-tree of this thesis (see chapters \ref{sec:src-org} and
+tree of this thesis (see Section \ref{sec:src-org} and
 \ref{sec:code-availability}). Exemplary, the LBS program to evaluate the
 function $f(x_G,x_D) = 3x \cdot (x_G + x_D^2)$ which will hold the result in
 \texttt{R1}:
@@ -156,7 +156,7 @@ $R_i \leftarrow R_i + (R_j \cdot \alpha)$ is equivalent to the $K^{\omega \times
 \JWlthree{Grouping the Matrices}
 \label{sec:matrix-grouping}
 
-The grouping process is straightforward: From the process described in chapter
+The grouping process is straightforward: From the process described in Section
 \ref{sec:FormulasToMatrixMuls} matrices $\widehat{M_1}$ to $\widehat{M_n}$,
 which each have the effect of exactly one LBS program statement, are obtained.
 Using associativity, groups of a variable amount of these matrices can be built.
@@ -194,18 +194,18 @@ result.
 
 \JWlthree{Evaluating the Matrices using OAFEs}
 
-From Chapter \ref{sec:matrix-garbling} the matrices $U_{1..m} \in K^{\omega
+From Section \ref{sec:matrix-garbling} the matrices $U_{1..m} \in K^{\omega
 \times \omega}$ are obtained. The matrices $U_{1..m}$ can be reshaped to vectors
 $u_{1..m} \in K^{\omega^2}$. The vectors $u_{1..m}$ can be concatenated to one
 large vector $\mu \in K^{m\omega^2}$. Next, two vectors $a$ and $b$ are deduced
 that hold the following property ($a, b \in K^{m\omega^2}$, $x_D$ a scalar
-variable, as in Chapter \ref{sec:matrix-grouping} David's input):
+variable, as in Section \ref{sec:matrix-grouping} David's input):
 
 \begin{align}
 a \cdot x_D + b = \mu
 \end{align}
 
-Using the $\prod^{\text{semi-int}}_{\text{OAFE}}$ protocol\cite{davidgoliath}
+Using the $\prod^{\text{semi-int}}_{\text{OAFE}}$ protocol \cite{davidgoliath}
 the function can now be evaluated securely.
 
 \begin{itemize}
@@ -317,7 +317,7 @@ r & = \sum_{a \in A} a + \sum_{m \in M'} m
 Whenever a circuit is not directly transformable to one single DARE, sub--DAREs
 get replaced by \emph{Randomized Variables} (RV). RVs do not appear in
 Applebaum's paper \cite{gac2012}. RVs are just (sub--)DAREs that
-get transmitted to the second party (see Chapter \ref{sec:dare}) which
+get transmitted to the second party (see Section \ref{sec:dare}) which
 fully evaluates them and saves the result just like an ordinary input variable
 (such as $x_D$). Following DAREs may then use the RVs as pseudo--inputs. But
 since a DARE reveals as much information as its decoded form, the original DARE
@@ -343,13 +343,13 @@ $\beta$ would get transmitted.
 
 \JWlthree{Relation to the Final Version}
 
-Some of the ideas and entities presented in this chapter relate to the final
+Some of the ideas and entities presented in this section relate to the final
 version of this thesis. \emph{Decomposable Affine Randomized Encodings} (DAREs)
-are closely related to \emph{Dual Randomized Affine Encodings} (DRAEs, chapter
+are closely related to \emph{Dual Randomized Affine Encodings} (DRAEs, Section
 \ref{def:DRAE}). The difference is that an evaluated DARE is equivalent to the
 value of the sub--circuit it models, DRAEs in contrast are still
 encrypted (twofold). Because the DAREs are equal to their plain evaluation,
-the old version presented in this chapter needed the \emph{Randomized Variables}
+the old version presented in this section needed the \emph{Randomized Variables}
 (RVs) that are not present in the final version. However, the final version
 also assigns evaluated sub--circuits to variables, but since DRAEs are encrypted
 anyways, there is no need for an additional encryption.
@@ -357,7 +357,7 @@ anyways, there is no need for an additional encryption.
 
 \JWlthree{Implementation State}
 
-The ideas of this chapter were implemented, but the implementation did
+The ideas of this section were implemented, but the implementation did
 evolve to the final version described in Chapter \ref{sec:methods}. If
 there is interest in the old implementation, it can be recovered from this
 thesis' source code tree by using the \JWTgit{} version control system.
