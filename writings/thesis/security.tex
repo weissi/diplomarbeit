@@ -9,7 +9,7 @@ In the UC framework security is defined by comparing an \emph{ideal model} to a
 real model. In the real model, there is an adversary $\mathcal{A}$ that controls
 all corrupted parties.  In the ideal model, there is a simulator $\mathcal{S}$
 that tries to mimic $\mathcal{A}$. An environment $\mathcal{Z}$ is plugged to
-either the real or the ideal model and has to guess to which it's plugged to. A
+either the real or the ideal model and has to guess to which it is plugged to. A
 protocol \JWprotoSym{}{} is an universally composable implementation of the
 ideal functionality if, for every adversary $\mathcal{A}$ there is a
 simulator $\mathcal{S}$ such that for all environments $\mathcal{Z}$ the entire
@@ -30,6 +30,7 @@ $\mathcal{S}$).
 \JWltwo{Simulators}
 \label{sec:simulators}
 
+\JWtodo{Hier hinschreiben, wofür man diese Simulatoren braucht}
 
 % SIMULATOR S_DAVID(A)
 \JWlthree{Simulator $\mathcal{S}_{\text{\JWpTwo{}}}(\mathcal{A})$}
@@ -217,7 +218,7 @@ and \JWadv{}' is:
 \end{align*}
 
 \noindent{}This argument can be used inductively until the original adversary
-\JWadv{} is transformed to a passive adversary $\mathcal{A}^*$ which does not
+\JWadv{} is transformed into a passive adversary $\mathcal{A}^*$ which does not
 illicitly change any message. Because the triangle inequality holds for the
 statistical distance and the maximal number of OAFEs used to evaluate a
 polynomial of degree $n$ is in $O(n)$, the statistical distance between any

@@ -22,7 +22,7 @@ parties. Informally, that means to evaluate a polynomial ($f(x) = \sum a_ix^i$)
 where the first party chooses $f$ and the second party chooses $x$. It is
 crucial that neither party learns the choice of the other party. The naive and
 simple solution is to instruct a trusted third party to evaluate the
-polynomial---provided by the first party---at the grid point $x$ provided by the
+polynomial---provided by the first party---at the node $x$ provided by the
 second party. Of course, this solution is just as simple as insecure because the
 third party could reveal its secrets at any time.
 
@@ -584,8 +584,8 @@ Trivially $\bot + \bot = \bot$ by a similar argument.
   \end{align*}
 
   \noindent{}The following equations show the successful decoding of
-  $\widetilde{y}$ and the unsuccessful decoding of $\widetilde{y'}$. Therefore,
-  a misbehaving party will get caught.
+  $\widetilde{y}$ and the unsuccessful decoding of $\widetilde{y'}$. This
+  demonstrates, that an unsuccessful decoding leads to uniform randomness.
 
   \begin{align*}
     %
@@ -800,7 +800,7 @@ secure multiplications. The description starts from ground up only using basic
 finite field mathematics.
 
 \paragraph{The general construction} is inspired by the paper \emph{How to
-Garble Arithmetic Circuits} by Applebaum et al.\cite{gac2012}. In fact, the
+Garble Arithmetic Circuits} by Applebaum et al.\ \cite{gac2012}. In fact, the
 first version which is presented in the following equations is the same as
 Applebaum's version. Applebaum's version enables to encode multiplications
 without revealing the operands. The further iterations which are presented
@@ -1539,5 +1539,10 @@ leading coefficients of the encoding party. Obviously, if two parties agreed on
 polynomial degree $n$ and the encoding party chooses to evaluate a polynomial of
 degree $m < n$ it can reshape the specification vector by trailing zeros until
 having $n+1$ rows.
+
+%
+% PROTOCOL AND FUNCTIONALITY
+%
+\input{protocols}
 
 % vim: set spell spelllang=en_us fileencoding=utf8 formatoptions=tcroql : %
