@@ -52,7 +52,7 @@ information when \JWpTwo{} evaluates one of the OAFEs, \JWpOne{} is forced to
 commit itself to a finite number of OAFEs a priori. \JWpOne{} is also forced to
 commit itself to all parameters for all OAFEs. The OAFE implementation from
 Döttling, Kraschewski and Müller--Quade \cite{davidgoliath} realizes the OAFE
-functionality on exactly one tamper--proof hardware token, that has to be
+functionality with exactly one tamper--proof hardware token which is
 physically sent to the other party. Because the OAFE functionality realizes all
 OAFEs together, \JWpOne{} needs to commit itself to the OAFE configuration at
 the beginning. \JWpOne{} configures all OAFEs before \JWpTwo{} even starts the
@@ -61,11 +61,12 @@ process.
 All following steps will be performed by \JWpTwo{} alone, no further interaction
 with \JWpOne{} is necessary. An honest \JWpTwo{} acts completely
 deterministically and will receive the function's final evaluated value $f(x)$.
-The following process dividing the function in smaller parts usually uses the
-term \emph{(arithmetic) circuit}. The term circuit means a rooted evaluation
-tree (e.g., Figure \ref{fig:sample-poly}) of a function where the leaf nodes
-contain values or inputs and the inner nodes---called \emph{(arithmetic)
-gates}---perform arithmetic operations.
+
+In the following, the process of dividing the function in smaller parts is
+examined. The term \emph{(arithmetic) circuit} meaning a rooted evaluation tree
+(e.g., Figure \ref{fig:sample-poly}) of a function is used thereafter. The the
+leaf nodes of the evaluation tree contain values or inputs and the inner
+nodes---called \emph{(arithmetic) gates}---perform arithmetic operations.
 
 The approach pursued here is to divide the arithmetic circuit that equals the
 overall function to smaller sub--circuits. Each sub--circuit can be composed of
@@ -758,7 +759,7 @@ The next sections describe in--depth how arithmetic operations can be safely
 encoded and how a DRAE describes this encoding. Since DRAEs evaluate to DRAVs
 and DRAVs can be easily added (see Section \ref{sec:DRAV-addition}), DRAE
 addition is easy, too: A DRAE that encodes the addition of two DRAEs can be
-built practically costless. But DRAE multiplication is more complex: To multiply
+built practically for free. But DRAE multiplication is more complex: To multiply
 two DRAEs, both DRAEs have to be evaluated separately, their results have to be
 assigned to intermediate variables and a third DRAE has to be built that solely
 multiplies the intermediate variables. In contrast to general DRAE
@@ -931,24 +932,25 @@ multiplicative expressions can be modeled with this construction. Exemplary, the
 evaluation of the expression $(x \cdot y) \cdot z$ is discussed. Assuming David
 provides $x$ and Goliath provides $y$ and $z$, the expression can be evaluated
 by first boxing David's input $\bar{x} = B(x)$ using one OAFE\@. Using the
-described construction, David can now calculate the encrypted intermediate
-result $\bar{t} = B(x) \cdot \bar{y}$ without knowing anything about $y$ or the
-intermediate result $t$. In the next step, David is commissioned to calculate
-$\bar{o} = \bar{t} \cdot \bar{z}$ similarly, $\bar{o}$ being the final result.
-Using one additional OAFE, Goliath can allow David to execute $o = U(\bar{o})$
-yielding the unencrypted result $o = (x \cdot y) \cdot z$. David will not learn
-anything about $y$, $t$ or $z$ that it cannot calculate from the output $o$ and
-his input $x$ anyways. David could try to forge the value of $\bar{t}$ before
-calculating $\bar{t} \cdot \bar{z}$ but because it has no information about the
-encryption keys of $\bar{t}$ or $\bar{z}$ it will render $o = U(\bar{o})$ to
-randomness because it will contain random terms depending on some encryption key
-($\forall \bar{v} \in \{B(v) \mid v \in \mathbb{K}\}, \Delta \in \mathbb{K}
-\setminus \{0\}: U(\bar{v}+\Delta) \neq U(\bar{v})+\Delta$).  However, there is
-a security flaw: Usually, from $o = (x \cdot y) \cdot z = 0$, David can learn $x
-= 0 \vee y = 0 \vee z = 0$. Because $x$ is its own input, when knowing $x \neq
-0$, from $o = 0$ it should learn $y = 0 \vee z = 0$.  Unfortunately, David could
-choose $\bar{t}$ randomly and with overwhelming probability $U(\bar{t}) \neq 0$.
-So forging $\bar{t}$ to a random number will reveal additional information to
+described construction and given that it obtained $\bar{y}$ and $\bar{z}$, David
+can now calculate the encrypted intermediate result $\bar{t} = \bar{x} \cdot
+\bar{y}$ without knowing anything about $y$ or the plain intermediate result
+value $t$. In the next step, David is commissioned to calculate $\bar{o} =
+\bar{t} \cdot \bar{z}$ similarly, $\bar{o}$ being the final result.  Using one
+additional OAFE, Goliath can allow David to execute $o = U(\bar{o})$ yielding
+the unencrypted result $o = (x \cdot y) \cdot z$. David will not learn anything
+about $y$, $t$ or $z$ that it cannot calculate from the output $o$ and his input
+$x$ anyways. David could try to forge the value of $\bar{t}$ before calculating
+$\bar{t} \cdot \bar{z}$ but because it has no information about the encryption
+keys of $\bar{t}$ or $\bar{z}$ it will render $o = U(\bar{o})$ to randomness
+because it will contain random terms depending on some encryption key ($\forall
+\bar{v} \in \{B(v) \mid v \in \mathbb{K}\}, \Delta \in \mathbb{K} \setminus
+\{0\}: U(\bar{v}+\Delta) \neq U(\bar{v})+\Delta$).  However, there is a security
+flaw: Usually, from $o = (x \cdot y) \cdot z = 0$, David can learn $x = 0 \vee y
+= 0 \vee z = 0$. Because $x$ is its own input, when knowing $x \neq 0$, from $o
+= 0$ it should learn $y = 0 \vee z = 0$.  Unfortunately, David could choose
+$\bar{t}$ randomly and with overwhelming probability $U(\bar{t}) \neq 0$.  So
+forging $\bar{t}$ to a random number will reveal additional information to
 David: $o = 0 \Rightarrow U(\bar{t} \cdot \bar{z}) = 0 \Rightarrow z = 0$ with
 overwhelming probability. This means that even though David is not aware of the
 concrete change it does to the calculation, it can reveal additional information
@@ -975,17 +977,18 @@ function is a one--time encryption as well. Because this thesis uses $\bar{x} =
 B(x) = \alpha x + \beta$ with fresh $\alpha$ and $\beta$ for every variable,
 $\bar{x}$ is an one--time encryption of $x$. Because of the flaw which reveals
 additional information when multiplications result in $0$, this iteration
-replaces boxed values by DRAVs (Section \ref{def:DRAV}). DRAVs are twofold
-one--time encryptions that authenticate each other pairwise. This means that a
-DRAV is only valid (well--formed) iff the decryption of both one--time
-encryptions are equal. Hence, DRAVs are encrypted values with \JWdef{Message
-Authentication Code}{MAC}{s} build--in. Syntactically, $\widetilde{x} =
-(\widetilde{x_l}, \widetilde{x_r})$ is the DRAV representing the plain value
-$x$. $\widetilde{x_l}$ and $\widetilde{x_r}$ are the one--time encryptions and
-the pairwise MACs. To be able to multiply two DRAVs $\widetilde{x}$ and
-$\widetilde{y}$, the multiplication construction is adapted. Before performing
-calculations involving DRAVs, the plain values have to be initially encrypted as
-DRAVs using OAFEs:
+revises boxed values and switches to DRAVs (Section \ref{def:DRAV}).
+
+DRAVs are twofold one--time encryptions that authenticate each other pairwise.
+This means that a DRAV is only valid (well--formed) iff the decryption of both
+one--time encryptions are equal. Hence, DRAVs are encrypted values with
+\JWdef{Message Authentication Code}{MAC}{s} build--in. Syntactically,
+$\widetilde{x} = (\widetilde{x_l}, \widetilde{x_r})$ is the DRAV representing
+the plain value $x$. $\widetilde{x_l}$ and $\widetilde{x_r}$ are the one--time
+encryptions and the pairwise MACs. To be able to multiply two DRAVs
+$\widetilde{x}$ and $\widetilde{y}$, the multiplication construction is adapted.
+Before performing calculations involving DRAVs, the plain values have to be
+initially encrypted as DRAVs using OAFEs:
 
 \begin{align*}
   %
@@ -1032,7 +1035,8 @@ numbers drawn before configuring the OAFEs.
 \end{align*}
 
 \noindent{}The evaluating party is finally able to calculate the DRAV
-$\widetilde{z} = \widetilde{x} \cdot \widetilde{y}$.
+$\widetilde{z} = \widetilde{x} \cdot \widetilde{y}$ only from the OAFE outputs
+$\mathfrak{A}$ to $\mathfrak{H}$.
 
 \begin{align*}
   \widetilde{z} & =
@@ -1363,9 +1367,9 @@ yield the result $\widetilde{z}$.
 
 \noindent{}To analyze the security of this multiplication encoding, the
 following equations exemplarily analyze the term ($\mathfrak{A}_1 +
-\mathfrak{A}_2$). Assuming the attacker either changes the value of left tuple
-component ($\Rightarrow \Delta_1 \neq 0$) or the right component ($\Rightarrow
-\Delta_2 \neq 0$), $\widetilde{x}$ is non--well--formed.
+\mathfrak{A}_2$). Assuming the attacker either changes the value of the left
+tuple component ($\Rightarrow \Delta_1 \neq 0$) or the right component
+($\Rightarrow \Delta_2 \neq 0$), $\widetilde{x}$ is non--well--formed.
 
 \begin{align*}
 %
