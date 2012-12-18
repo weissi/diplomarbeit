@@ -1,7 +1,7 @@
 Diplomarbeit / Master's Thesis
 ==============================
 
-Diplomarbeit / Master's Thesis by Johannes Weiß <diplomarbeit@johannesweiss.eu>
+Diplomarbeit / Master's Thesis by Johannes Weiß (<diplomarbeit@johannesweiss.eu>)
 
 Advisor: [Daniel Kraschewski](http://www.iks.kit.edu/index.php?id=kraschewski)
 
