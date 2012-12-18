@@ -16,9 +16,8 @@ evolution of the methodology.
 The first approach pursued in this thesis to transform general formulas to
 affine functions suitable for OAFEs was via Linear Bijection Straight--Line
 Programs.  The results seemed promising at the first glance but a problem
-emerged leading to exponential blowup when using multiplications. The problem
-already becomes apparent as Cleve writes in the abstract of his paper
-\cite{cleve91}:
+emerged when using multiplications. The problem already becomes apparent as
+Cleve writes in the abstract of his paper \cite{cleve91}:
 
 \begin{quote}
   We show that, over an arbitrary ring, for any fixed $\epsilon > 0$, all
@@ -323,7 +322,7 @@ fully evaluates them and saves the result just like an ordinary input variable
 since a DARE reveals as much information as its decoded form, the original DARE
 cannot just be transmitted as the final overall DARE. That would reveal
 intermediate information. Therefore, RVs get an additional garbling step: Say
-the following property would hold for a variable $v$ being the decoded value of
+the following property holds for a variable $v$ being the decoded value of
 a DARE $e$:
 
 \begin{align*}
@@ -337,8 +336,8 @@ value $\hat{v}$
 \hat{v} = \alpha \cdot (v + \beta) = DEC(\hat{e})
 \end{align*}
 
-\noindent{}with secret keys---known only by the first party---$\alpha$ and
-$\beta$ would get transmitted.
+\noindent{}with secret keys $\alpha$ and
+$\beta$---known only by the first party---is transmitted.
 
 
 \JWlthree{Relation to the Final Version}

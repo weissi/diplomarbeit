@@ -19,7 +19,7 @@ voters input their private vote and the result of the calculation is the
 percentage breakdown.
 
 \JWdefn{Oblivious Polynomial Evaluation}{OPE} \cite{naor99,naor06} is a special
-case of SFE. In contrast to arbitrary functions that are known by the involved
+case of SFE\@. In contrast to arbitrary functions that are known by the involved
 parties, OPE only allows the first party to privately submit a polynomial $p$
 and another party to evaluate the polynomial at one node $x$. The second party
 obtains the result $p(x)$ but not the polynomial, the first party learns
@@ -36,7 +36,7 @@ is asymptotically as fast as usual polynomial evaluation. Alongside the
 theoretical methodology, this thesis features an efficient, secure, and working
 implementation of the proposed protocol. The presented approaches are also
 suitable for general SFE (including \emph{Square \& Multiply} \cite{knuth81}),
-however the security is only proved for OPE. The security of the protocol
+however the security is only proved for OPE\@. The security of the protocol
 against passive and active adversaries is in\-for\-ma\-tion--the\-o\-ret\-ically
 proved in the \JWdefn{Universal Composability}{UC} framework \cite{canetti05}.
 
@@ -50,12 +50,12 @@ proved in the \JWdefn{Universal Composability}{UC} framework \cite{canetti05}.
 The notion of \emph{universal composability} in the UC framework by Canetti
 \cite{canetti05} places strict demands on the security of cryptographic
 protocols. Proofs in the UC framework have to show that any environment is
-unable to distinguish between an ideal functionality and the actually
-implemented protocol, even when malicious adversaries misuse the protocol in
-some unpredictable way. The benefit of the strict requirements of this notion is
-that UC--secure protocols can be composed and ran concurrently while still
-staying safe without the necessity of additional security proofs. This thesis
-uses universal composability as the notion of security.
+unable to distinguish between an ideal functionality and the implemented
+protocol, even when malicious adversaries misuse the protocol in some
+unpredictable way. The benefit of the strict requirements of this notion is that
+UC--secure protocols can be composed and ran concurrently while still staying
+safe without the necessity of additional security proofs. This thesis uses
+universal composability as the notion of security.
 
 Yao defined the problem of multi--party computations and his \JWdefn{Garbled
 Circuit}{GC} approach \cite{yao86} describes encrypted evaluation of (boolean)
@@ -67,22 +67,23 @@ every gate (cf.\ \cite{naor99privacy}). This thesis solves these problem
 efficiently for arbitrary polynomials.
 
 Besides the GC approach, this thesis is also related to \emph{Efficient
-Multi-Party Computation Over Rings} by Cramer et al.\ \cite{cramer03}. The
+Multi-Party Computation Over Rings} by Cramer et al.~\cite{cramer03}. The
 difference is that Cramer's approach is based on the simulation of formulas by
 bounded--width programs by Cleve \cite{cleve91} which does not support
 \emph{Square \& Multiply} \cite{knuth81} and the complexity is polynomial (with
 a low degree) in the number of arithmetic operations performed. The writings of
-Naor et al.\ \cite{naor99,naor06} also describe OPE but have polynomial
+Naor et al.~\cite{naor99,naor06} also describe OPE but have polynomial
 complexity and based on \JWdefn{Oblivious Transfer}{OT} \cite{rabin81}.
 
-\emph{How to Garble Arithmetic Circuits} by Applebaum et al.\ \cite{gac2012}
+\emph{How to Garble Arithmetic Circuits} by Applebaum et al.~\cite{gac2012}
 describes the garbled evaluation of arithmetic circuits.  Many ideas used in
-this thesis are inspired by Applebaum et al. The difference between Applebaum's
-paper and this thesis, is that the former relies on computational assumptions to
-be secure. In contrast, this thesis does not rely on computational assumptions
-and proves the methodology to be information--theoretically secure. This thesis
-adapts some of Applebaum's ideas to work with \JWdefn{Oblivious Affine Function
-Evaluation}{OAFE} \cite{davidgoliath}.
+this thesis are inspired by Applebaum et al. The difference between
+Applebaum's paper and this thesis, is that the former relies on computational
+assumptions to be secure. In contrast, this thesis does not rely on
+computational assumptions and proves the methodology to be
+information--theoretically secure. This thesis adapts some of Applebaum's ideas
+to work with \JWdefn{Oblivious Affine Function Evaluation}{OAFE}
+\cite{davidgoliath}.
 
 %
 % ACKNOWLEDGMENTS

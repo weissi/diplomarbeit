@@ -5,9 +5,11 @@
 \label{sec:protocol}
 
 This section formally defines the functionality \JWfuncSymOPE and the protocol
-\JWprotoSymOPE this thesis proposes to realize OPE (see Section \ref{def:OPE}).
-The functionality described in Figures \ref{fig:func-ope} and
-\ref{fig:graph-ope} is the ideal model of what the protocol tries to achieve.
+\JWprotoSymOPE this thesis proposes to realize OPE.  The functionality described
+in Figures \ref{fig:func-ope} and \ref{fig:graph-ope} is the ideal model of what
+the protocol tries to achieve. The protocol described in Figure
+\ref{fig:proto-ope} is a formalization of the OPE methodology as described in
+Section \ref{def:OPE}.
 
 \begin{JWfunc}%
   {\JWfuncSymOPE}%
@@ -88,21 +90,22 @@ The functionality described in Figures \ref{fig:func-ope} and
 
   \item Upon receiving the DRAC from \JWpOne{}, verify that there is no stored
     DRAC yet, else ignore that input. Next, \JWpTwo{} verifies the received
-    input is a DRAC, else ignores that input. Additionally it verifies
-    that the DRAC encodes a function whose degree is equal to $n$ (see
-    Section \ref{sec:max-poly-degree}), else ignores the input. If the DRAC
-    verification was successful, store the DRAC.
+    input is a DRAC, else ignores that input. Additionally it verifies that the
+    DRAC encodes a function whose degree is equal to $n$, else ignores the
+    input. If the DRAC verification was successful, store the DRAC.
 
   \item Upon receiving input \JWmsgTP{Evaluate}{$x$} from the environment,
-    verify that $x \in \mathbb{F}_{2^k}$, else ignore that input. If there is
-    already a stored DRAC, continue at the next step, else wait for a stored
-    DRAC.
+    verify that there is no stored value yet and that $x \in \mathbb{F}_{2^k}$,
+    else ignore that input. If $x$ has been verified successfully, store $x$ as
+    the value. If there is already a stored DRAC, continue at step
+    \ref{step:eval-DRAC}, else wait for a stored DRAC.
 
-  \item Next, \JWpTwo{} evaluates the DRAC. Because the OAFE functionality is
-    set up by \JWpOne{}, it is possible that during the evaluation the OAFE
-    functionality turns out to behave unexpectedly: It could decline needed
-    evaluations and it could return vectors of unexpected shapes. In both cases
-    always assume it would have returned all zero vectors of the expected shape.
+  \item \label{step:eval-DRAC} Next, \JWpTwo{} evaluates the DRAC. Because the
+    OAFE functionality is set up by \JWpOne{}, it is possible that during the
+    evaluation the OAFE functionality turns out to behave unexpectedly: It could
+    decline needed evaluations and it could return vectors of unexpected shapes.
+    In both cases always assume it would have returned all zero vectors of the
+    expected shape.
 
   \item After the evaluation, \JWpTwo{} adds both components of the last DRAV
     and queries a special final OAFE with that value. Again, use the all zero
@@ -113,5 +116,7 @@ The functionality described in Figures \ref{fig:func-ope} and
   \end{JWprotoSteps}
 
 \end{JWprotocol}
+
+\FloatBarrier
 
 % vim: set spell spelllang=en_us fileencoding=utf8 :

@@ -3,7 +3,7 @@
 
 This chapter states and proves the security of the protocol in the
 \JWdef{Universal--Composability}{UC} framework by Ran Canetti \cite{canetti05}.
-In the UC framework security is defined by comparing an \emph{ideal model} to a
+In the UC framework, security is defined by comparing an \emph{ideal model} to a
 \emph{real model}. The ideal model implements the intended functionality
 \JWfuncSym{}{} safely by definition. The protocol under examination runs in the
 real model. In the real model, there is an adversary $\mathcal{A}$ that controls
@@ -23,6 +23,11 @@ $\mathcal{S}$).
 \text{ideal}\ \widetilde{=}\ \text{real}
 %
 \end{align*}
+
+%
+% PROTOCOL AND FUNCTIONALITY
+%
+\input{protocols}
 
 %
 % SIMULATORS
@@ -85,7 +90,8 @@ ideal model.
     \JWpTwo{} evaluates the last OAFE with $\chi$, it will receive the correct
     result $y = f(\chi) = \psi \cdot \chi + r = \frac{y-r}{\chi} \cdot \chi + r
     = y$. Any dishonest \JWpTwo{} will receive some random value depending on
-    the random value $r$. Finally unhalt the simulation.
+    the random value $r$. Finally unhalt the simulation, no further
+    interceptions are necessary.
 
 \end{itemize}
 
@@ -126,10 +132,11 @@ The setup phase is run as soon as the simulator starts.
     verify, that the polynomial has a degree that equals the parametrized degree
     $k$. If \JWadv{} submitted a polynomial of valid degree, store the
     polynomial's coefficients as $a \in \JWfieldGeneral^n$.  Next, upload that
-    polynomial to the ideal functionality \JWfuncSymOPEnp{} by outputting
-    \JWmsgTP{Commit}{$a$} to \JWfuncSymOPEnp{}.  If the polynomial was illegal,
-    restart the simulator in the setup phase.  This restart is equivalent to
-    ignoring the adversary's inputs.
+    polynomial to the ideal functionality \JWfuncSymOPEnp{} by sending
+    \JWmsgTP{Commit}{$a$} to \JWfuncSymOPEnp{}, the simulation is now
+    terminated, wait for the adversary to terminate as well. If the polynomial
+    was illegal, restart the simulator in the setup phase.  This restart is
+    equivalent to ignoring the adversary's inputs.
 
 \end{itemize}
 
@@ -152,24 +159,28 @@ act honest.
 \JWlthree{Corrupted \JWpTwo{}}
 
 This section will proof the security of the proposed protocol \JWprotoSymOPE
-in the Universal Composability (UC) framework \cite{canetti05} against both,
-passive and active adversaries impersonating \JWpTwo{}. Passive adversaries are
-adversaries which try to calculate additional information from intermediate
-results, active adversaries additionally misuse the protocol in some
-unpredictable way.
+(Figure \ref{fig:proto-ope}) in the Universal Composability (UC) framework
+\cite{canetti05} against both, passive and active adversaries impersonating
+\JWpTwo{}. Passive adversaries are adversaries which try to calculate additional
+information from intermediate results, active adversaries additionally misuse
+the protocol in some unpredictable way.
 
 The protocol is trivially secure against passive adversaries impersonating
 \JWpTwo{} because every value that gets transmitted to \JWpTwo{} is one--time
-encrypted. The values sent to \JWpTwo{} are part of a DRAE and DRAEs only
+encrypted, except the very last one which is the plain result of the evaluated
+polynomial. The values sent to \JWpTwo{} are part of a DRAE and DRAEs only
 contain references to OAFEs and DRAVs. Section \ref{def:DRAV} proves (Lemma
 \ref{lem:DRAV-random}) that DRAVs only transport uncorrelated uniform randomness
 to parties not in possession of the encryption keys. The OAFE evaluations yield
 further (one--time encrypted) DRAVs and radicals (see Section
-\ref{sec:sec-muls}) which are one--time encrypted as well. The simulator from
-Section \ref{sec:simulator-david} plays on this property and encodes a random
-polynomial of the same degree that is used to test \JWpTwo{}'s honesty. In fact,
-because every value is one--time encrypted, the protocol is perfectly secure
-against any passive adversary.
+\ref{sec:sec-muls}) which are one--time encrypted as well. The last OAFE only
+yields the unencrypted result which \JWpTwo{} should obtain anyways and
+therefore is uninteresting. The simulator from Section \ref{sec:simulator-david}
+plays on this property and encodes a random polynomial of the correct degree.
+Neither \JWpTwo{} nor the environment will not be able to distinguish the random
+polynomial from any other polynomial of the same degree because everything they
+might learn is one--time pad encrypted. Therefore, the protocol is perfectly
+secure against any passive adversary.
 
 For the security against an actively corrupted \JWpTwo{}, an hybrid argument is
 employed. The general idea is to transform an actively corrupted adversary
@@ -223,10 +234,15 @@ and \JWadv{}' is:
 
 \noindent{}This argument can be used inductively until the original adversary
 \JWadv{} is transformed into a passive adversary $\mathcal{A}^*$ which does not
-illicitly change any message. Because the triangle inequality holds for the
-statistical distance and the maximal number of OAFEs used to evaluate a
-polynomial of degree $n$ is in $O(n)$, the statistical distance between any
-active adversary \JWadv{} and any passive adversary $\mathcal{A}^*$ is
+illicitly change any message anymore. For example, if the original adversary
+$\mathcal{A}$ forges three messages, then $\mathcal{A}'$ (\JWadv{} plus monitor
+module) forges two, $\mathcal{A}''$ ($\mathcal{A}'$ plus monitor module) forges
+one, and $\mathcal{A}'''$ forges no messages. Per definition $\mathcal{A}'''$ is
+a passively corrupted adversary. Because the triangle inequality holds for the
+statistical distance and the maximal number of OAFEs (and therefore the maximal
+number of messages the adversary can forge) used to evaluate a polynomial of
+degree $n$ is in $O(n)$,  the statistical distance between any active adversary
+\JWadv{} and some passive adversary $\mathcal{A}^*$ is
 
 \begin{align*}
   %
@@ -263,8 +279,8 @@ A corrupted \JWpOne{} has the following possibilities to cheat:
 
 \noindent{}Both, in the ideal model (running the simulator from
 \ref{sec:simulator-goliath}) as well as in the real model (running the
-\JWprotoSymOPE{} and the adversary) these possibilities are handled
-indistinguishably for any environment:
+\JWprotoSymOPE{} (Figure \ref{fig:proto-ope}) and the adversary), these
+possibilities are handled indistinguishably for any environment:
 
 \begin{enumerate}
 
@@ -280,7 +296,8 @@ indistinguishably for any environment:
 
 \end{enumerate}
 
-This assures any environment will not be able to distinguish between the real
-and the ideal model.
+\noindent{}This assures that any environment will not be able to distinguish
+between the real and the ideal model for any adversary using the simulator from
+Section \ref{sec:simulator-goliath}. \qed{}
 
 % vim: set spell spelllang=en_us fileencoding=utf8 :

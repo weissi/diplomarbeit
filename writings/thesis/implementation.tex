@@ -1,19 +1,18 @@
 \JWlone{Implementation}
 \label{sec:implementation}
 
-In addition to the formal methodology (Chapter \ref{sec:methods}), the protocol
-description (Chapter \ref{sec:protocol}) and the security proof of the protocol
-in the UC framework (Chapter \ref{sec:security}), this thesis contains an
-implementation of the protocol. The implementation is written in the lazy,
-functional programming language \JWTLhaskell{}, more specifically \JWThaskell{}
-as implemented by the major \JWThaskell{} compiler, the \JWTXLghc{} (\JWTghc{})
-version \JWTVghc{}. Whenever feasible, standard \emph{Haskell 2010}
-\cite{haskell2010} features have been preferred. However, the following
-extensions have been used: \JWhsExt{Bang\-Patterns},
+In addition to the formal methodology (Chapter~\ref{sec:methods}) and the
+security proof of the protocol in the UC framework (Chapter \ref{sec:security}),
+this thesis contains an implementation of the protocol. The implementation is
+written in the lazy, functional programming language \JWTLhaskell{}, more
+specifically \JWThaskell{} as implemented by the major \JWThaskell{} compiler,
+the \JWTXLghc{} (\JWTghc{}) version \JWTVghc{}. Whenever feasible, standard
+\emph{Haskell 2010} \cite{haskell2010} features have been preferred. However,
+the following extensions have been used: \JWhsExt{Bang\-Patterns},
 \JWhsExt{Scoped\-Type\-Variables}, \JWhsExt{Rank2\-Types}, and
-\JWhsExt{Flexible\-Contexts}.  The \JWTprotobuf{} (see chapter
-\ref{sec:net-comm}) serialization and parsing code that is generated
-automatically by \JWbinary{hprotoc} additionally uses
+\JWhsExt{Flexible\-Contexts}.  The \JWTprotobuf{} (see
+Chapter~\ref{sec:net-comm}) serialization and parsing code that is generated
+automatically by \JWTLhprotoc{} additionally uses
 \JWhsExt{Derive\-Data\-Typeable}, \JWhsExt{Flexible\-Instances}, and
 \JWhsExt{Multi\-Param\-Type\-Classes}. The code should therefore be compilable
 by any \JWThaskell{} compiler that supports these extensions and is able to
@@ -26,22 +25,16 @@ Evaluation as explained in Chapter \ref{def:OPE}.
 Even the Haskell data--types such as \JWcode{DRAC}, \JWcode{DRAE}, \JWcode{RAE},
 \JWcode{LinearExpr} match the names of the constructs described in chapter
 \ref{sec:methods}: DRACs (Chapter \ref{def:DRAC}), DRAEs (chapter
-\ref{def:DRAE}) and linear expressions (named $\mathcal{C}$ in chapter
-\ref{def:DRAE}). For practical reasons the program also features \JWcode{RAC}
-(Randomized Affine Circuits) and \JWcode{RAE} (Randomized Affine Encodings)
-which are the same as their \emph{dual} counterparts but separated in the tuple
-components. So while running the program two \JWcode{RAE}s are derived from one
-\JWcode{DRAE}.
+\ref{def:DRAE}) and linear expressions.
 
 As in Chapter \ref{def:OPE}, the oblivious polynomial evaluation consists of
 three parties: The OAFE issuing party \JWpOne{} (executable program called
 \JWBpOne{}), the receiving party \JWpTwo{} (\JWBpTwo{}) and the OAFE
 functionality (\JWBtoken{}). The individual programs talk to each other using
-TCP/IP networking. The \JWtoken{} implements the OAFE functionality
-\JWfuncSym{seq-ot}{OAFE} as provided by the David \& Goliath protocol
-\cite{davidgoliath}. The \JWtoken{} does not implement the David \& Goliath
-protocol but only its interface. A real implementation using a tamper--proof
-hardware token is left open to potential future works.
+TCP/IP networking. Even though \JWBtoken{} implements the OAFE functionality
+\JWfuncSymOAFE{}, it does not implement the David \& Goliath protocol
+\cite{davidgoliath} but only its interface. A real implementation using a
+tamper--proof hardware token is left open to potential future work.
 
 
 %
@@ -72,7 +65,7 @@ exactly once.
 On TCP port \JWport{23021} \JWpTwo{} initiates a connection to the \JWtoken{}.
 This connection serves to evaluate the OAFEs. \JWpTwo{} tells which
 OAFE to evaluate and the value. The \JWtoken{} then replies with a vector
-consisting of the evaluated linear expressions.
+consisting of the values of the evaluated linear expressions.
 
 
 % DAVID TO GOLIATH
@@ -112,21 +105,21 @@ that \JWpTwo{} does not verify the polynomial degree it evaluates.
 \JWltwo{Implementation Details}
 \label{sec:implementation-details}
 
-This section describes implementation details that could be of interest and/or
+This section describes implementation details that could be of interest or
 need documentation.
 
 % Calculations in Finite Fields
 \JWlthree{Calculations in Finite Fields}
 \label{sec:finite-field-calcs}
 
-For calculations in finite fields (Chapter \ref{sec:field}), the \JWTcpp{}
-library \JWTLntl{} (\emph{Number Theory Library}) has been interfaced to
-\JWThaskell{} to use in the implementation of this thesis. The interface
-has been developed using \JWThaskell{}'s \JWdef{Foreign Function Interface}{FFI}
-\cite{haskell2010} and \JWdef{C $\longrightarrow$ Haskell}{C2Hs} \cite{c2hs}.
-Before interfacing the library to Haskell a very lightweight \JWTc{} wrapper
-has been developed because the library is written in \JWTcpp{} which cannot
-directly be interfaced by the FFI.
+For calculations in finite fields, the \JWTcpp{} library \JWTLntl{}
+(\emph{Number Theory Library}) has been interfaced to \JWThaskell{} to use in
+the implementation of this thesis. The interface has been developed using
+\JWThaskell{}'s \JWdef{Foreign Function Interface}{FFI} \cite{haskell2010} and
+\JWdef{C $\longrightarrow$ Haskell}{C2Hs} \cite{c2hs}.  Before interfacing the
+library to Haskell a very lightweight \JWTc{} wrapper has been developed because
+the library is written in \JWTcpp{} which cannot directly be interfaced by the
+FFI.
 
 Although \JWTntl{} does its work fast and without problems, the library has some
 implementation problems and is not optimally designed for exposing its
@@ -135,7 +128,7 @@ neither thread--safe nor reentrant because it globally stores internal state
 that can be modified using library functions. The small \JWTc{} wrapper library
 therefore tries to provide a thread--safe interface to \JWTntl{} by limiting its
 functionality.  Another problem is that \JWTntl{} is designed for mutable
-objects, e.g., arithmetic operations are implemented using destructive
+objects, for example, arithmetic operations are implemented using destructive
 assignment.  Since \JWThaskell{} is a pure functional language
 \cite{haskell2010} and destructive assignment is referentially opaque, the
 \JWTc{} wrapper changes that and offers only an interface that obeys referential
@@ -166,6 +159,10 @@ problem for evaluations of large polynomials (see chapter
 \ref{sec:comp-complexity}). Nevertheless, this problem is easily fixable by
 using a \JWThaskell{} library for finite field calculations or interfacing a
 library that fits better.
+
+To benchmark this thesis (see Chapter \ref{sec:evaluation}), a second library
+(in $\mathbb{F}_{97}$, from the \JWTLhaskellForMaths{} package) has been used,
+this library does not have the same problems as \JWTntl{}.
 
 
 % Thread Safety
@@ -210,7 +207,7 @@ The communication between the different binaries is done using the
 schrie\-bl\-esque \JWTXLprotobuf{}. This library features easy network
 communication with complex data types independent of the programming language,
 operating system, machine endianness, and other parameters. The \JWThaskell{}
-\JWTprotobuf{} compiler \JWbinary{hprotoc} that comes with the \JWThaskell{}
+\JWTprotobuf{} compiler \JWThprotoc{} that comes with the \JWThaskell{}
 \JWTprotobuf{} library (\JWTprotobufLib{}) automatically generates the
 \JWThaskell{} source code which serializes the data structures to
 \JWTprotobuf{}, and code parses \JWTprotobuf{} to \JWThaskell{} data
@@ -230,8 +227,8 @@ complete list of packages can be extracted from the file
 \JWlthree{Source Tree Organization}
 \label{sec:src-org}
 
-A listing of the most important folders in the source code tree of this thesis
-can be found below.
+A listing of the most important directories in the source code tree of this
+thesis can be found below.
 
 \begin{itemize}
 
@@ -248,18 +245,18 @@ can be found below.
   \item \JWpath{lib/Data/RAE/}, RAE encoding, decoding and evaluation.
 
   \item \JWpath{lib/Math/}, finite field implementation and other
-    mathematical methods.
+    mathematical functions.
 
   \item \JWpath{test/}, \JWTquickcheck{} tests and the unit tests.
 
   \item \JWpath{bench/}, benchmarking programs.
 
-  \item \JWpath{scripts/}, helper scripts, mainly for benchmarking.
+  \item \JWpath{scripts/}, helper scripts, mainly for benchmarking and testing.
 
-  \item \JWpath{protos/}, \JWTXprotobuf{} definition files.
+  \item \JWpath{protos/}, \JWTprotobuf{} description files.
 
   \item \JWpath{gen-src/}, automatically generated source code, derived from the
-    \JWTprotobuf{} definition files.
+    \JWTprotobuf{} descriptions files.
 
   \item \JWpath{writings/}, this writing.
 
@@ -296,7 +293,7 @@ commands in a shell:
 
 Whenever field elements in large fields that are no prime fields (e.g.,
 $\mathbb{F}_{2^{256}}$) are read from user input or are outputted to the user, a
-special text format is used. Notice that scalar field elements of non--prime
+special text format is used. Note that scalar field elements of non--prime
 fields are elements from polynomial rings and therefore written as polynomials.
 This implementation uses the following format (given as a regular expression) to
 denote the polynomials (that represent the scalar field elements):
@@ -327,7 +324,7 @@ $0$, not counting the spaces and the brackets). An exception is the string
 \end{itemize}
 
 \noindent{}The default implementation uses $\mathbb{F}_{2^{256}}$ specified by
-the irreducible polynomial $1 + x^2 + x^5 + x^{10} + x^{256}$. The
+the irreducible polynomial $1 + x^2 + x^5 + x^{10} + x^{256}$.
 $\mathbb{F}_{97}$ is a prime field and therefore the elements are regular
 elements of the ring $\mathbb{Z}/2\mathbb{Z}$.  This implementation uses regular
 numbers for any prime field. Exemplary for $\mathbb{F}_{97}$: $1 \entspricht 1
@@ -343,13 +340,13 @@ numbers for any prime field. Exemplary for $\mathbb{F}_{97}$: $1 \entspricht 1
 
 The three main programs are \JWBpOne{}, \JWBpTwo{} and \JWBtoken{}. \JWBtoken{}
 does not accept any command line parameters. \JWpOne{} expects exactly one
-command line parameter: The file for the polynomial to evaluate, one coefficient
-per line. \JWpTwo{} expects exactly one parameter too: The field element to
-evaluate the polynomial. The following example would evaluate the polynomial
-$f(x) = a \cdot 1 + b \cdot x + c \cdot x^2$ where $a = 1 \entspricht
-\text{\JWcode{[1]}}$, $b = 1 + p^2 \entspricht \text{\JWcode{[1 0 1]}}$,
-$c = (1 + p^2 + p^4) \entspricht \text{\JWcode{[1 0 1 0 1]}}$, and $x = 1 + p^2
-+ p^3 + p^4 + p^6 \entspricht \text{\JWcode{[1 0 1 1 1 0 1]}}$:
+command line parameter: The file with the polynomial to evaluate, one
+coefficient per line. \JWpTwo{} expects exactly one parameter too: The field
+element to evaluate the polynomial with. The following example would evaluate
+the polynomial $f(x) = a \cdot 1 + b \cdot x + c \cdot x^2$ where $a = 1
+\entspricht \text{\JWcode{[1]}}$, $b = 1 + p^2 \entspricht \text{\JWcode{[1 0
+1]}}$, $c = (1 + p^2 + p^4) \entspricht \text{\JWcode{[1 0 1 0 1]}}$, and $x = 1
+  + p^2 + p^3 + p^4 + p^6 \entspricht \text{\JWcode{[1 0 1 1 1 0 1]}}$:
 
 \medskip{}
 

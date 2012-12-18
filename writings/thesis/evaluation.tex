@@ -2,8 +2,8 @@
 \label{sec:evaluation}
 
 This part evaluates the computational complexity of the methodology and the
-performance of the implementation. Additionally, this thesis' contribution and
-the open questions are exposed in the following.
+performance of the implementation.
+
 
 %
 % TEST SETUP
@@ -67,25 +67,26 @@ in $\Theta(n)$ \cite{cormen01}. Despite the complex technique presented in this
 thesis the overall evaluation time is still in $\Theta(n)$. This is true for
 both, the theoretical examination and the implementation. Figure
 \ref{fig:poly-deg-t} and Table \ref{tab:poly-deg-t} show this for the finite
-field $\mathbb{F}_{97}$ (implementation from the \JWTLhaskellForMaths{}
-package). The implementation for the field $\mathbb{F}_{2^{256}}$ does not seem
-to have linear time complexity. This is caused by the suboptimal implementation
-and the Haskell binding of the library used for the calculations in
-$\mathbb{F}_{2^{256}}$. It is problematic that the library includes a rather
-complex routine for object destruction that takes most of the evaluation time.
-Root of the problem is that functional languages prefer immutable (unchangeable)
-objects with very fast construction/destruction and the C++ library that is
-interfaced is optimized for as few constructions/destructions as possible and
-the use of mutable objects. The phenomenon that is observable when using this
-library is that the garbage collector is taking up most of the running time (up
-to $85\%$) waiting for the library destruction routine. For high performance
-(such as the pure Haskell implementation for $\mathbb{F}_{97}$) another library
-should be interfaced or developed entirely in Haskell, but this is not the main
-concern of this thesis. Further details are covered in Section
-\ref{sec:finite-field-calcs}. For lower degrees, the current implementation for
-$\mathbb{F}_{2^{256}}$ has linear time complexity. Figure
-\ref{fig:poly-deg-t-small} and Table \ref{tab:poly-deg-t-small} show this. It is
-also noteworthy that the first test machine (see Section
+field $\mathbb{F}_{97}$ ($\mathbb{F}_{97}$ implementation from the
+\JWTLhaskellForMaths{} package). The implementation using the field
+$\mathbb{F}_{2^{256}}$ does not seem to have linear time complexity. This is
+caused by the suboptimal implementation and the Haskell binding of the library
+used for the calculations in $\mathbb{F}_{2^{256}}$. It is problematic that the
+library includes a rather complex routine for object destruction that takes most
+of the evaluation time.  Root of the problem is that functional languages prefer
+immutable (unchangeable) objects with very fast construction/destruction and the
+C++ library that is interfaced is optimized for as few
+constructions/destructions as possible and the use of mutable objects. The
+phenomenon that is observable when using this library is that the garbage
+collector is taking up most of the running time (up to $85\%$) waiting for the
+library destruction routine. For high performance (such as the pure Haskell
+implementation for $\mathbb{F}_{97}$) another library should be interfaced or
+developed entirely in Haskell, but this is not the main concern of this thesis.
+Further details are covered in Section \ref{sec:finite-field-calcs}. For lower
+degrees, the implementation shows its linear time complexity even when used with
+the suboptiomal $\mathbb{F}_{2^{256}}$ implementation, Figure
+\ref{fig:poly-deg-t-small} and Table \ref{tab:poly-deg-t-small} manifest this.
+It is also noteworthy that the first test machine (see Section
 \ref{sec:test-machines}) outperforms the second test machine despite the
 inferior hardware. The cause has not been investigated, but a possible cause
 could be that the 64--bit \JWTghc{} runtime seems to be slower (at least on
@@ -140,7 +141,8 @@ Apple Macs) \cite{lentczner11}.
 \begin{figure}[ht]
   \centering
   \input{images/poly-deg-t-small}
-  \caption{Evaluation Time of Polynomials (Lower Degrees) on Test Machine 1}
+  \caption{Evaluation Time of $\mathbb{F}_{2^{256}}$ Polynomials
+  (Lower Degrees) on Test Machine 1}
   \label{fig:poly-deg-t-small}
 \end{figure}
 
@@ -167,7 +169,8 @@ Apple Macs) \cite{lentczner11}.
     %
     \bottomrule
   \end{tabular}
-  \caption{Evaluation Time of Polynomials (Lower Degrees) on Test Machine 1}
+  \caption{Evaluation Time of $\mathbb{F}_{2^{256}}$ Polynomials
+  (Lower Degrees) on Test Machine 1}
   \label{tab:poly-deg-t-small}
 \end{table}
 
