@@ -3,9 +3,9 @@ Diplomarbeit / Master's Thesis
 
 This is the GitHub repository for my Diplomarbeit / Master's Thesis.
 
- - Subject: /Efficient Secure Function Evaluation using
+ - Subject: *Efficient Secure Function Evaluation using
  Garbled Arithmetic Circuits and Untrusted
- Tamper–Proof Hardware/
+ Tamper–Proof Hardware*
  - [Institute of Cryptography and Security (IKS)]
    (http://www.iks.kit.edu/index.php?id=iks&L=2) at the
    [Karlsruhe Institute of Technology](http://www.kit.edu/english/index.php)
