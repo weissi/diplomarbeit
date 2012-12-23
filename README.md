@@ -1,9 +1,18 @@
 Diplomarbeit / Master's Thesis
 ==============================
 
-Diplomarbeit / Master's Thesis by Johannes Weiß (<diplomarbeit@johannesweiss.eu>)
+This is the GitHub repository for my Diplomarbeit / Master's Thesis.
 
-Advisor: [Daniel Kraschewski](http://www.iks.kit.edu/index.php?id=kraschewski)
+ - Subject: /Efficient Secure Function Evaluation using
+ Garbled Arithmetic Circuits and Untrusted
+ Tamper–Proof Hardware/
+ - [Institute of Cryptography and Security (IKS)]
+   (http://www.iks.kit.edu/index.php?id=iks&L=2) at the
+   [Karlsruhe Institute of Technology](http://www.kit.edu/english/index.php)
+ - Professor: [Prof. Dr. Jörn Müller-Quade]
+              (http://www.iks.kit.edu/index.php?id=mueller-quade&L=2)
+ - Advisor: [Daniel Kraschewski]
+            (http://www.iks.kit.edu/index.php?id=kraschewski&L=2)
 
 
 Abstract
