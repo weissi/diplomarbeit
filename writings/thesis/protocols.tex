@@ -50,7 +50,7 @@ Section \ref{def:OPE}.
     \draw [<-] (OPE) ++(1.5,0.25) node [anchor=east] {} -- +(0.75,0) node
     [anchor=west] {$x \in \JWfieldGeneral$};
 
-    \draw [->] (OPE) ++(1.5,-0.75) node [anchor=east] {$\sum_{i=0}^k a_ix^i$}
+    \draw [->] (OPE) ++(1.5,-0.75) node [anchor=east] {$\sum_{i=0}^n a_ix^i$}
     -- +(0.75,0)
     node [anchor=west] {$y \in \JWfieldGeneral$};
 
@@ -110,7 +110,7 @@ Section \ref{def:OPE}.
   \item After the evaluation, \JWpTwo{} adds both components of the last DRAV
     and queries a special final OAFE with that value. Again, use the all zero
     vector if the OAFE behaves unexpectedly. The then received new value is the
-    result of the computation $y = \sum_{i=0}^k a_ix^i$. Finally, output
+    result of the computation $y = \sum_{i=0}^n a_ix^i$. Finally, output
     \JWmsgTP{Evaluated}{$y$} to the environment.
 
   \end{JWprotoSteps}
