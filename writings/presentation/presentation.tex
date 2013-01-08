@@ -1,0 +1,317 @@
+\documentclass[compress]{beamer}
+
+\usepackage{beamerthemesplit}
+
+% language
+\usepackage[american]{babel}
+\usepackage[utf8x]{inputenc}
+
+\usepackage{ucs}
+\usepackage{graphicx}
+\usepackage{multirow}
+
+% bib
+\bibliographystyle{alphaurl}
+
+% TikZ
+\usepackage{tikz}
+
+% beamer
+\usetheme{Frankfurt}
+\usecolortheme{default}
+\usepackage{appendixnumberbeamer}
+
+\input{commands}
+
+\title{\JWtitle{}}
+
+\author{Johannes Weiß}
+
+\date{Januar 2012}
+
+\begin{document}
+
+\frame{\titlepage}
+
+%
+% OUTLINE
+%
+\section{Outline}
+
+\frame {
+
+  \frametitle{Outline}
+
+  \begin{itemize}
+
+    \item What is the Problem?
+
+    \item OAFE
+
+    \item Secure Arithmetic
+
+    \item Demo
+
+  \end{itemize}
+
+}
+
+
+%
+% WHAT IS THE PROBLEM
+%
+
+\section{Problem}
+
+% WHAT IS THE PROBLEM
+\subsection{What is the Problem?}
+
+\frame {
+
+  \frametitle{What is the Problem?}
+
+  \begin{itemize}
+
+    \item \emph{Secure Function Evaluation} (SFE)\\
+      \JWtodo{Kurze Erklärung was das ist}
+
+    \item \emph{Oblivious Polynomial Evaluation} (OPE)\\
+      \JWtodo{Kurze Erklärung was das ist}
+
+  \end{itemize}
+
+}
+
+% OTHER APPROACHES
+\subsection{Other Approaches}
+
+\frame {
+
+  \frametitle{Other Approaches}
+
+  \begin{itemize}
+
+    \item Garbled Arithmetic Circuits \cite{gac2012}
+
+    \item \JWtodo{Andere hinschreiben}
+
+  \end{itemize}
+
+}
+
+% INITIAL IDEA
+\subsection{Initial Idea}
+
+\frame {
+
+  \frametitle{Initial Idea}
+
+  Just implement the ideas of some papers...
+
+}
+
+% OPE
+\subsection{OPE}
+
+\frame {
+
+  \frametitle{Oblivious Polynomial Evaluation (OPE)}
+
+  \begin{align*}
+    %
+    y = f(x) = \sum_{i=0}^n a_ix^i
+    %
+  \end{align*}
+
+  \begin{tikzpicture}[>=stealth]
+
+    \node (OPE) at (8.5,0) {OPE};
+    \draw (OPE) +(-1.5,-1.15) rectangle +(1.5,0.65);
+
+    \draw [<-] (OPE) ++(-1.5,0.25) node [anchor=west] {} -- +(-0.75,0) node
+    [anchor=east] {$\JWfieldGeneral^{n+1} \ni a$};
+
+    \draw [<-] (OPE) ++(1.5,0.25) node [anchor=east] {} -- +(0.75,0) node
+    [anchor=west] {$x \in \JWfieldGeneral$};
+
+    \draw [->] (OPE) ++(1.5,-0.75) node [anchor=east] {$\sum_{i=0}^n a_ix^i$}
+    -- +(0.75,0)
+    node [anchor=west] {$y \in \JWfieldGeneral$};
+
+  \end{tikzpicture}
+
+  The first party chooses the polynomial and learns nothing, the second party
+  chooses the node $x$ and learns $y = f(x)$.
+
+}
+
+
+%
+% OAFE
+%
+
+\section{OAFE}
+
+\frame {
+
+  \frametitle{Oblivious Affine Function Evaluation (OAFE)}
+
+  \JWtodo{Erklärung was OAFE \cite{davidgoliath} ist}
+
+}
+
+
+%
+% SECURE ARITHMETIC
+%
+
+\section{Secure Arithmetic}
+
+\subsection{Definition}
+
+\frame {
+
+  \frametitle{Secure Arithmetic}
+
+  \JWtodo{Erklärung was Secure Arithmetic so leisten muss}
+
+}
+
+\frame {
+
+  \frametitle{Secure Arithmetic}
+
+  \begin{JWtodoBox}
+
+    \begin{itemize}
+
+      \item Double--Zeug
+
+      \item Wegmann Carter MAC
+
+    \end{itemize}
+
+  \end{JWtodoBox}
+
+}
+
+% ADDITION
+\subsection{Addition}
+
+\frame {
+
+  \frametitle{Addition}
+
+  \JWtodo{Wie funktioniert $a + b$}
+
+}
+
+% MULTIPLICATION
+\subsection{Multiplication}
+
+\frame {
+
+  \frametitle{Multiplication}
+
+  \JWtodo{Wie funktioniert $a \cdot b$}
+
+  \JWtodo{Hier die erste Double--Konstruktion erklären}
+
+}
+
+\frame {
+
+  \frametitle{Problem}
+
+  \JWtodo{Problem der Konstruktion erklären}
+
+}
+
+\frame {
+
+  \frametitle{The Radicals Trick}
+
+  \JWtodo{Radicals Trick erklären}
+
+}
+
+
+%
+% EVALUATION
+%
+
+\section{Evaluation}
+
+\frame {
+
+  \frametitle{Evaluation}
+
+  \JWtodo{Bilder und Evaluation}
+
+}
+
+
+%
+% CONTRIBUTION
+%
+
+\section{Contribution}
+
+\frame {
+
+  \frametitle{Contribution}
+
+  \begin{itemize}
+
+    \item UC--secure
+
+    \item linear time complexity
+
+  \end{itemize}
+
+}
+
+
+%
+% IMPLEMENTATION
+%
+\section{Implementation}
+
+\subsection{Implementation}
+
+\frame {
+
+  \frametitle{Implementation}
+
+  \JWtodo{Some information about the implementation}
+
+}
+
+\frame {
+
+  \frametitle{Demonstration of the Implementation}
+
+  DEMO
+
+}
+
+
+%
+% APPENDIX
+%
+
+\appendix
+
+\section{Bibliography}
+
+\frame {
+
+  \frametitle{Bibliography}
+
+  \bibliography{bibliography}
+
+}
+
+\end{document}
+
+% vim: set spell spelllang=en_us fileencoding=utf8 formatoptions=tcroql : %
