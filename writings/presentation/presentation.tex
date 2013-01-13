@@ -46,11 +46,15 @@
 
     \item What is the Problem?
 
-    \item OAFE
+    \item \JWdefn{Oblivious Affine Function Evaluation}{OAFE}
 
     \item Secure Arithmetic
 
-    \item Demo
+    \item Evaluation
+
+    \item Contribution
+
+    \item Implementation
 
   \end{itemize}
 
@@ -89,27 +93,32 @@
 
   \frametitle{Other Approaches}
 
+  Classic:
   \begin{itemize}
 
-    \item Garbled Arithmetic Circuits \cite{gac2012}
-
-    \item \JWtodo{Andere hinschreiben}
+    \item Yao's \JWdefn{Garbled Circuit}{GC} \cite{yao86} approach
 
   \end{itemize}
 
-  \begin{JWtodoBox}
+  Promising:
+  \begin{itemize}
 
-    Problems:
+    \item \emph{Efficient Multi--Party Computation Over Rings} \cite{cramer03},
+      based on \emph{Simulation of Formulas by Bounded--Width Programs}
+      \cite{cleve91}
 
-    \begin{itemize}
+    \item Garbled Arithmetic Circuits \cite{gac2012}
 
-      \item No Square \& Multiply
+  \end{itemize}
 
-      \item Polynomial Time Complexity
+  Problems:
+  \begin{itemize}
 
-    \end{itemize}
+    \item No Square \& Multiply
 
-  \end{JWtodoBox}
+    \item Polynomial Time Complexity
+
+  \end{itemize}
 
 }
 
@@ -122,7 +131,7 @@
 
   SFE on arbitrary arithmetic circuits.
 
-  ... bt just implementing the ideas of some papers.
+  ... by just implementing the ideas of some papers.
 
   Didn't work, why?
 
@@ -133,7 +142,7 @@
 
 \frame {
 
-  \frametitle{Oblivious Polynomial Evaluation (OPE)}
+  \frametitle{Goal: Oblivious Polynomial Evaluation (OPE)}
 
   \begin{align*}
     %
@@ -141,22 +150,26 @@
     %
   \end{align*}
 
-  \begin{tikzpicture}[>=stealth]
+  \begin{figure}[h!]
+    \centering
 
-    \node (OPE) at (8.5,0) {OPE};
-    \draw (OPE) +(-1.5,-1.15) rectangle +(1.5,0.65);
+    \begin{tikzpicture}[>=stealth]
 
-    \draw [<-] (OPE) ++(-1.5,0.25) node [anchor=west] {} -- +(-0.75,0) node
-    [anchor=east] {$\JWfieldGeneral^{n+1} \ni a$};
+      \node (OPE) at (8.5,0) {OPE};
+      \draw (OPE) +(-1.5,-1.15) rectangle +(1.5,0.65);
 
-    \draw [<-] (OPE) ++(1.5,0.25) node [anchor=east] {} -- +(0.75,0) node
-    [anchor=west] {$x \in \JWfieldGeneral$};
+      \draw [<-] (OPE) ++(-1.5,0.25) node [anchor=west] {} -- +(-0.75,0) node
+      [anchor=east] {$\JWfieldGeneral^{n+1} \ni a$};
 
-    \draw [->] (OPE) ++(1.5,-0.75) node [anchor=east] {$\sum_{i=0}^n a_ix^i$}
-    -- +(0.75,0)
-    node [anchor=west] {$y \in \JWfieldGeneral$};
+      \draw [<-] (OPE) ++(1.5,0.25) node [anchor=east] {} -- +(0.75,0) node
+      [anchor=west] {$x \in \JWfieldGeneral$};
 
-  \end{tikzpicture}
+      \draw [->] (OPE) ++(1.5,-0.75) node [anchor=east] {$\sum_{i=0}^n a_ix^i$}
+      -- +(0.75,0)
+      node [anchor=west] {$y \in \JWfieldGeneral$};
+
+    \end{tikzpicture}
+  \end{figure}
 
   The first party chooses the polynomial and learns nothing, the second party
   chooses the node $x$ and learns $y = f(x)$.
@@ -172,10 +185,27 @@
 
 \frame {
 
-  \frametitle{Oblivious Affine Function Evaluation (OAFE)}
+  \frametitle{Basis: Oblivious Affine Function Evaluation (OAFE)}
 
-  \JWtodo{Erklärung was OAFE \cite{davidgoliath} ist}
+  The main building block is OAFE \cite{davidgoliath}.
 
+  \begin{figure}[h!]
+    \centering
+
+    \begin{tikzpicture}[>=stealth]
+      \node (OAFE) at (8.5,0) {OAFE};
+      \draw (OAFE) +(-1.5,-1.15) rectangle +(1.5,0.65);
+      \draw [<-] (OAFE) ++(-1.5,0.25) node [anchor=west] {} -- +(-0.75,0) node
+      [anchor=east] {$a$};
+      \draw [<-] (OAFE) ++(-1.5,-0.25) node [anchor=west] {} -- +(-0.75,0) node
+      [anchor=east] {$b$};
+      \draw [<-] (OAFE) ++(1.5,0.25) node [anchor=east] {} -- +(0.75,0) node
+      [anchor=west] {$x$};
+      \draw [->] (OAFE) ++(1.5,-0.75) node [anchor=east] {$ax+b$} -- +(0.75,0)
+      node [anchor=west] {$y$};
+      %
+    \end{tikzpicture}
+  \end{figure}
 }
 
 
@@ -191,7 +221,14 @@
 
   \frametitle{Secure Arithmetic}
 
-  \JWtodo{Erklärung was Secure Arithmetic so leisten muss}
+  \begin{itemize}
+
+    \item The goal is a construction to encode additions ($+$) and
+      multiplications ($\cdot$) that is secure and composable.
+
+    \item Optimally, the construction supports Square \& Multiply
+
+  \end{itemize}
 
 }
 
@@ -199,19 +236,45 @@
 
   \frametitle{Secure Arithmetic}
 
-  \begin{JWtodoBox}
+  \begin{itemize}
 
-    \begin{itemize}
+    \item \JWdefn{Dual Affine Randomized Value}{DRAV}
 
-      \item Double--Zeug
+    \item Wegmann Carter MAC
 
-      \item Wegmann Carter MAC
+  \end{itemize}
 
-    \end{itemize}
+  \begin{align*}
+    \hat{E}(v; \alpha_l, \alpha_r, \beta, \beta') &=
+    \begin{pmatrix}
+      \alpha_l \cdot v + \beta\\\alpha_r \cdot v + \beta'
+    \end{pmatrix}\\
+    %
+    E(v) &= \hat{E}(v; \alpha_l, \alpha_r, \beta, \beta') \qquad
+    \text{($\alpha$s and $\beta$s implicit)} \\
+    %
+    \hat{D}(\widetilde{v}; \alpha_l, \alpha_r, \beta, \beta') &=
+    \begin{pmatrix}
+      \frac{\widetilde{v_l} - \beta}{\alpha_l}\\
+      \frac{\widetilde{v_r} - \beta'}{\alpha_r}
+    \end{pmatrix}\\
+    %
+    \label{eqn:keys-assumed}
+  \begin{pmatrix}D_l(\widetilde{v})\\D_r(\widetilde{v})\end{pmatrix} &=
+    \hat{D}(\widetilde{v}; \alpha_l, \alpha_r, \beta, \beta') \qquad
+    \text{($\alpha$s and $\beta$s implicit)}\\
+    %
+    D(\widetilde{v}) &=
+    \left\{
+      \begin{array}{l l}
+        D_l(\widetilde{v}) & \quad
+        \text{if}~D_l(\widetilde{v}) = D_r(\widetilde{v})\\
+        \bot & \quad \text{otherwise ($\widetilde{v}$ is non--well--formed)}\\
+      \end{array}\right.\nonumber
+      %
+    \end{align*}
 
-  \end{JWtodoBox}
-
-}
+  }
 
 % ADDITION
 \subsection{Addition}
@@ -220,7 +283,40 @@
 
   \frametitle{Addition}
 
-  \JWtodo{Wie funktioniert $a + b$}
+  The addition of $\widetilde{a}$ and $\widetilde{b}$ can be performed
+  component--wise
+
+  \begin{align*}
+    %
+    \widetilde{a} &=
+    \begin{pmatrix}
+      \alpha_l \cdot a + \beta_1\\
+      \alpha_r \cdot a + \beta_2
+    \end{pmatrix} &
+    %
+    \widetilde{b} &=
+    \begin{pmatrix}
+      \alpha_l \cdot b + \beta_3\\
+      \alpha_r \cdot b + \beta_4
+    \end{pmatrix}\\
+    %
+  \end{align*}
+
+  \noindent{}Yielding $\widetilde{y} = \widetilde{a} + \widetilde{b}$
+
+  \begin{align*}
+    %
+    \widetilde{y} &=
+    \begin{pmatrix}
+      \alpha_l \cdot a + \beta_1 + \alpha_l \cdot b + \beta_3\\
+      \alpha_r \cdot a + \beta_2 + \alpha_r \cdot b + \beta_4\\
+    \end{pmatrix} =
+    \begin{pmatrix}
+      \alpha_l \cdot (a+b) + (\beta_1 + \beta_3)\\
+      \alpha_r \cdot (a+b) + (\beta_2 + \beta_4)\\
+    \end{pmatrix}\\
+    %
+  \end{align*}
 
 }
 
@@ -231,17 +327,64 @@
 
   \frametitle{Multiplication}
 
-  \JWtodo{Wie funktioniert $a \cdot b$}
+  \begin{align*}
+    %
+  \begin{pmatrix}\mathfrak{A}\\\mathfrak{G}\end{pmatrix} & =
+  \begin{pmatrix}\alpha_l\\\alpha_r r_6\end{pmatrix} \cdot D_l(\widetilde{x}) +
+  \begin{pmatrix}-r_1\\-r_7\end{pmatrix} &
+    %
+  \begin{pmatrix}\mathfrak{B}\\\mathfrak{H}\end{pmatrix} & =
+  \begin{pmatrix}1\\r_5\end{pmatrix} \cdot D_l(\widetilde{y}) +
+  \begin{pmatrix}-r_2\\r_8\end{pmatrix}\\
+    %
+  \begin{pmatrix}\mathfrak{E}\\\mathfrak{C}\end{pmatrix} & =
+  \begin{pmatrix}\alpha_r\\\alpha_l r_2\end{pmatrix} \cdot D_r(\widetilde{x}) +
+  \begin{pmatrix}-r_5\\r_3\end{pmatrix} &
+    %
+  \begin{pmatrix}\mathfrak{F}\\\mathfrak{D}\end{pmatrix} & =
+  \begin{pmatrix}1\\r_1\end{pmatrix} \cdot D_r(\widetilde{y}) +
+  \begin{pmatrix}-r_6\\r_4\end{pmatrix}\\
+    %
+  \end{align*}
 
-  \JWtodo{Hier die erste Double--Konstruktion erklären}
+  \noindent{}Calculation of the (encrypted) result:
+  \begin{align*}
+    \widetilde{z} & =
+    \begin{pmatrix}
+      \mathfrak{A} \cdot \mathfrak{B}+\mathfrak{C}+\mathfrak{D}\\
+      \mathfrak{E} \cdot \mathfrak{F}+\mathfrak{G}+\mathfrak{H}
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+      \alpha_l xy + \beta\\
+      \alpha_r xy + \beta'
+    \end{pmatrix}
+    \\
+  \end{align*}
 
+  \noindent{}$\widetilde{z}$'s encryption keys:
+  \begin{align*}
+    \beta & = r_1r_2 + r_3 + r_4 &
+    \beta' & = r_5r_6 + r_7 + r_8 \\
+    %
+  \end{align*}
 }
 
 \frame {
 
   \frametitle{Problem}
 
-  \JWtodo{Problem der Konstruktion erklären}
+  \begin{itemize}
+
+    \item The problem is that an adversary learns the OAFE outputs
+      $\mathfrak{A}$ to $\mathfrak{H}$.
+
+    \item We were not able to proof the security of the construction (nor the
+      opposite).
+
+    \item So, we used a small trick to proof the security.
+
+  \end{itemize}
 
 }
 
@@ -249,8 +392,34 @@
 
   \frametitle{The Radicals Trick}
 
-  \JWtodo{Radicals Trick erklären}
+  Vulnerable example $\mathfrak{A}$:
+  \begin{align*}
+    %
+    \mathfrak{A} = \alpha_l \cdot D_l(\widetilde{x}) - r_1
+    %
+  \end{align*}
 
+  The radicals trick:
+  \begin{align*}
+    %
+    R_1 & = (1-\kappa)\cdot(\Phi \cdot D_\delta(\widetilde{v})+\Psi) + \gamma\\
+    %
+    R_2 & = \kappa \qquad\ \,\cdot
+    (\Phi \cdot D_{!\delta}(\widetilde{v})+\Psi) - \gamma\\
+    %
+  \end{align*}
+
+  Fixed example $\mathfrak{A}$ using the radicals trick:
+  \begin{align*}
+    %
+    \mathfrak{A}_1 &= (1 - \kappa_1) \cdot
+    (\alpha_l \cdot D_l(\widetilde{x}) - r_1) + \gamma_1\\
+    %
+    \mathfrak{A}_2 &= \kappa_1 \qquad\ \,\cdot
+    (\alpha_l \cdot D_r(\widetilde{x}) - r_1) - \gamma_1\\
+    %
+    \mathfrak{A} &= \mathfrak{A}_1 + \mathfrak{A}_2
+  \end{align*}
 }
 
 
@@ -261,11 +430,9 @@
 \section{Evaluation}
 
 \frame {
-
   \frametitle{Evaluation}
 
-  \JWtodo{Bilder und Evaluation}
-
+  \input{img-poly-deg-t}
 }
 
 
@@ -281,7 +448,7 @@
 
   \begin{itemize}
 
-    \item UC--secure
+    \item UC--secure \cite{canetti05}
 
     \item linear time complexity
 
@@ -301,7 +468,14 @@
 
   \frametitle{Implementation}
 
-  \JWtodo{Some information about the implementation}
+  \begin{itemize}
+
+    \item Implemented in the lazy, functional language Haskell
+
+    \item Open--sourced at available
+      \JWnamedlinkfn{https://github.com/weissi/diplomarbeit}{online}
+
+  \end{itemize}
 
 }
 

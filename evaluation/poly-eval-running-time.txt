@@ -61,3 +61,52 @@ plot(data.frame(degree=a$degree, time=a$x/1000),
      xlab='Polynomial Degree', ylab='Running Time [s]',
      main='', type='o')
 dev.off()
+
+###########################################################
+# PRESENTATION: Normal F97 vs. F2Pow256 und Linux vs. Mac #
+###########################################################
+# scripts/benchmark-poly-degrees.sh -m 500 -M 10000 -s 500 -r 5 \
+#   -b "../run-evaluation.sh" -f \
+#   -o ../evaluation/linux-F97-bench-500-10000-500.out
+# ...
+#R
+tlf97 <- read.table('linux-rad-F97-bench-500-10000-500.out', header=T)
+alf97 <- aggregate(tlf97$Time, list(degree=tlf97$Polynomial.Degree), median)
+
+tlf256 <- read.table('linux-rad-bench-500-10000-500.out', header=T)
+alf256 <- aggregate(tlf256$Time, list(degree=tlf256$Polynomial.Degree), median)
+
+tmf97 <- read.table('mac-rad-F97-bench-500-10000-500.out', header=T)
+amf97 <- aggregate(tmf97$Time, list(degree=tmf97$Polynomial.Degree), median)
+
+tmf256 <- read.table('mac-rad-bench-500-10000-500.out', header=T)
+amf256 <- aggregate(tmf256$Time, list(degree=tmf256$Polynomial.Degree), median)
+
+require( tikzDevice )
+options(tikzMetricPackages = c("\\usepackage[utf8]{inputenc}",
+                               "\\usepackage[T1]{fontenc}",
+                               "\\usetikzlibrary{calc}",
+                               "\\usepackage{amssymb}"))
+tikz('../writings/presentation/img-poly-deg-t.tex', height=3, width=4.5,
+packages=c("\\usepackage{tikz}",
+           "\\usepackage[active,tightpage,psfixbb]{preview}",
+           "\\PreviewEnvironment{pgfpicture}",
+           "\\setlength\\PreviewBorder{0pt}",
+           "\\usepackage{amssymb}"))
+
+plot(data.frame(degree=alf97$degree, time=alf97$x/1000),
+     xlab='Polynomial Degree', ylab='Running Time [s]',
+     main='', type='o', pch=21, ylim=c(0, 250), col='red')
+lines(data.frame(degree=alf256$degree, time=alf256$x/1000),
+      type='o', pch=21, lty=2, col='blue')
+lines(data.frame(degree=amf97$degree, time=amf97$x/1000),
+      type='o', pch=22, lty=3, col='green')
+lines(data.frame(degree=amf256$degree, time=amf256$x/1000),
+      type='o', pch=22, lty=4, col='black')
+
+legend(300, 250, c("Machine 1, $\\mathbb{F}_{97}$",
+                   "Machine 1, $\\mathbb{F}_{2^{256}}$",
+                   "Machine 2, $\\mathbb{F}_{97}$",
+                   "Machine 2, $\\mathbb{F}_{2^{256}}$"),
+       pch=c(21, 21, 22, 22),lty=1:4,col=c('red', 'blue', 'green', 'black'))
+dev.off()
