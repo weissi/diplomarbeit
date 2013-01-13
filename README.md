@@ -13,9 +13,9 @@ This is the GitHub repository for my Diplomarbeit / Master's Thesis.
               (http://www.iks.kit.edu/index.php?id=mueller-quade&L=2)
  - Advisor: [Daniel Kraschewski]
             (http://www.iks.kit.edu/index.php?id=kraschewski&L=2)
- - [Download the PDF of the submitted version](goo.gl/IxTEQ)
+ - [Download the PDF of the submitted version](http://goo.gl/IxTEQ)
  - [Download the PDF of the latest version (incl. post submission fixes)]
-   (goo.gl/kMJWm)
+   (http://goo.gl/kMJWm)
 
 
 Abstract
