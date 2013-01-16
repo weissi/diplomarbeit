@@ -50,11 +50,11 @@
 
     \item Secure Arithmetic
 
-    \item Evaluation
-
-    \item Contribution
+    \item Main Results
 
     \item Implementation
+
+    \item Evaluation
 
   \end{itemize}
 
@@ -223,58 +223,30 @@
 
   \begin{itemize}
 
-    \item The goal is a construction to encode additions ($+$) and
-      multiplications ($\cdot$) that is secure and composable.
+    \item Goal: Secure and composable encoding of additions ($+$) and
+      multiplications ($\cdot$)
 
-    \item Optimally, the construction supports Square \& Multiply
+    \item Optimally, support Square \& Multiply
 
   \end{itemize}
+
+  \begin{figure}
+    \centering
+    \includegraphics[width=6cm]{sample-polynomial-no-DRAE}
+  \end{figure}
 
 }
 
 \frame {
 
-  \frametitle{Secure Arithmetic}
+  \frametitle{Dual Randomized Affine Value (DRAV)}
 
-  \begin{itemize}
+  \begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{DRAV}
+  \end{figure}
 
-    \item \JWdefn{Dual Affine Randomized Value}{DRAV}
-
-    \item Wegmann Carter MAC
-
-  \end{itemize}
-
-  \begin{align*}
-    \hat{E}(v; \alpha_l, \alpha_r, \beta, \beta') &=
-    \begin{pmatrix}
-      \alpha_l \cdot v + \beta\\\alpha_r \cdot v + \beta'
-    \end{pmatrix}\\
-    %
-    E(v) &= \hat{E}(v; \alpha_l, \alpha_r, \beta, \beta') \qquad
-    \text{($\alpha$s and $\beta$s implicit)} \\
-    %
-    \hat{D}(\widetilde{v}; \alpha_l, \alpha_r, \beta, \beta') &=
-    \begin{pmatrix}
-      \frac{\widetilde{v_l} - \beta}{\alpha_l}\\
-      \frac{\widetilde{v_r} - \beta'}{\alpha_r}
-    \end{pmatrix}\\
-    %
-    \label{eqn:keys-assumed}
-  \begin{pmatrix}D_l(\widetilde{v})\\D_r(\widetilde{v})\end{pmatrix} &=
-    \hat{D}(\widetilde{v}; \alpha_l, \alpha_r, \beta, \beta') \qquad
-    \text{($\alpha$s and $\beta$s implicit)}\\
-    %
-    D(\widetilde{v}) &=
-    \left\{
-      \begin{array}{l l}
-        D_l(\widetilde{v}) & \quad
-        \text{if}~D_l(\widetilde{v}) = D_r(\widetilde{v})\\
-        \bot & \quad \text{otherwise ($\widetilde{v}$ is non--well--formed)}\\
-      \end{array}\right.\nonumber
-      %
-    \end{align*}
-
-  }
+}
 
 % ADDITION
 \subsection{Addition}
@@ -376,13 +348,11 @@
 
   \begin{itemize}
 
-    \item The problem is that an adversary learns the OAFE outputs
-      $\mathfrak{A}$ to $\mathfrak{H}$.
+    \item Problem: Adversary learns the OAFE outputs $\mathfrak{A}$ to
+      $\mathfrak{H}$.
 
-    \item We were not able to proof the security of the construction (nor the
-      opposite).
-
-    \item So, we used a small trick to proof the security.
+    \item Security Proof too complicated (\emph{maybe impossible?})
+      $\Rightarrow$ small trick to proof the security.
 
   \end{itemize}
 
@@ -392,14 +362,14 @@
 
   \frametitle{The Radicals Trick}
 
-  Vulnerable example $\mathfrak{A}$:
+  Vulnerable affine expression $\mathfrak{A}$ (exemplary):
   \begin{align*}
     %
     \mathfrak{A} = \alpha_l \cdot D_l(\widetilde{x}) - r_1
     %
   \end{align*}
 
-  The radicals trick:
+  Radicals trick (for affine function $\Phi \cdot x + \Psi$):
   \begin{align*}
     %
     R_1 & = (1-\kappa)\cdot(\Phi \cdot D_\delta(\widetilde{v})+\Psi) + \gamma\\
@@ -424,33 +394,22 @@
 
 
 %
-% EVALUATION
+% MAIN RESULTS
 %
 
-\section{Evaluation}
-
-\frame {
-  \frametitle{Evaluation}
-
-  \input{img-poly-deg-t}
-}
-
-
-%
-% CONTRIBUTION
-%
-
-\section{Contribution}
+\section{Main Results}
 
 \frame {
 
-  \frametitle{Contribution}
+  \frametitle{Main Results / Contribution}
 
   \begin{itemize}
 
-    \item UC--secure \cite{canetti05}
+    \item UC--secure \cite{canetti01} against all passive and active adversaries
 
-    \item linear time complexity
+    \item Linear time complexity (in the number of arithmetic operations)
+
+    \item Working implementation
 
   \end{itemize}
 
@@ -479,12 +438,17 @@
 
 }
 
+
+%
+% EVALUATION
+%
+
+\section{Evaluation}
+
 \frame {
+  \frametitle{Evaluation}
 
-  \frametitle{Demonstration of the Implementation}
-
-  DEMO
-
+  \input{img-poly-deg-t}
 }
 
 
@@ -493,6 +457,16 @@
 %
 
 \appendix
+
+\section{Demo}
+
+\frame {
+
+  \frametitle{Demo of the Implementation}
+
+  DEMO
+
+}
 
 \section{Bibliography}
 
