@@ -218,8 +218,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1"
-     inkscape:cx="313.48757"
-     inkscape:cy="161.39121"
+     inkscape:cx="341.4912"
+     inkscape:cy="161.74196"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -251,7 +251,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -260,26 +260,22 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(-31.273437,-49.948128)">
-    <g
-       id="g3761"
-       transform="translate(414.15314,162)">
-      <rect
-         rx="40"
-         ry="40"
-         y="70.664688"
-         x="-164.08453"
-         height="98.902"
-         width="398.90201"
-         id="rect2985"
-         style="fill:none;stroke:#000000;stroke-width:5;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
-      <path
-         inkscape:connector-curvature="0"
-         id="path2987"
-         d="m 35.366468,70.615694 1.2e-5,98.999996"
-         style="fill:none;stroke:#000000;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
-    </g>
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:4;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect2985"
+       width="398.90201"
+       height="98.902"
+       x="250.0686"
+       y="232.66469"
+       ry="40"
+       rx="40" />
     <path
-       style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:url(#Arrow2Lstart);marker-end:url(#Arrow2Lend)"
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 449.51961,232.61569 10e-6,99"
+       id="path2987"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:url(#Arrow2Lstart);marker-end:url(#Arrow2Lend)"
        d="m 349.54186,305.38751 c 0,0 55.33333,88.15633 100,88.48123 44.66666,0.32489 100,-86.53186 100,-86.53186"
        id="path3775"
        inkscape:connector-curvature="0"
@@ -417,28 +413,30 @@
     <flowRoot
        xml:space="preserve"
        id="flowRoot5095"
-       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier New;-inkscape-font-specification:Courier New"
+       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier New;-inkscape-font-specification:Bitstream Vera Sans"
        transform="translate(16,25.037767)"><flowRegion
          id="flowRegion5097"><rect
            id="rect5099"
            width="104"
            height="33"
            x="20"
-           y="239.36218" /></flowRegion><flowPara
+           y="239.36218"
+           style="font-weight:normal;-inkscape-font-specification:Bitstream Vera Sans" /></flowRegion><flowPara
          id="flowPara5101"
-         style="font-size:28px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans Bold">DRAV</flowPara></flowRoot>    <flowRoot
+         style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans">DRAV</flowPara></flowRoot>    <flowRoot
        xml:space="preserve"
        id="flowRoot5095-5"
-       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier New;-inkscape-font-specification:Courier New"
+       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier New;-inkscape-font-specification:Bitstream Vera Sans Oblique"
        transform="translate(16,-190.23331)"><flowRegion
          id="flowRegion5097-8"><rect
            id="rect5099-2"
            width="203"
            height="39"
            x="20"
-           y="239.36218" /></flowRegion><flowPara
+           y="239.36218"
+           style="font-weight:normal;-inkscape-font-specification:Bitstream Vera Sans Oblique" /></flowRegion><flowPara
          id="flowPara5101-0"
-         style="font-size:28px;font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans Bold Oblique">scalar value </flowPara></flowRoot>    <flowRoot
+         style="font-size:28px;font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans Oblique">scalar value </flowPara></flowRoot>    <flowRoot
        xml:space="preserve"
        id="flowRoot5176"
        style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier New;-inkscape-font-specification:Courier New"><flowRegion
@@ -448,7 +446,7 @@
            height="67"
            x="342"
            y="43.362186" /></flowRegion><flowPara
-         id="flowPara5182"></flowPara></flowRoot>    <flowRoot
+         id="flowPara5182" /></flowRoot>    <flowRoot
        xml:space="preserve"
        id="flowRoot4415-5"
        style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier New;-inkscape-font-specification:Courier New"
@@ -461,7 +459,7 @@
            y="374.36218" /></flowRegion><flowPara
          id="flowPara4421-7"
          style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:DejaVu Serif;-inkscape-font-specification:DejaVu Serif">v ∈ 𝕂</flowPara></flowRoot>    <path
-       style="fill:none;stroke:#000000;stroke-width:5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-end:url(#Arrow2Lend)"
+       style="fill:none;stroke:#000000;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-end:url(#Arrow2Lend)"
        d="m 450,96.73719 0,109.625"
        id="path5252"
        inkscape:connector-curvature="0"
@@ -493,14 +491,15 @@
     <flowRoot
        xml:space="preserve"
        id="flowRoot4407-8"
-       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier New;-inkscape-font-specification:Courier New"
+       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Courier New;-inkscape-font-specification:Bitstream Vera Sans"
        transform="translate(138.6875,-163.66752)"><flowRegion
          id="flowRegion4409-0"><rect
            id="rect4411-8"
            width="128"
            height="30"
            x="326"
-           y="278.36218" /></flowRegion><flowPara
+           y="278.36218"
+           style="font-weight:normal;-inkscape-font-specification:Bitstream Vera Sans" /></flowRegion><flowPara
          id="flowPara4413-3"
-         style="font-size:20px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans Bold">encryption</flowPara></flowRoot>  </g>
+         style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans">encryption</flowPara></flowRoot>  </g>
 </svg>

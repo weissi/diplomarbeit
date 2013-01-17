@@ -171,9 +171,13 @@
     \end{tikzpicture}
   \end{figure}
 
-  The first party chooses the polynomial and learns nothing, the second party
-  chooses the node $x$ and learns $y = f(x)$.
+  \begin{itemize}
 
+    \item First party chooses polynomial, learns nothing
+
+    \item Second Party chooses node $x$ and learns $y = f(x)$
+
+  \end{itemize}
 }
 
 
@@ -187,7 +191,7 @@
 
   \frametitle{Basis: Oblivious Affine Function Evaluation (OAFE)}
 
-  The main building block is OAFE \cite{davidgoliath}.
+  Main building block: OAFE \cite{davidgoliath}.
 
   \begin{figure}[h!]
     \centering
@@ -255,8 +259,7 @@
 
   \frametitle{Addition}
 
-  The addition of $\widetilde{a}$ and $\widetilde{b}$ can be performed
-  component--wise
+  Addition of $\widetilde{a}$ and $\widetilde{b}$ performed component--wise.
 
   \begin{align*}
     %
@@ -344,53 +347,34 @@
 
 \frame {
 
-  \frametitle{Problem}
+  \frametitle{Problem \& Solution}
+
+  Problem:
 
   \begin{itemize}
 
-    \item Problem: Adversary learns the OAFE outputs $\mathfrak{A}$ to
+    \item Adversary learns the OAFE outputs $\mathfrak{A}$ to
       $\mathfrak{H}$.
 
     \item Security Proof too complicated (\emph{maybe impossible?})
-      $\Rightarrow$ small trick to proof the security.
+
+  \end{itemize}
+
+  Solution (\emph{Radicals Trick}):
+
+  \begin{itemize}
+
+    \item Split $\mathfrak{A}$ to $\mathfrak{H}$ in two linear functions
+      (respectively)
+
+    \item Secret Sharing
+
+    \item Security proof easy
 
   \end{itemize}
 
 }
 
-\frame {
-
-  \frametitle{The Radicals Trick}
-
-  Vulnerable affine expression $\mathfrak{A}$ (exemplary):
-  \begin{align*}
-    %
-    \mathfrak{A} = \alpha_l \cdot D_l(\widetilde{x}) - r_1
-    %
-  \end{align*}
-
-  Radicals trick (for affine function $\Phi \cdot x + \Psi$):
-  \begin{align*}
-    %
-    R_1 & = (1-\kappa)\cdot(\Phi \cdot D_\delta(\widetilde{v})+\Psi) + \gamma\\
-    %
-    R_2 & = \kappa \qquad\ \,\cdot
-    (\Phi \cdot D_{!\delta}(\widetilde{v})+\Psi) - \gamma\\
-    %
-  \end{align*}
-
-  Fixed example $\mathfrak{A}$ using the radicals trick:
-  \begin{align*}
-    %
-    \mathfrak{A}_1 &= (1 - \kappa_1) \cdot
-    (\alpha_l \cdot D_l(\widetilde{x}) - r_1) + \gamma_1\\
-    %
-    \mathfrak{A}_2 &= \kappa_1 \qquad\ \,\cdot
-    (\alpha_l \cdot D_r(\widetilde{x}) - r_1) - \gamma_1\\
-    %
-    \mathfrak{A} &= \mathfrak{A}_1 + \mathfrak{A}_2
-  \end{align*}
-}
 
 
 %
@@ -448,7 +432,7 @@
 \frame {
   \frametitle{Evaluation}
 
-  \input{img-poly-deg-t}
+  \input{img-poly-deg-t-f97}
 }
 
 
@@ -458,17 +442,38 @@
 
 \appendix
 
-\section{Demo}
+\section{The End}
 
 \frame {
 
   \frametitle{Demo of the Implementation}
 
-  DEMO
+  {\Huge DEMO}
 
 }
 
-\section{Bibliography}
+
+%
+% THE END
+%
+
+\frame {
+
+  \frametitle{The End}
+
+  {\Large That's it!}
+
+  \bigskip{}
+  \bigskip{}
+  \bigskip{}
+
+  {\Huge Questions?}
+}
+
+
+%
+% BIBLIOGRAPHY
+%
 
 \frame {
 
@@ -476,6 +481,50 @@
 
   \bibliography{bibliography}
 
+}
+
+%
+% ADDITIONAL MATERIAL
+%
+
+\frame {
+
+  \frametitle{The Radicals Trick}
+
+  Vulnerable affine expression $\mathfrak{A}$ (exemplary):
+  \begin{align*}
+    %
+    \mathfrak{A} = \alpha_l \cdot D_l(\widetilde{x}) - r_1
+    %
+  \end{align*}
+
+  Radicals trick (for affine function $\Phi \cdot x + \Psi$):
+  \begin{align*}
+    %
+    R_1 & = (1-\kappa)\cdot(\Phi \cdot D_\delta(\widetilde{v})+\Psi) + \gamma\\
+    %
+    R_2 & = \kappa \qquad\ \,\cdot
+    (\Phi \cdot D_{!\delta}(\widetilde{v})+\Psi) - \gamma\\
+    %
+  \end{align*}
+
+  Fixed example $\mathfrak{A}$ using the radicals trick:
+  \begin{align*}
+    %
+    \mathfrak{A}_1 &= (1 - \kappa_1) \cdot
+    (\alpha_l \cdot D_l(\widetilde{x}) - r_1) + \gamma_1\\
+    %
+    \mathfrak{A}_2 &= \kappa_1 \qquad\ \,\cdot
+    (\alpha_l \cdot D_r(\widetilde{x}) - r_1) - \gamma_1\\
+    %
+    \mathfrak{A} &= \mathfrak{A}_1 + \mathfrak{A}_2
+  \end{align*}
+}
+
+\frame {
+  \frametitle{Evaluation, $\mathbb{F}_{97}$ vs.\ $\mathbb{F}_{2^{256}}$}
+
+  \input{img-poly-deg-t}
 }
 
 \end{document}

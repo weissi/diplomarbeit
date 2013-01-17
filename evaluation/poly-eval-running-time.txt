@@ -110,3 +110,40 @@ legend(300, 250, c("Machine 1, $\\mathbb{F}_{97}$",
                    "Machine 2, $\\mathbb{F}_{2^{256}}$"),
        pch=c(21, 21, 22, 22),lty=1:4,col=c('red', 'blue', 'green', 'black'))
 dev.off()
+
+###################################
+# PRESENTATION: F97 Linux vs. Mac #
+###################################
+# scripts/benchmark-poly-degrees.sh -m 500 -M 10000 -s 500 -r 5 \
+#   -b "../run-evaluation.sh" -f \
+#   -o ../evaluation/linux-F97-bench-500-10000-500.out
+# ...
+#R
+tlf97 <- read.table('linux-rad-F97-bench-500-10000-500.out', header=T)
+alf97 <- aggregate(tlf97$Time, list(degree=tlf97$Polynomial.Degree), median)
+
+tmf97 <- read.table('mac-rad-F97-bench-500-10000-500.out', header=T)
+amf97 <- aggregate(tmf97$Time, list(degree=tmf97$Polynomial.Degree), median)
+
+require( tikzDevice )
+options(tikzMetricPackages = c("\\usepackage[utf8]{inputenc}",
+                               "\\usepackage[T1]{fontenc}",
+                               "\\usetikzlibrary{calc}",
+                               "\\usepackage{amssymb}"))
+tikz('../writings/presentation/img-poly-deg-t-f97.tex', height=3, width=4.5,
+packages=c("\\usepackage{tikz}",
+           "\\usepackage[active,tightpage,psfixbb]{preview}",
+           "\\PreviewEnvironment{pgfpicture}",
+           "\\setlength\\PreviewBorder{0pt}",
+           "\\usepackage{amssymb}"))
+
+plot(data.frame(degree=alf97$degree, time=alf97$x/1000),
+     xlab='Polynomial Degree', ylab='Running Time [s]',
+     main='', type='o', pch=21, ylim=c(0, 50), col='red')
+lines(data.frame(degree=amf97$degree, time=amf97$x/1000),
+      type='o', pch=22, lty=3, col='green')
+
+legend(300, 50, c("Machine 1 (Linux), $\\mathbb{F}_{97}\\ \\ \\ $",
+                   "Machine 2 (Mac), $\\mathbb{F}_{97}$"),
+       pch=c(21, 22),col=c('red', 'green'))
+dev.off()

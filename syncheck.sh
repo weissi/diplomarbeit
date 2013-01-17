@@ -50,7 +50,7 @@ done < <(find . \(     -name '*.h' \
                              -or -path './syncheck.sh' \
                              -or -path './writings/thesis/res/*' \
                              -or -path './writings/thesis/images/*' \
-                             -or -path './writings/presentation/img-*-t.tex' \
+                             -or -path './writings/presentation/img-*.tex' \
                           \) \
                 -type f \
         )
