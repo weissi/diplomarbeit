@@ -223,6 +223,45 @@
 
 \section{Secure Arithmetic}
 
+\subsection{Protocol Basics}
+
+\frame {
+
+  \frametitle{Protocol Basics}
+
+  First Party (Goliath):
+
+  \begin{enumerate}
+
+    \item Defines function
+
+    \item Sets up OAFE functionality (coefficients of the affine functions)
+
+  \end{enumerate}
+
+  Second Party (David):
+
+  \begin{enumerate}
+
+    \item Encrypts its input to a DRAV using the OAFE functionality
+
+    \item Calculates (encrypted) intermediate results
+
+      \begin{itemize}
+
+        \item Performs calculations
+
+        \item Evaluates OAFEs using intermediate DRAVs, obtaining new
+          intermediate DRAVs
+
+      \end{itemize}
+
+    \item Decrypts the last DRAV (using OAFE)
+
+  \end{enumerate}
+
+}
+
 \subsection{Definition}
 
 \frame {
