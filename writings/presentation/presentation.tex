@@ -27,7 +27,7 @@
 
 \author{Johannes Weiß}
 
-\date{Januar 2012}
+\date{Januar 2013}
 
 \begin{document}
 
@@ -223,6 +223,39 @@
 
 \section{Secure Arithmetic}
 
+\subsection{Definition}
+
+\frame {
+
+  \frametitle{Secure Arithmetic}
+
+  \begin{itemize}
+
+    \item Goal: Secure and composable encoding of additions ($+$) and
+      multiplications ($\cdot$)
+
+    \item Optimally, support Square \& Multiply (arbitrary arithmetic circuits)
+
+  \end{itemize}
+
+  \begin{figure}
+    \centering
+    \includegraphics[width=6cm]{sample-polynomial-no-DRAE}
+  \end{figure}
+
+}
+
+\frame {
+
+  \frametitle{Dual Randomized Affine Value (DRAV)}
+
+  \begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{DRAV}
+  \end{figure}
+
+}
+
 \subsection{Protocol Basics}
 
 \frame {
@@ -259,39 +292,6 @@
     \item Decrypts the last DRAV (using OAFE)
 
   \end{enumerate}
-
-}
-
-\subsection{Definition}
-
-\frame {
-
-  \frametitle{Secure Arithmetic}
-
-  \begin{itemize}
-
-    \item Goal: Secure and composable encoding of additions ($+$) and
-      multiplications ($\cdot$)
-
-    \item Optimally, support Square \& Multiply (arbitrary arithmetic circuits)
-
-  \end{itemize}
-
-  \begin{figure}
-    \centering
-    \includegraphics[width=6cm]{sample-polynomial-no-DRAE}
-  \end{figure}
-
-}
-
-\frame {
-
-  \frametitle{Dual Randomized Affine Value (DRAV)}
-
-  \begin{figure}
-    \centering
-    \includegraphics[width=\textwidth]{DRAV}
-  \end{figure}
 
 }
 
