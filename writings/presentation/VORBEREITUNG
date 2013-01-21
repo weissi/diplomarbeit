@@ -1,0 +1,35 @@
+VORBEREITUNG
+============
+
+# Gnome-Terminal, 3 mal zoomen
+
+cd ~/studium/diplomarbeit/
+scripts/switch-implementation.sh -f
+
+
+TERMINAL 1
+==========
+short_prompt
+cd ~/studium/diplomarbeit/
+for f in $(seq 5); do let R=$RANDOM%97; echo $R; done | tee /tmp/f97.poly
+dist/build/Goliath/Goliath /tmp/f97.poly
+
+
+TERMINAL 2
+==========
+short_prompt
+cd ~/studium/diplomarbeit/
+dist/build/Token/Token
+
+
+TERMINAL 3
+==========
+short_prompt
+cd ~/studium/diplomarbeit/
+let R=$RANDOM%97; echo $R; dist/build/David/David -q $R
+
+
+TERMINAL 4
+==========
+short_prompt
+sudo tcpdump -i lo "" "portrange 23000-23999"
