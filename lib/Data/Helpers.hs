@@ -29,15 +29,16 @@ import Control.Exception (bracket)
 import Control.Monad.IO.Class (liftIO, MonadIO)
 import Control.Monad.Trans.Control (MonadBaseControl, control)
 import Data.Bits (Bits, shiftR)
-import Data.ByteString
+import Data.ByteString (ByteString)
 import Data.Char (chr)
 import Data.Conduit.Network ( ClientSettings(..), Application
                             , sourceSocket, sinkSocket
                             )
 import Data.Conduit.Network.Internal (AppData(..))
+import Data.Maybe (fromJust)
 import Data.Monoid (mempty, mappend)
 import qualified Data.Conduit as C
-import qualified Data.Conduit.Util as CU
+import qualified Data.Conduit.List as CL
 import qualified Data.Conduit.Network as CN
 import qualified Network.Socket as NS
 
@@ -62,9 +63,8 @@ integralBytes n0
 -- | A 'C.Conduit' drops every element but the first.
 takeOneConduit :: C.MonadResource m => C.Conduit i m i
 takeOneConduit =
-    CU.conduitState () push close
-    where push _ i = return $ CU.StateFinished Nothing [i]
-          close _ = return []
+    do mX <- CL.head
+       C.yield $ fromJust mX
 
 -- | Run an 'Application' by connecting to the specified server.
 -- Does TCP_NOWAIT
