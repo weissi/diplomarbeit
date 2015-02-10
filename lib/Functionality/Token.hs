@@ -42,9 +42,10 @@ runOAFEEvaluation :: Field el
                   -> OAFEEvaluationRequest el      -- ^ 'OAFEEvaluationRequest'
                   -> IO (OAFEEvaluationResponse el)-- ^ 'OAFEEvaluationResponse'
 runOAFEEvaluation vOAC req =
-   do oac <- atomically $ takeTMVar vOAC
-      let rsp = processOAFEEvaluationRequest oac req
-          var = fst rsp
-          oac' = HM.delete var oac
-      atomically $ putTMVar vOAC oac'
-      return rsp
+   atomically $
+       do oac <- takeTMVar vOAC
+          let rsp = processOAFEEvaluationRequest oac req
+              var = fst rsp
+              oac' = HM.delete var oac
+          putTMVar vOAC oac'
+          return $! rsp
