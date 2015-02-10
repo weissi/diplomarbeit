@@ -26,6 +26,7 @@ import Control.Concurrent.STM.TChan (TChan, newTChan, readTChan, writeTChan)
 import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (atomically)
+import Control.Monad.Trans.Resource (MonadResource, runResourceT)
 import Data.List (partition)
 import System.Environment (getArgs)
 import System.Exit (exitWith, ExitCode(..))
@@ -35,9 +36,8 @@ import qualified Data.ByteString as BS
 
 -- # SITE PACKAGES
 import Crypto.Random (SystemRandom, newGenIO)
-import Data.Conduit ( Conduit, MonadResource
+import Data.Conduit ( Conduit
                     , ($$), ($=), (=$=)
-                    , runResourceT
                     )
 import Data.Vector (Vector)
 import qualified Data.Conduit.List as CL
@@ -65,7 +65,7 @@ import qualified Math.Polynomials as P
 import StaticConfiguration
 
 -- | Token Configuration Port (G -> T) and Token Evaluation Port (D -> T)
-type TokenConfInfo m = (CN.ClientSettings m, SetupGoliathToDavid)
+type TokenConfInfo = (CN.ClientSettings, SetupGoliathToDavid)
 
 die :: String -> IO ()
 die err =
@@ -83,37 +83,39 @@ debugPrintConduit = CL.mapM $ \a -> liftIO (print a) >> return a
 _DEBUG_ :: Bool
 _DEBUG_ = False
 
-configureToken :: CN.ClientSettings RMonad
+configureToken :: CN.ClientSettings
                -> OAFEConfiguration Element
                -> IO ()
 configureToken tokenSettings oac =
     do putStr "Sending OAC to Token... "
-       runResourceT$ CN.runTCPClient tokenSettings confTokenApp
+       CN.runTCPClient tokenSettings confTokenApp
        putStrLn "OK"
-    where confTokenApp :: MonadResource m => CN.Application m
+    where confTokenApp :: CN.AppData -> IO ()
           confTokenApp appData =
               let sink = CN.appSink appData
-               in CL.sourceList (HM.toList oac)
-                  $= (if _DEBUG_ then debugPrintConduit else CL.map id)
-                  =$= oacSerializeConduit
-                  $$ sink
+               in runResourceT $
+                   CL.sourceList (HM.toList oac)
+                   $= (if _DEBUG_ then debugPrintConduit else CL.map id)
+                   =$= oacSerializeConduit
+                   $$ sink
 
 configureDavid :: SetupDavidToGoliath
                -> RAC Element
                -> IO ()
 configureDavid sd2g rac =
    let davidNetConf = clientSettingsFromSetupD2G sd2g
-   in runResourceT (CN.runTCPClient davidNetConf connected)
+   in (CN.runTCPClient davidNetConf connected)
         `E.catch` (\e -> putStrLn $ "Connect to David failed: " ++
                                     show (e :: E.IOException))
    where connected appData =
              let sink = CN.appSink appData
-              in CL.sourceList rac
-                 $= (if _DEBUG_ then debugPrintConduit else CL.map id)
-                 =$= racFragmentSerializeConduit
-                 $$ sink
+              in runResourceT $
+                  CL.sourceList rac
+                  $= (if _DEBUG_ then debugPrintConduit else CL.map id)
+                  =$= racFragmentSerializeConduit
+                  $$ sink
 
-runGoliath :: CN.ClientSettings RMonad
+runGoliath :: CN.ClientSettings
            -> SetupDavidToGoliath
            -> Expr Element
            -> IO ()
@@ -131,24 +133,24 @@ runGoliath tokenConf setupD2G expr =
          Left err -> putStrLn "ERROR" >> die ("ERROR: " ++ show err)
          Right _ -> putStrLn "OK"
 
-evalClient :: MonadResource m
-           => TChan (TokenConfInfo RMonad) -> Expr Element -> CN.Application m
+evalClient :: TChan TokenConfInfo -> Expr Element -> CN.AppData -> IO ()
 evalClient cTokens expr appData =
     let src = CN.appSource appData
         sink = CN.appSink appData
-     in src
-        $= sd2gParseConduit
-        =$= takeOneConduit
-        =$= CL.mapM newEvalClient
-        =$= sg2dSerializeConduit
-        $$ sink
+     in runResourceT $
+         src
+         $= sd2gParseConduit
+         =$= takeOneConduit
+         =$= CL.mapM newEvalClient
+         =$= sg2dSerializeConduit
+         $$ sink
     where newEvalClient setupD2G =
               do liftIO $ putStrLn "David connected"
                  myToken <- liftIO $ atomically $ readTChan cTokens
                  _ <- liftIO $ forkIO $ runGoliath (fst myToken) setupD2G expr
                  return (snd myToken)
 
-spawnTokenGenerator :: TChan (TokenConfInfo RMonad) -> IO ()
+spawnTokenGenerator :: TChan TokenConfInfo -> IO ()
 spawnTokenGenerator cTokens =
     do _ <- forkIO $
             do atomically $ writeTChan cTokens
@@ -177,6 +179,6 @@ main =
        spawnTokenGenerator cTokens
        putStrLn "GOLIATH READY FOR CONNECTION"
        hFlush stdout
-       runResourceT $ CN.runTCPServer _SRV_CONF_GOLIATH_FROM_DAVID_
-                                      (evalClient cTokens expr)
+       _ <- CN.runTCPServer _SRV_CONF_GOLIATH_FROM_DAVID_
+                            (evalClient cTokens expr)
        putStrLn "GOLIATH DONE"

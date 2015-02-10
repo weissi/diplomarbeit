@@ -25,7 +25,8 @@ import Data.Text (Text)
 import qualified Data.Text as T
 
 -- # SITE PACKAGES
-import Data.Conduit (($$), ($=), (=$=), runResourceT)
+import Control.Monad.Trans.Resource (runResourceT)
+import Data.Conduit (($$), ($=), (=$=))
 import qualified Data.Conduit.Binary as CB
 import qualified Data.Conduit.List as CL
 import qualified Data.Conduit.Text as CT

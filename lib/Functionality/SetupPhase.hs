@@ -30,8 +30,9 @@ module Functionality.SetupPhase
 -- # STDLIB
 
 -- # SITE PACKAGES
+import Control.Monad.Trans.Resource (MonadResource)
 import Data.ByteString (ByteString)
-import Data.Conduit (Conduit, MonadResource, (=$=))
+import Data.Conduit (Conduit, (=$=))
 import Text.ProtocolBuffers.Basic (uFromString, uToString)
 import qualified Data.ByteString.Char8 as BS8
 import qualified Data.Conduit.List as CL
@@ -52,25 +53,21 @@ data SetupDavidToGoliath = SetupDavidToGoliath { sd2gHost :: String
                                                , sd2gPort :: Int
                                                } deriving Show
 
-clientSettingsFromSetupD2G :: Monad m
-                           => SetupDavidToGoliath -> CN.ClientSettings m
+clientSettingsFromSetupD2G :: SetupDavidToGoliath -> CN.ClientSettings
 clientSettingsFromSetupD2G (SetupDavidToGoliath host port) =
     CN.clientSettings port (BS8.pack host)
 
-clientSettingsFromSetupG2D :: Monad m
-                           => SetupGoliathToDavid -> CN.ClientSettings m
+clientSettingsFromSetupG2D :: SetupGoliathToDavid -> CN.ClientSettings
 clientSettingsFromSetupG2D (SetupGoliathToDavid tokenHost tokenPort) =
     CN.clientSettings tokenPort (BS8.pack tokenHost)
 
-setupG2DFromClientSettings :: Monad m
-                           => CN.ClientSettings m -> SetupGoliathToDavid
+setupG2DFromClientSettings :: CN.ClientSettings -> SetupGoliathToDavid
 setupG2DFromClientSettings cs =
-    SetupGoliathToDavid ((BS8.unpack . CN.clientHost) cs) (CN.clientPort cs)
+    SetupGoliathToDavid ((BS8.unpack . CN.getHost) cs) (CN.getPort cs)
 
-setupD2GFromClientSettings :: Monad m
-                           => CN.ClientSettings m -> SetupDavidToGoliath
+setupD2GFromClientSettings :: CN.ClientSettings -> SetupDavidToGoliath
 setupD2GFromClientSettings cs =
-    SetupDavidToGoliath ((BS8.unpack . CN.clientHost) cs) (CN.clientPort cs)
+    SetupDavidToGoliath ((BS8.unpack . CN.getHost) cs) (CN.getPort cs)
 
 sg2dParseConduit :: MonadResource m => Conduit ByteString m SetupGoliathToDavid
 sg2dParseConduit = pbufParse =$= CL.map sg2dParse

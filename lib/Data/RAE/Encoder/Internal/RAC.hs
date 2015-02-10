@@ -47,9 +47,6 @@ import Data.RAE.Types ( DRAE(..), DRAC, RAE(..), RAC
                       , DualLinearRadicals(..)
                       )
 
-instance Show a => Show (DList a) where
-    show = show . DL.toList
-
 type OAFEConfigGen el = HashMap VariableName (Int, DList (el, el))
 
 _EMPTY_RAE_ :: Field el => RAE RadicalTuple OAFEReference el

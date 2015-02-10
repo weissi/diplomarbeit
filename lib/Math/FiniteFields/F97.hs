@@ -56,7 +56,7 @@ instance IntegerAsType n => CRandom (Fp n) where
           Right (a, g') -> Right (fromIntegral (a :: Int), g')
 
 instance IntegerAsType n => Arbitrary (Fp n) where
-    arbitrary = arbitrarySizedIntegral
+    arbitrary = fmap fromIntegral arbitrarySizedIntegral
 
 instance IntegerAsType n => Random (Fp n) where
     random g =

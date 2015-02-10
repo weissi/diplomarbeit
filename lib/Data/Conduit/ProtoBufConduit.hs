@@ -25,7 +25,8 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as BSL
 
 -- # SITE PACKAGES
-import Data.Conduit (Conduit, MonadResource, yield, awaitForever, await)
+import Data.Conduit (Conduit, yield, awaitForever, await)
+import Control.Monad.Trans.Resource (MonadResource)
 import Text.ProtocolBuffers.Get (Result(..))
 import Text.ProtocolBuffers.Reflections (ReflectDescriptor)
 import Text.ProtocolBuffers.WireMessage ( Wire

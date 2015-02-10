@@ -100,6 +100,6 @@ evaluateExpr varMap expr logMsg =
           token vOAC d2t t2d =
               do sourceTBMChan d2t
                  $= CL.mapM (liftIO . (runOAFEEvaluation vOAC))
-                 $$ sinkTBMChan t2d
+                 $$ sinkTBMChan t2d True
           pushRAC :: RAC el -> TBMChan (RACFragment el) -> IO ()
-          pushRAC rac g2d = sourceList rac $$ sinkTBMChan g2d
+          pushRAC rac g2d = sourceList rac $$ sinkTBMChan g2d True

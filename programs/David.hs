@@ -26,7 +26,7 @@ import Control.Concurrent.STM.TMVar ( TMVar, newEmptyTMVar
                                     , takeTMVar, tryPutTMVar
                                     )
 import Control.Monad (liftM, when, void)
-import Control.Monad.IO.Class (MonadIO, liftIO)
+import Control.Monad.IO.Class (liftIO)
 import Control.Monad.STM (atomically)
 import Data.List (partition)
 import System.Environment (getArgs)
@@ -34,11 +34,12 @@ import qualified Control.Exception.Base as E
 
 -- # SITE PACKAGES
 import Control.Concurrent.STM.TBMChan (TBMChan, newTBMChan, closeTBMChan)
+import Control.Monad.Trans.Resource (MonadResource, runResourceT)
 import Data.ByteString (ByteString)
 import Data.Conduit.TMChan (sourceTBMChan, sinkTBMChan)
-import Data.Conduit ( Conduit, MonadResource
+import Data.Conduit ( Conduit
                     , ($$), ($=), (=$=), yield
-                    , runResourceT
+                    , Source
                     )
 import qualified Data.Conduit.List as CL
 import qualified Data.Conduit.Network as CN
@@ -47,12 +48,13 @@ import qualified Data.Text as T
 
 -- # LOCAL
 import Data.OAFE (OAFEEvaluationRequest, OAFEEvaluationResponse)
-import Data.Helpers (takeOneConduit, runTCPClientNoWait, isOptionArg)
+import Data.Helpers (takeOneConduit, isOptionArg, runTCPClientNoWait)
 import Data.LinearExpression (VarMapping)
 import Data.RAE.Conduit ( oafeEvaluationResponseParseConduit
                         , oafeEvaluationRequestSerializeConduit
                         , racFragmentParseConduit
                         )
+import Data.RAE.Types (RACFragment)
 import Functionality.SetupPhase ( SetupGoliathToDavid, sd2gSerializeConduit
                                 , sg2dParseConduit, setupD2GFromClientSettings
                                 , clientSettingsFromSetupG2D
@@ -83,22 +85,23 @@ evalReqSerializeConduit = oafeEvaluationRequestSerializeConduit
 -- receives and parses OAFE evaluation responses. Both are connected via the
 -- 'reqs' and 'rsps' channels to the evaluation thread
 -- (see @Functionality.David.runRACEvaluation@).
-spawnCommThreads :: CN.ClientSettings RMonad
+spawnCommThreads :: CN.ClientSettings
                  -> TBMChan (OAFEEvaluationRequest Element)
                  -> TBMChan (OAFEEvaluationResponse Element)
                  -> IO ()
 spawnCommThreads tokenSettings reqs rsps =
     do _ <- forkIO $
-              runResourceT (runTCPClientNoWait tokenSettings commApp)
+              (runTCPClientNoWait tokenSettings commApp)
               `E.finally` do atomically $ closeTBMChan reqs
                              atomically $ closeTBMChan rsps
        return ()
-    where commApp appData =
-              do let netSrc = CN.appSource appData
+    where commApp :: CN.AppData -> IO ()
+          commApp appData =
+              do let netSource :: MonadResource m => Source m ByteString
+                     netSource = CN.appSource appData
                      netSink = CN.appSink appData
                  _ <- liftIO $ forkIO $ runResourceT $ sender netSink
-                 receiver netSrc
-                 return ()
+                 runResourceT $ receiver netSource
           sender netSink =
               sourceTBMChan reqs
               $= evalReqSerializeConduit
@@ -106,7 +109,7 @@ spawnCommThreads tokenSettings reqs rsps =
           receiver netSrc =
               netSrc
               $= evalRspParseConduit
-              $$ sinkTBMChan rsps
+              $$ sinkTBMChan rsps True
 -- | Start the evaluation server and the evaluation thread.
 --
 -- The evaluation server accepts an ARE stream from Goliath and transmits the
@@ -124,18 +127,18 @@ runEvaluator varMap reqs rsps vResult logMsg die =
        _ <- forkIO $
              (runRACEvaluation varMap reqs rsps cRACFrag vResult logMsg)
                `E.catch` (\e -> die $ show (e :: E.IOException))
-       runResourceT
-           (CN.runTCPServer _SRV_CONF_DAVID_FROM_GOLIATH_ (conn vStop cRACFrag))
+       (CN.runTCPServer _SRV_CONF_DAVID_FROM_GOLIATH_ (conn vStop cRACFrag))
          `E.catch` (\e -> die $ show (e :: E.IOException))
        return ()
-    where conn vStop cRACFrag appData =
+    where conn :: TMVar () -> TBMChan (RACFragment Element) -> CN.AppData -> IO ()
+          conn vStop cRACFrag appData =
               do let src = CN.appSource appData
                  success <- liftIO $ atomically $ tryPutTMVar vStop ()
-                 when success $ conn' cRACFrag src
+                 when success $ runResourceT $ conn' cRACFrag src
           conn' cRACFrag src =
               src
               $= racFragmentParseConduit
-              $$ sinkTBMChan cRACFrag
+              $$ sinkTBMChan cRACFrag True
 
 -- | This function exchanges the initial settings with Goliath.
 --
@@ -154,17 +157,17 @@ exchangeConfWithGoliath =
          Right () ->
              do settings <- atomically $ takeTMVar vSettings
                 return $ Right settings
-    where tryConnect :: CN.ClientSettings RMonad
+    where tryConnect :: CN.ClientSettings
                      -> TMVar SetupGoliathToDavid
                      -> IO (Either String ())
           tryConnect conf vSettings =
-              do runResourceT $ CN.runTCPClient conf (connected vSettings)
+              do CN.runTCPClient conf (connected vSettings)
                  return $ Right ()
           connected vSettings appData =
               do let src = CN.appSource appData
                      sink = CN.appSink appData
-                 () <- sender sink
-                 receiver vSettings src
+                 () <- runResourceT $ sender sink
+                 runResourceT $ receiver vSettings src
           sender sink =
               yield (setupD2GFromClientSettings _CLIENT_CONF_GOLIATH_TO_DAVID_)
               $= sd2gSerializeConduit

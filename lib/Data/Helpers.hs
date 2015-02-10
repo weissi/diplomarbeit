@@ -20,27 +20,27 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE FlexibleContexts #-}
 module Data.Helpers ( integralBytes, takeOneConduit
-                    , runTCPClientNoWait
                     , isOptionArg
+                    , runTCPClientNoWait
                     ) where
 import Blaze.ByteString.Builder (Builder, toByteString)
 import Blaze.ByteString.Builder.Char8 (fromChar)
 import Control.Exception (bracket)
-import Control.Monad.IO.Class (liftIO, MonadIO)
-import Control.Monad.Trans.Control (MonadBaseControl, control)
+import Control.Monad.Trans.Resource (MonadResource)
 import Data.Bits (Bits, shiftR)
 import Data.ByteString (ByteString)
 import Data.Char (chr)
-import Data.Conduit.Network ( ClientSettings(..), Application
-                            , sourceSocket, sinkSocket
-                            )
-import Data.Conduit.Network.Internal (AppData(..))
+import Data.Streaming.Network (safeRecv, getSocketFamilyTCP)
+import Data.Streaming.Network.Internal
+import Network.Socket.ByteString (sendAll)
+
 import Data.Maybe (fromJust)
 import Data.Monoid (mempty, mappend)
 import qualified Data.Conduit as C
 import qualified Data.Conduit.List as CL
 import qualified Data.Conduit.Network as CN
 import qualified Network.Socket as NS
+
 
 -- | Encode a value of an 'Integral' type as 'ByteString'.
 integralBytes :: (Integral a, Bits a, Show a)
@@ -61,32 +61,28 @@ integralBytes n0
                  _ -> marshallIntByte (n `shiftR` 8) (acc `mappend` newBuilder)
 
 -- | A 'C.Conduit' drops every element but the first.
-takeOneConduit :: C.MonadResource m => C.Conduit i m i
+takeOneConduit :: MonadResource m => C.Conduit i m i
 takeOneConduit =
     do mX <- CL.head
        C.yield $ fromJust mX
 
--- | Run an 'Application' by connecting to the specified server.
+-- | Run an "application" by connecting to the specified server.
 -- Does TCP_NOWAIT
 --
--- (stolen from network-conduit-0.6.1.1)
-runTCPClientNoWait :: (MonadIO m, MonadBaseControl IO m)
-                   => ClientSettings m      -- ^ Settings such as host and port.
-                   -> Application m -> m ()
-runTCPClientNoWait cs app =
-    let port = clientPort cs
-        host = clientHost cs
-     in control $ \run -> bracket
-        (CN.getSocket host port)
-        (NS.sClose . fst)
-        (\(s, address) ->
-            do liftIO $ NS.setSocketOption s NS.NoDelay 1
-               run $ app AppData
-                         { appSource = sourceSocket s
-                         , appSink = sinkSocket s
-                         , appSockAddr = address
-                         , appLocalAddr = Nothing
-                         })
+-- (stolen from streaming-commons-0.1.9.1)
+runTCPClientNoWait :: CN.ClientSettings -> (AppData -> IO a) -> IO a
+runTCPClientNoWait (ClientSettings port host addrFamily) app = bracket
+    (getSocketFamilyTCP host port addrFamily)
+    (NS.sClose . fst)
+    (\(s, address) ->
+        do NS.setSocketOption s NS.NoDelay 1
+           app AppData
+               { appRead' = safeRecv s 4096
+               , appWrite' = sendAll s
+               , appSockAddr' = address
+               , appLocalAddr' = Nothing
+               , appCloseConnection' = NS.sClose s
+               })
 
 -- | Predicate to decide whether a command line argument is an optional argument
 -- (starts with a dash).

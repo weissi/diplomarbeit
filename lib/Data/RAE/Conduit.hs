@@ -36,7 +36,8 @@ import qualified Data.Foldable as F
 import qualified Data.Sequence as S
 
 -- # SITE PACKAGES
-import Data.Conduit (Conduit, MonadResource, (=$=))
+import Control.Monad.Trans.Resource (MonadResource)
+import Data.Conduit (Conduit, (=$=))
 import Data.Text (Text)
 import Data.Vector (Vector)
 import Text.ProtocolBuffers.Basic (Utf8(Utf8))

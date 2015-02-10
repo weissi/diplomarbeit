@@ -31,11 +31,10 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
 
 -- # SITE PACKAGES
-import Control.Monad.Trans.Resource (ResourceT)
-import Data.Conduit ( Conduit, MonadResource, runResourceT
+import Control.Monad.Trans.Resource (MonadResource, runResourceT)
+import Data.Conduit ( Conduit
                     , ($=), ($$), yield
                     )
-import Data.Conduit.Network (Application)
 import Data.Vector (Vector)
 import qualified Data.Conduit.List as CL
 import qualified Data.Conduit.Network as CN
@@ -70,26 +69,27 @@ evalResponseSerializeConduit = oafeEvaluationResponseSerializeConduit
 tokenEvaluatorStartThread :: TMVar (OAFEConfiguration Element) -> IO ()
 tokenEvaluatorStartThread vOAC =
     do putStrLn "TOKEN EVALUATOR RUNNING"
-       let cfg :: CN.ServerSettings (ResourceT IO)
-           cfg = _SRV_CONF_TOKEN_FROM_DAVID_ {
-                   CN.serverAfterBind =
-                       \s -> liftIO $ NS.setSocketOption s NS.NoDelay 1
-                 }
-       runResourceT (CN.runTCPServer cfg (tokenEval vOAC))
+       let cfg :: CN.ServerSettings
+           cfg = CN.setAfterBind
+                   (\s -> liftIO $ NS.setSocketOption s NS.NoDelay 1)
+                   _SRV_CONF_TOKEN_FROM_DAVID_
+       CN.runTCPServer cfg (tokenEval vOAC)
 
-tokenEval :: (MonadResource m, MonadIO m)
-          => TMVar (OAFEConfiguration Element) -> Application m
+tokenEval :: TMVar (OAFEConfiguration Element) -> CN.AppData -> IO ()
 tokenEval vOAC appData =
     let src = CN.appSource appData
         sink = CN.appSink appData
-     in src
-        $= evalRequestParseConduit
-        $= CL.mapM (liftIO . (runOAFEEvaluation vOAC))
-        $= evalResponseSerializeConduit
-        $$ sink
+     in runResourceT $
+         src
+         $= evalRequestParseConduit
+         $= CL.mapM (liftIO . (runOAFEEvaluation vOAC))
+         $= evalResponseSerializeConduit
+         $$ sink
 
-tokenClient :: forall m. (MonadResource m, MonadIO m)
-            => TMVar () -> TMVar (OAFEConfiguration Element) -> Application m
+tokenClient :: TMVar ()
+            -> TMVar (OAFEConfiguration Element)
+            -> CN.AppData
+            -> IO ()
 tokenClient vAcceptConfig vOAC appData =
     do let source = CN.appSource appData
            sink = CN.appSink appData
@@ -98,10 +98,11 @@ tokenClient vAcceptConfig vOAC appData =
               if empty
                 then putTMVar vAcceptConfig () >> return True
                 else return False
-       if accept
-         then do m <- receiver source
-                 sender sink m
-         else CL.sourceList [BS.pack [70, 85, 76, 76, 10]] $$ sink
+       runResourceT $
+           if accept
+              then do m <- receiver source
+                      sender sink m
+              else CL.sourceList [BS.pack [70, 85, 76, 76, 10]] $$ sink
     where launchTokenEvaluation oac =
               do atomically $ putTMVar vOAC oac
                  return ()
@@ -119,6 +120,6 @@ main =
        vAcceptConfig <- atomically newEmptyTMVar
        vOAC <- atomically newEmptyTMVar
        _ <- forkIO $ tokenEvaluatorStartThread vOAC
-       runResourceT $ CN.runTCPServer _SRV_CONF_TOKEN_FROM_GOLIATH_
-                                      (tokenClient vAcceptConfig vOAC)
+       _ <- CN.runTCPServer _SRV_CONF_TOKEN_FROM_GOLIATH_
+                            (tokenClient vAcceptConfig vOAC)
        putStrLn "TOKEN: DONE"
